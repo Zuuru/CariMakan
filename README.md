@@ -20,14 +20,9 @@ Setiap anggota tim WAJIB bekerja di branch masing-masing.
 
 * `main` → branch stabil (FINAL PROJECT)
 
-## 🌿 Branch fitur:
+## 🌿 Branch Peorang/Permodul:
 
-Gunakan format:
-
-* `feature/auth`
-* `feature/ui`
-* `feature/order`
-* `feature/database`
+Kerjain dulu permodul-perorang nanti diakhir project baru finalisasi
 
 ---
 
