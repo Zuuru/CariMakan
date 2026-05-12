@@ -328,6 +328,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
+<<<<<<< HEAD
   mobile_scanner:
     dependency: "direct main"
     description:
@@ -336,6 +337,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.2.0"
+=======
+>>>>>>> 294824d (membuat tampilan splash dan register sementara)
   native_toolchain_c:
     dependency: transitive
     description:
@@ -368,6 +371,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+<<<<<<< HEAD
   path_parsing:
     dependency: transitive
     description:
@@ -376,6 +380,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+=======
+>>>>>>> 294824d (membuat tampilan splash dan register sementara)
   path_provider:
     dependency: transitive
     description:
@@ -424,6 +430,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+<<<<<<< HEAD
   petitparser:
     dependency: transitive
     description:
@@ -432,6 +439,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.2"
+=======
+>>>>>>> 294824d (membuat tampilan splash dan register sementara)
   platform:
     dependency: transitive
     description:
@@ -645,6 +654,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+<<<<<<< HEAD
   xml:
     dependency: transitive
     description:
@@ -653,6 +663,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.6.1"
+=======
+>>>>>>> 294824d (membuat tampilan splash dan register sementara)
   yaml:
     dependency: transitive
     description:
