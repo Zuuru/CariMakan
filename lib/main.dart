@@ -4,7 +4,8 @@ import 'package:carimakan/features/splash/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'firebase_options.dart';
+import 'package:carimakan/firebase_options.dart';
+import 'package:carimakan/features/home/presentation/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +22,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CariMakan',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme),
+        useMaterial3: true,
+        textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
       ),
-      home: const RegisterPage(),
+      home: const SplashScreen(),
     );
   }
 }
