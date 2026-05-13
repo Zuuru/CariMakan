@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:carimakan/core/theme/app_colors.dart';
 
 class CardResto extends StatelessWidget {
   final String imageUrl;
@@ -27,7 +27,7 @@ class CardResto extends StatelessWidget {
       height: 240,
       margin: const EdgeInsets.only(right: 15),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F1), // Cream/Pinkish background from image
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -69,7 +69,7 @@ class CardResto extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFE30613),
+                    color: AppColors.primary,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(15),
                       bottomRight: Radius.circular(24),
@@ -77,7 +77,7 @@ class CardResto extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 14),
+                      const Icon(Icons.star, color: AppColors.starColor, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         '$rating ($reviewCount)',
@@ -105,18 +105,18 @@ class CardResto extends StatelessWidget {
                       distance,
                       style: GoogleFonts.poppins(
                         fontSize: 10,
-                        color: Colors.black87,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.people_outline, size: 12, color: Colors.black54),
+                        const Icon(Icons.people_outline, size: 12, color: AppColors.textSecondary),
                         const SizedBox(width: 4),
                         Text(
                           '$queueCount Antrean',
                           style: GoogleFonts.poppins(
                             fontSize: 10,
-                            color: Colors.black87,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -129,7 +129,7 @@ class CardResto extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textMain,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -142,3 +142,4 @@ class CardResto extends StatelessWidget {
     );
   }
 }
+
