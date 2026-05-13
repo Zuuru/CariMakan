@@ -142,7 +142,7 @@ class _SplashPage1State extends State<SplashPage1>
           fit: StackFit.expand,
           children: [
             Image.asset(
-              'assets/image/splash_screen/splash pic 1.png',
+              'assets/images/splash_screen/splash pic 1.png',
               fit: BoxFit.cover,
               alignment: Alignment.center,
             ),
@@ -287,7 +287,7 @@ class _SplashPage2State extends State<SplashPage2>
       fit: StackFit.expand,
       children: [
         Image.asset(
-          'assets/image/splash_screen/splash pic 2.png',
+          'assets/images/splash_screen/splash pic 2.png',
           fit: BoxFit.cover,
           alignment: Alignment.center,
         ),
@@ -430,7 +430,7 @@ class _SplashPage3State extends State<SplashPage3>
       fit: StackFit.expand,
       children: [
         Image.asset(
-          'assets/image/splash_screen/splash pic 3.png',
+          'assets/images/splash_screen/splash pic 3.png',
           fit: BoxFit.cover,
           alignment: Alignment.center,
         ),
@@ -490,7 +490,7 @@ class SplashPage4 extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: Image.asset(
-        'assets/image/background/bg 1.png',
+        'assets/images/background/bg 1.png',
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
@@ -510,14 +510,14 @@ class SplashPage5 extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            'assets/image/background/bg 1.png',
+            'assets/images/background/bg 1.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
           ),
           Center(
             child: Image.asset(
-              'assets/image/Icon/icon carimakan.png',
+              'assets/images/icon/icon_carimakan.png',
               width: 150,
               height: 150,
             ),
@@ -539,7 +539,7 @@ class SplashPage6 extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            'assets/image/background/bg 1.png',
+            'assets/images/background/bg 1.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,

@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/image/background/bg 1.png'),
+                image: AssetImage('assets/images/background/bg 1.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -99,18 +99,23 @@ class _LoginPageState extends State<LoginPage> {
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.black,
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
                                     ),
-                                    child: Text(
-                                      "Belum Punya Akun?",
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                  ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        "Belum Punya Akun?",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -122,18 +127,23 @@ class _LoginPageState extends State<LoginPage> {
                                   height: 50,
                                   child: ElevatedButton.icon(
                                     onPressed: () {},
-                                    icon: Image.asset('assets/image/Icon/google logo.png', width: 24),
-                                    label: Text(
-                                      "Login pake\nGoogle",
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    icon: Image.asset('assets/images/icon/google_logo.png', width: 24),
+                                    label: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        "Login pake\nGoogle",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(30),
                                       ),

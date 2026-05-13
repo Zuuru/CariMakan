@@ -20,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/image/background/bg 2.png'),
+                image: AssetImage('assets/images/background/bg 2.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -125,21 +125,26 @@ class _RegisterPageState extends State<RegisterPage> {
                                     MaterialPageRoute(builder: (context) => const LoginPage()),
                                   );
                                 },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.black,
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  "Udah Punya Akun?",
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                                 child: FittedBox(
+                                   fit: BoxFit.scaleDown,
+                                   child: Text(
+                                     "Udah Punya Akun?",
+                                     style: GoogleFonts.outfit(
+                                       fontSize: 12,
+                                       fontWeight: FontWeight.bold,
+                                     ),
+                                   ),
+                                 ),
+                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -148,22 +153,27 @@ class _RegisterPageState extends State<RegisterPage> {
                               height: 50,
                               child: ElevatedButton.icon(
                                 onPressed: () {},
-                                icon: Image.asset('assets/image/Icon/google logo.png', width: 24),
-                                label: Text(
-                                  "Login pake\nGoogle",
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                                icon: Image.asset('assets/images/icon/google_logo.png', width: 24),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30),
                                   ),
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
+                                ),
+                                label: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    "Login pake\nGoogle",
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
