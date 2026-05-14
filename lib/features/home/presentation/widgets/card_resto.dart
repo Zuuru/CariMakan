@@ -9,6 +9,7 @@ class CardResto extends StatelessWidget {
   final int queueCount;
   final double rating;
   final int reviewCount;
+  final VoidCallback? onTap;
 
   const CardResto({
     super.key,
@@ -18,13 +19,16 @@ class CardResto extends StatelessWidget {
     required this.queueCount,
     this.rating = 4.9,
     this.reviewCount = 999,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 147,
-      height: 240,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 147,
+        height: 240,
       margin: const EdgeInsets.only(right: 15),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF1F1), // Cream/Pinkish background from image
@@ -139,6 +143,6 @@ class CardResto extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

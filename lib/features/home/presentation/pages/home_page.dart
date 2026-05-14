@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../profile/presentation/pages/customer_profile_page.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../widgets/card_resto.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/icon_makanan.dart';
 import 'scan_page.dart';
+import 'resto_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,64 +19,93 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomeContent(onProfileTap: () => setState(() => _currentIndex = 3)),
+      const Center(child: Text('Promo Page')),
+      const Center(child: Text('Pesanan Page')),
+      CustomerProfilePage(onBack: () => setState(() => _currentIndex = 0)),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    _buildHeader(),
-                    const SizedBox(height: 20),
-                    _buildGreeting(),
-                    const SizedBox(height: 15),
-                    _buildSearchBar(),
-                    const SizedBox(height: 25),
-                    _buildPromotionSection(),
-                    const SizedBox(height: 25),
-                    _buildMapSection(),
-                    const SizedBox(height: 25),
-                    const IconMakanan(),
-                    const SizedBox(height: 25),
-                    _buildNearbySection(),
-                    const SizedBox(height: 200), // Space for bottom nav
-                  ],
-                ),
-              ),
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _currentIndex,
+            children: _pages,
+          ),
+          Positioned(
+            bottom: 0,
+            left: 20,
+            right: 20,
+            child: CustomBottomNav(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
             ),
-            Positioned(
-              bottom: 0,
-              left: 20,
-              right: 20,
-              child: CustomBottomNav(
-                currentIndex: _currentIndex,
-                onTap: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeContent extends StatelessWidget {
+  final VoidCallback onProfileTap;
+  const HomeContent({super.key, required this.onProfileTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              _buildHeader(context),
+              const SizedBox(height: 20),
+              _buildGreeting(),
+              const SizedBox(height: 15),
+              _buildSearchBar(),
+              const SizedBox(height: 25),
+              _buildPromotionSection(),
+              const SizedBox(height: 25),
+              _buildMapSection(),
+              const SizedBox(height: 25),
+              const IconMakanan(),
+              const SizedBox(height: 25),
+              _buildNearbySection(context),
+              const SizedBox(height: 200), // Space for bottom nav
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 25,
-          backgroundColor: Colors.grey[200],
-          backgroundImage: const AssetImage('assets/images/profile.png'),
+        GestureDetector(
+          onTap: onProfileTap,
+          child: CircleAvatar(
+            radius: 25,
+            backgroundColor: Colors.grey[200],
+            backgroundImage: const AssetImage('assets/images/profile.png'),
+          ),
         ),
         const SizedBox(width: 12),
         Column(
@@ -161,7 +192,6 @@ class _HomePageState extends State<HomePage> {
       children: [
         Expanded(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
             height: 50,
             decoration: BoxDecoration(
               color: Colors.white,
@@ -174,18 +204,21 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: AppColors.textSecondary),
-                const SizedBox(width: 10),
-                Text(
-                  'Cari makan atau tempat nih',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Cari makan atau tempat nih',
+                hintStyle: GoogleFonts.poppins(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
                 ),
-              ],
+                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textMain,
+              ),
             ),
           ),
         ),
@@ -204,7 +237,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildPromotionSection() {
-    return PromoBanner();
+    return const PromoBanner();
   }
 
   Widget _buildMapSection() {
@@ -214,7 +247,7 @@ class _HomePageState extends State<HomePage> {
         Text(
           'Tempat makan terdekat dari kamu',
           style: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -269,15 +302,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-  Widget _buildNearbySection() {
+  Widget _buildNearbySection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Resto yang gacor nihh',
           style: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -286,24 +318,63 @@ class _HomePageState extends State<HomePage> {
           height: 240,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            children: const [
+            children: [
               CardResto(
                 imageUrl: 'assets/images/ideologist.jpg',
                 name: 'Ideologist Coffee And Social Space',
                 distance: '2,14 km',
                 queueCount: 4,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RestoPage(
+                        name: 'Ideologist Coffee And Social Space',
+                        imageUrl: 'assets/images/ideologist.jpg',
+                        distance: '2,14 km',
+                        queueCount: 4,
+                      ),
+                    ),
+                  );
+                },
               ),
               CardResto(
                 imageUrl: 'assets/images/parjo sipodang.jpg',
                 name: 'Burjo Parjo Sipodang',
                 distance: '0,95 km',
                 queueCount: 8,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RestoPage(
+                        name: 'Burjo Parjo Sipodang',
+                        imageUrl: 'assets/images/parjo sipodang.jpg',
+                        distance: '0,95 km',
+                        queueCount: 8,
+                      ),
+                    ),
+                  );
+                },
               ),
               CardResto(
                 imageUrl: 'https://via.placeholder.com/250x120',
                 name: 'Warmindo Berkah',
                 distance: '1,2 km',
                 queueCount: 2,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RestoPage(
+                        name: 'Warmindo Berkah',
+                        imageUrl: 'https://via.placeholder.com/250x120',
+                        distance: '1,2 km',
+                        queueCount: 2,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),

@@ -46,7 +46,7 @@ class _IconMakananState extends State<IconMakanan> {
         Text(
           'Kuliner favorit kamu nihh',
           style: GoogleFonts.poppins(
-            fontSize: 24,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.textMain,
           ),
