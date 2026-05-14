@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/theme/app_colors.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -18,7 +19,7 @@ class CustomBottomNav extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 20),
       height: 80,
       decoration: BoxDecoration(
-        color: const Color(0xFF121212), // Hitam lebih pekat sesuai gambar
+        color: AppColors.navBackground, // Gunakan dari AppColors
         borderRadius: BorderRadius.circular(100),
         boxShadow: [
           BoxShadow(
@@ -64,11 +65,11 @@ class CustomBottomNav extends StatelessWidget {
             maxWidth: isActive ? 160 : 56,
           ),
           decoration: BoxDecoration(
-            color: isActive ? const Color(0xFFE30613) : const Color(0xFF262626),
+            color: isActive ? AppColors.primary : AppColors.navItemInactive,
             borderRadius: BorderRadius.circular(100),
             boxShadow: isActive ? [
               BoxShadow(
-                color: const Color(0xFFE30613).withOpacity(0.3),
+                color: AppColors.primary.withOpacity(0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -120,4 +121,4 @@ class CustomBottomNav extends StatelessWidget {
       child: navItem,
     );
   }
-}
+}

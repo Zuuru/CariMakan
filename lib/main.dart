@@ -1,8 +1,11 @@
+import 'package:carimakan/features/login/pages/login_page.dart';
+import 'package:carimakan/features/login/pages/register_page.dart';
+import 'package:carimakan/features/splash/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'firebase_options.dart';
-import 'features/home/presentation/pages/home_page.dart';
+import 'package:carimakan/firebase_options.dart';
+import 'package:carimakan/features/home/presentation/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,11 +25,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(
-          Theme.of(context).textTheme,
-        ),
+        textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
       ),
-      home: const HomePage(),
+      home: const SplashScreen(),
     );
   }
 }

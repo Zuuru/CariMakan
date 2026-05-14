@@ -64,16 +64,16 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+
   assets:
     - assets/images/
     - assets/images/promo/
     - assets/images/icon_makanan/
     - assets/images/background/
-    - assets/image/splash_screen/
-    - assets/image/Icon/
+    - assets/images/splash_screen/
+    - assets/images/Icon/
     - assets/images/menu/makanan/
     - assets/images/menu/minuman/
-
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

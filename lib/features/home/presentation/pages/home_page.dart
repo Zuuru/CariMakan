@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:carimakan/core/theme/app_colors.dart';
 import '../../../profile/presentation/pages/customer_profile_page.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../widgets/card_resto.dart';
