@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'register_page.dart';
+import '../../home/presentation/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -67,7 +68,28 @@ class _LoginPageState extends State<LoginPage> {
                             width: double.infinity,
                             height: 55,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      const begin = Offset(0.0, 1.0);
+                                      const end = Offset.zero;
+                                      const curve = Curves.easeInOutQuart;
+
+                                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                      var offsetAnimation = animation.drive(tween);
+
+                                      return SlideTransition(
+                                        position: offsetAnimation,
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 800),
+                                  ),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black,
                                 shape: RoundedRectangleBorder(
@@ -127,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                                   height: 50,
                                   child: ElevatedButton.icon(
                                     onPressed: () {},
-                                    icon: Image.asset('assets/images/icon/google_logo.png', width: 24),
+                                    icon: Image.asset('assets/images/Icon/google_logo.png', width: 24),
                                     label: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       child: Text(

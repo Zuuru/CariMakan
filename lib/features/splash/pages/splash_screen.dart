@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import '../../../core/theme/app_colors.dart';
+import '../../login/pages/login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -34,9 +36,6 @@ class _SplashScreenState extends State<SplashScreen> {
           SplashPage1(isActive: _currentPage == 0),
           SplashPage2(isActive: _currentPage == 1),
           SplashPage3(isActive: _currentPage == 2),
-          const SplashPage4(),
-          const SplashPage5(),
-          const SplashPage6(),
         ],
       ),
     );
@@ -438,7 +437,7 @@ class _SplashPage3State extends State<SplashPage3>
         Positioned(
           left: 24,
           right: 24,
-          bottom: 60,
+          bottom: 40,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -474,6 +473,55 @@ class _SplashPage3State extends State<SplashPage3>
                   ),
                 ),
               ),
+              const SizedBox(height: 32),
+              FadeTransition(
+                opacity: _subtitleOpacityAnimation,
+                child: SlideTransition(
+                  position: _subtitleOffsetAnimation,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(0.0, 1.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOutQuart;
+
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 800),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                      ),
+                      child: Text(
+                        "Mulai Sekarang",
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -482,80 +530,3 @@ class _SplashPage3State extends State<SplashPage3>
   }
 }
 
-class SplashPage4 extends StatelessWidget {
-  const SplashPage4({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Image.asset(
-        'assets/images/background/bg 1.png',
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-      ),
-    );
-  }
-}
-
-class SplashPage5 extends StatelessWidget {
-  const SplashPage5({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/images/background/bg 1.png',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ),
-          Center(
-            child: Image.asset(
-              'assets/images/icon/icon_carimakan.png',
-              width: 150,
-              height: 150,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SplashPage6 extends StatelessWidget {
-  const SplashPage6({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/images/background/bg 1.png',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ),
-          Center(
-            child: Text(
-              "haloo",
-              style: GoogleFonts.outfit(
-                fontSize: 64,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
