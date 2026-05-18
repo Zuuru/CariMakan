@@ -6,6 +6,7 @@ import '../widgets/custom_bottom_nav.dart';
 import '../widgets/card_resto.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/icon_makanan.dart';
+import '../widgets/user_points.dart';
 import 'scan_page.dart';
 import 'resto_page.dart';
 import '../../../promo/presentation/pages/promo_page.dart';
@@ -184,9 +185,12 @@ class HomeContent extends StatelessWidget {
             ),
           ],
         ),
+        const Spacer(),
+        const UserPoints(),
       ],
     );
   }
+
 
   Widget _buildSearchBar() {
     return Row(
