@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/custom_bottom_nav.dart';
+import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
 
 class CustomerProfilePage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -26,7 +27,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
             fit: BoxFit.cover,
           ),
         ),
-        
+
         // Main Content
         SafeArea(
           child: Column(
@@ -82,7 +83,11 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black),
+              child: const Icon(
+                Icons.arrow_back_ios_new,
+                size: 20,
+                color: Colors.black,
+              ),
             ),
           ),
           ClipRRect(
@@ -90,11 +95,17 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 45,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   'Profil',
@@ -150,7 +161,11 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.camera_alt, color: Colors.white, size: 12),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -208,10 +223,26 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
       ),
       child: Column(
         children: [
-          _buildMenuItem(icon: Icons.person, title: 'Edit Profil', showDivider: true),
-          _buildMenuItem(icon: Icons.settings, title: 'Tentang App', showDivider: true),
-          _buildMenuItem(icon: Icons.language, title: 'Bahasa', showDivider: true),
-          _buildMenuItem(icon: Icons.security, title: 'Keamanan/Privasi', showDivider: false),
+          _buildMenuItem(
+            icon: Icons.person,
+            title: 'Edit Profil',
+            showDivider: true,
+          ),
+          _buildMenuItem(
+            icon: Icons.settings,
+            title: 'Tentang App',
+            showDivider: true,
+          ),
+          _buildMenuItem(
+            icon: Icons.language,
+            title: 'Bahasa',
+            showDivider: true,
+          ),
+          _buildMenuItem(
+            icon: Icons.security,
+            title: 'Keamanan/Privasi',
+            showDivider: false,
+          ),
         ],
       ),
     );
@@ -243,9 +274,18 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               color: Colors.black,
             ),
           ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: 14,
+            color: Colors.black,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           visualDensity: VisualDensity.compact,
         ),
         if (showDivider)
@@ -265,7 +305,11 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
       ),
       child: Column(
         children: [
-          _buildToggleItem(icon: Icons.notifications, title: 'Notifikasi', value: true),
+          _buildToggleItem(
+            icon: Icons.notifications,
+            title: 'Notifikasi',
+            value: true,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Divider(color: Colors.grey.withOpacity(0.1), height: 1),
@@ -276,7 +320,11 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
   }
 
-  Widget _buildToggleItem({required IconData icon, required String title, required bool value}) {
+  Widget _buildToggleItem({
+    required IconData icon,
+    required String title,
+    required bool value,
+  }) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(6),
@@ -319,6 +367,12 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         border: Border.all(color: AppColors.primary, width: 1.5),
       ),
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ValidasiDiriPage()),
+          );
+        },
         leading: Container(
           padding: const EdgeInsets.all(6),
           decoration: const BoxDecoration(

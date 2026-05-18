@@ -18,7 +18,10 @@ class PesananPage extends StatelessWidget {
           children: [
             // Header with Back Button, Search, and Filter
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 10,
+              ),
               child: Row(
                 children: [
                   GestureDetector(
@@ -65,9 +68,14 @@ class PesananPage extends StatelessWidget {
                             color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
-                          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppColors.textSecondary,
+                          ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                          ),
                         ),
                         style: GoogleFonts.poppins(
                           fontSize: 14,
@@ -90,14 +98,19 @@ class PesananPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            
+
             // Divider
             Divider(color: Colors.grey[300], thickness: 1, height: 1),
-            
+
             // List of Orders
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 120), // Padding bottom for nav
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  20,
+                  20,
+                  120,
+                ), // Padding bottom for nav
                 children: const [
                   CardPesanan(
                     status: PesananStatus.process,
@@ -105,7 +118,8 @@ class PesananPage extends StatelessWidget {
                     itemName: '1x Butterscotch Sea Salt',
                     time: '19.00',
                     orderType: OrderType.dineIn,
-                    imageUrl: 'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                    imageUrl:
+                        'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
                   ),
                   CardPesanan(
                     status: PesananStatus.complete,
@@ -113,7 +127,8 @@ class PesananPage extends StatelessWidget {
                     itemName: '1x Butterscotch Sea Salt',
                     time: '19.00',
                     orderType: OrderType.takeAway,
-                    imageUrl: 'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                    imageUrl:
+                        'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
                   ),
                   // Tambahkan data pesanan lainnya di sini
                 ],

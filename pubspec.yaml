@@ -80,6 +80,10 @@ flutter:
     - assets/images/Icon/
     - assets/images/menu/makanan/
     - assets/images/menu/minuman/
+    - assets/images/status/
+    - assets/images/icon_navbar_resto/
+    - assets/images/icon_home_resto/
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
