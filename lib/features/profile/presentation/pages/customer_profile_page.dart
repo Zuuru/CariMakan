@@ -31,7 +31,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 10),
               _buildAppBar(context),
               Expanded(
                 child: SingleChildScrollView(
@@ -64,7 +63,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
 
   Widget _buildAppBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -75,7 +74,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF99BDD5).withOpacity(0.3), width: 1),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -84,7 +82,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
+              child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black),
             ),
           ),
           ClipRRect(

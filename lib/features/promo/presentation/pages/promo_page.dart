@@ -42,7 +42,12 @@ class PromoPage extends StatelessWidget {
           // List of Promos (Scrolling behind header)
           Positioned.fill(
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 120, 20, 120), // Top padding for header space
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.of(context).padding.top + 74,
+                20,
+                120,
+              ),
               itemCount: promos.length,
               itemBuilder: (context, index) {
                 return CardPromo(
@@ -62,7 +67,6 @@ class PromoPage extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                 child: Container(
-                  height: 110,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.7),
                     border: Border(
@@ -75,7 +79,7 @@ class PromoPage extends StatelessWidget {
                   child: SafeArea(
                     bottom: false,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
                       child: Row(
                         children: [
                           GestureDetector(
