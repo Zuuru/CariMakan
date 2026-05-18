@@ -8,6 +8,7 @@ import '../widgets/promo_banner.dart';
 import '../widgets/icon_makanan.dart';
 import 'scan_page.dart';
 import 'resto_page.dart';
+import '../../../promo/presentation/pages/promo_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,7 +27,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _pages = [
       HomeContent(onProfileTap: () => setState(() => _currentIndex = 3)),
-      const Center(child: Text('Promo Page')),
+      PromoPage(onBack: () => setState(() => _currentIndex = 0)),
       const Center(child: Text('Pesanan Page')),
       CustomerProfilePage(onBack: () => setState(() => _currentIndex = 0)),
     ];
