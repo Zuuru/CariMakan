@@ -8,6 +8,8 @@ import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
 import '../../../login/pages/login_page.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
+import 'wallet_payment.dart';
+import '../widgets/menu_item.dart';
 
 class CustomerProfilePage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -215,10 +217,17 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         color: const Color(0xFFF1F1F1).withOpacity(0.9),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: _buildMenuItem(
+      child: ProfileMenuItem(
         icon: Icons.account_balance_wallet,
         title: 'Wallet',
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WalletPaymentPage(),
+            ),
+          );
+        },
       ),
     );
   }
@@ -231,12 +240,12 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
       ),
       child: Column(
         children: [
-          _buildMenuItem(
+          const ProfileMenuItem(
             icon: Icons.person,
             title: 'Edit Profil',
             showDivider: true,
           ),
-          _buildMenuItem(
+          ProfileMenuItem(
             icon: Icons.settings,
             title: 'Tentang App',
             showDivider: true,
@@ -249,12 +258,12 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               );
             },
           ),
-          _buildMenuItem(
+          const ProfileMenuItem(
             icon: Icons.language,
             title: 'Bahasa',
             showDivider: true,
           ),
-          _buildMenuItem(
+          ProfileMenuItem(
             icon: Icons.security,
             title: 'Keamanan/Privasi',
             showDivider: false,
@@ -272,54 +281,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
   }
 
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    bool showDivider = false,
-    VoidCallback? onTap,
-  }) {
-    return Column(
-      children: [
-        ListTile(
-          onTap: onTap,
-          leading: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 18),
-          ),
-          title: Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
-          ),
-          trailing: const Icon(
-            Icons.arrow_forward_ios,
-            size: 14,
-            color: Colors.black,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 2,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          visualDensity: VisualDensity.compact,
-        ),
-        if (showDivider)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(color: Colors.grey.withOpacity(0.1), height: 1),
-          ),
-      ],
-    );
-  }
 
   Widget _buildToggleSection() {
     return Container(
