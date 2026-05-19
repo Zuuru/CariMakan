@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'add_card.dart';
 
 class WalletPaymentPage extends StatelessWidget {
   const WalletPaymentPage({super.key});
@@ -30,7 +31,7 @@ class WalletPaymentPage extends StatelessWidget {
               const SizedBox(height: 20),
               _buildCreditCard(),
               const SizedBox(height: 20),
-              _buildAddCardButton(),
+              _buildAddCardButton(context),
               const SizedBox(height: 40),
               _buildSectionHeader('Lainnya', '2 Metode Ditambahkan'),
               const SizedBox(height: 20),
@@ -154,28 +155,36 @@ class WalletPaymentPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAddCardButton() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFED001E),
-        borderRadius: BorderRadius.circular(40),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFED001E).withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          '+ Tambah Kartu Kamu?',
-          style: GoogleFonts.outfit(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
+  Widget _buildAddCardButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddCardPage()),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFED001E),
+          borderRadius: BorderRadius.circular(40),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFED001E).withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            '+ Tambah Kartu Kamu?',
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
