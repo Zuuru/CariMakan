@@ -29,17 +29,19 @@ class CustomBottomNav extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10), // Padding dalam navbar
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+      ), // Padding dalam navbar
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildNavItem(0, Icons.home_outlined, 'Home'),
+          _buildNavItem(0, Icons.home_rounded, 'Home'),
           const SizedBox(width: 5),
-          _buildNavItem(1, Icons.percent, 'Promo'),
+          _buildNavItem(1, Icons.percent_rounded, 'Promo'),
           const SizedBox(width: 5),
-          _buildNavItem(2, Icons.assignment_outlined, 'Pesanan'),
+          _buildNavItem(2, Icons.event_note_rounded, 'Pesanan'),
           const SizedBox(width: 5),
-          _buildNavItem(3, Icons.person_outline, 'Profil'),
+          _buildNavItem(3, Icons.person_rounded, 'Profil'),
         ],
       ),
     );
@@ -67,13 +69,15 @@ class CustomBottomNav extends StatelessWidget {
           decoration: BoxDecoration(
             color: isActive ? AppColors.primary : AppColors.navItemInactive,
             borderRadius: BorderRadius.circular(100),
-            boxShadow: isActive ? [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ] : null,
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -82,11 +86,7 @@ class CustomBottomNav extends StatelessWidget {
               AnimatedRotation(
                 turns: isActive ? 1 : 0,
                 duration: const Duration(milliseconds: 500),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 26,
-                ),
+                child: Icon(icon, color: Colors.white, size: 26),
               ),
               AnimatedSize(
                 duration: const Duration(milliseconds: 300),
@@ -121,4 +121,4 @@ class CustomBottomNav extends StatelessWidget {
       child: navItem,
     );
   }
-}
+}
