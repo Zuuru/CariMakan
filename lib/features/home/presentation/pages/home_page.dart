@@ -6,8 +6,11 @@ import '../widgets/custom_bottom_nav.dart';
 import '../widgets/card_resto.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/icon_makanan.dart';
+import '../widgets/user_points.dart';
 import 'scan_page.dart';
 import 'resto_page.dart';
+import '../../../promo/presentation/pages/promo_page.dart';
+import '../../../pesanan/presentation/pages/pesanan_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,8 +29,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _pages = [
       HomeContent(onProfileTap: () => setState(() => _currentIndex = 3)),
-      const Center(child: Text('Promo Page')),
-      const Center(child: Text('Pesanan Page')),
+      PromoPage(onBack: () => setState(() => _currentIndex = 0)),
+      PesananPage(onBack: () => setState(() => _currentIndex = 0)),
       CustomerProfilePage(onBack: () => setState(() => _currentIndex = 0)),
     ];
   }
@@ -183,9 +186,12 @@ class HomeContent extends StatelessWidget {
             ),
           ],
         ),
+        const Spacer(),
+        const UserPoints(),
       ],
     );
   }
+
 
   Widget _buildSearchBar() {
     return Row(

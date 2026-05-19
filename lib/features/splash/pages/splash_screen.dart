@@ -68,35 +68,29 @@ class _SplashPage1State extends State<SplashPage1>
       vsync: this,
     );
 
-    _imageOffsetAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 1.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOutQuart),
-      ),
-    );
+    _imageOffsetAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.5, curve: Curves.easeOutQuart),
+          ),
+        );
 
-    _titleOffsetAnimation = Tween<Offset>(
-      begin: const Offset(-1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.5, 1.0, curve: Curves.easeOutQuart),
-      ),
-    );
+    _titleOffsetAnimation =
+        Tween<Offset>(begin: const Offset(-1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.5, 1.0, curve: Curves.easeOutQuart),
+          ),
+        );
 
-    _subtitleOffsetAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.5, 1.0, curve: Curves.easeOutQuart),
-      ),
-    );
+    _subtitleOffsetAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.5, 1.0, curve: Curves.easeOutQuart),
+          ),
+        );
 
     _textOpacityAnimation = CurvedAnimation(
       parent: _controller,
@@ -161,7 +155,7 @@ class _SplashPage1State extends State<SplashPage1>
                       child: Text(
                         "Gas\nCari\nMakan",
                         style: GoogleFonts.outfit(
-                          fontSize: 56,
+                          fontSize: 90,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.1,
@@ -221,25 +215,21 @@ class _SplashPage2State extends State<SplashPage2>
       vsync: this,
     );
 
-    _titleOffsetAnimation = Tween<Offset>(
-      begin: const Offset(-1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutQuart),
-      ),
-    );
+    _titleOffsetAnimation =
+        Tween<Offset>(begin: const Offset(-1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOutQuart),
+          ),
+        );
 
-    _subtitleOffsetAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeOutQuart),
-      ),
-    );
+    _subtitleOffsetAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.4, 1.0, curve: Curves.easeOutQuart),
+          ),
+        );
 
     _titleOpacityAnimation = CurvedAnimation(
       parent: _controller,
@@ -364,25 +354,21 @@ class _SplashPage3State extends State<SplashPage3>
       vsync: this,
     );
 
-    _titleOffsetAnimation = Tween<Offset>(
-      begin: const Offset(-1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutQuart),
-      ),
-    );
+    _titleOffsetAnimation =
+        Tween<Offset>(begin: const Offset(-1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOutQuart),
+          ),
+        );
 
-    _subtitleOffsetAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeOutQuart),
-      ),
-    );
+    _subtitleOffsetAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.4, 1.0, curve: Curves.easeOutQuart),
+          ),
+        );
 
     _titleOpacityAnimation = CurvedAnimation(
       parent: _controller,
@@ -486,21 +472,34 @@ class _SplashPage3State extends State<SplashPage3>
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(0.0, 1.0);
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOutQuart;
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const LoginPage(),
+                            transitionsBuilder:
+                                (
+                                  context,
+                                  animation,
+                                  secondaryAnimation,
+                                  child,
+                                ) {
+                                  const begin = Offset(0.0, 1.0);
+                                  const end = Offset.zero;
+                                  const curve = Curves.easeInOutQuart;
 
-                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                              var offsetAnimation = animation.drive(tween);
+                                  var tween = Tween(
+                                    begin: begin,
+                                    end: end,
+                                  ).chain(CurveTween(curve: curve));
+                                  var offsetAnimation = animation.drive(tween);
 
-                              return SlideTransition(
-                                position: offsetAnimation,
-                                child: child,
-                              );
-                            },
-                            transitionDuration: const Duration(milliseconds: 800),
+                                  return SlideTransition(
+                                    position: offsetAnimation,
+                                    child: child,
+                                  );
+                                },
+                            transitionDuration: const Duration(
+                              milliseconds: 800,
+                            ),
                           ),
                         );
                       },
@@ -529,4 +528,3 @@ class _SplashPage3State extends State<SplashPage3>
     );
   }
 }
-
