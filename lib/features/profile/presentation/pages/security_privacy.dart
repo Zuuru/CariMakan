@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'change_password.dart';
 
 class SecurityPrivacyPage extends StatefulWidget {
   const SecurityPrivacyPage({super.key});
@@ -182,6 +183,14 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
             title: 'Change Password',
             subtitle: 'Perbarui kata sandi/ ganti',
             trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black54),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ChangePasswordPage(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 12),
           _buildItemCard(
@@ -236,14 +245,17 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
     required String subtitle,
     Color? titleColor,
     Widget? trailing,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -284,6 +296,7 @@ class _SecurityPrivacyPageState extends State<SecurityPrivacyPage> {
           ]
         ],
       ),
+    ),
     );
   }
 }
