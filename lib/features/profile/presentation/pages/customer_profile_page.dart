@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/custom_bottom_nav.dart';
 import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
 import '../../../login/pages/login_page.dart';
+import 'about_app_page.dart';
 
 class CustomerProfilePage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -238,6 +239,14 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
             icon: Icons.settings,
             title: 'Tentang App',
             showDivider: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutAppPage(),
+                ),
+              );
+            },
           ),
           _buildMenuItem(
             icon: Icons.language,
