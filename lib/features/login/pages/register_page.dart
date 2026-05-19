@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_page.dart';
 import '../../home/presentation/pages/home_page.dart';
 
@@ -12,6 +14,77 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _namaController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _umurController = TextEditingController();
+  final _telpController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _umurController.dispose();
+    _telpController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _register() async {
+    if (_namaController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tolong isi semua data utama ya!')));
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      
+      if (credential.user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).set({
+          'id': credential.user!.uid, // following tech_spec.md schema
+          'nama': _namaController.text.trim(),
+          'email': _emailController.text.trim(),
+          'role': 'customer',
+          'url_whatsapp': _telpController.text.trim(),
+          'umur': _umurController.text.trim(), // additional field from UI
+          'status': 'aktif',
+          'poin_reward': 0,
+          'created_at': FieldValue.serverTimestamp(),
+        });
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOutQuart;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                return SlideTransition(position: animation.drive(tween), child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 800),
+            ),
+          );
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Terjadi kesalahan';
+      if (e.code == 'weak-password') msg = 'Password terlalu lemah';
+      else if (e.code == 'email-already-in-use') msg = 'Email sudah terdaftar';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,13 +131,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 24),
                       _buildLabel("Nama"),
-                      _buildTextField("Masukkin nama kamu yakk"),
+                      _buildTextField("Masukkin nama kamu yakk", controller: _namaController),
                       const SizedBox(height: 16),
                       _buildLabel("Email"),
-                      _buildTextField("Masukkin email kamu yakk"),
+                      _buildTextField("Masukkin email kamu yakk", controller: _emailController),
                       const SizedBox(height: 16),
                       _buildLabel("Password"),
-                      _buildTextField("Masukkin password unik kamu", isPassword: true),
+                      _buildTextField("Masukkin password unik kamu", isPassword: true, controller: _passwordController),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -73,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildLabel("Umur"),
-                                _buildTextField(""),
+                                _buildTextField("", controller: _umurController),
                               ],
                             ),
                           ),
@@ -83,7 +156,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildLabel("No telp"),
-                                _buildTextField(""),
+                                _buildTextField("", controller: _telpController),
                               ],
                             ),
                           ),
@@ -95,42 +168,30 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
-                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                  const begin = Offset(0.0, 1.0);
-                                  const end = Offset.zero;
-                                  const curve = Curves.easeInOutQuart;
-
-                                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                  var offsetAnimation = animation.drive(tween);
-
-                                  return SlideTransition(
-                                    position: offsetAnimation,
-                                    child: child,
-                                  );
-                                },
-                                transitionDuration: const Duration(milliseconds: 800),
-                              ),
-                            );
-                          },
+                          onPressed: _isLoading ? null : _register,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
-                          child: Text(
-                            "Gass Daftar",
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  "Gass Daftar",
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -232,13 +293,14 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(String hint, {bool isPassword = false}) {
+  Widget _buildTextField(String hint, {bool isPassword = false, TextEditingController? controller}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,

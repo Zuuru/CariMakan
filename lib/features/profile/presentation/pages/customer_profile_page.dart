@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/custom_bottom_nav.dart';
 import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
+import '../../../login/pages/login_page.dart';
 
 class CustomerProfilePage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -397,7 +399,16 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
 
   Widget _buildLogoutButton() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () async {
+        await FirebaseAuth.instance.signOut();
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+          );
+        }
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),

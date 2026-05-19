@@ -91,9 +91,30 @@ class _ValidasiDiriPageState extends State<ValidasiDiriPage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
+                          if (_namaPemilikController.text.isEmpty ||
+                              _nomorHpController.text.isEmpty ||
+                              _namaKtpController.text.isEmpty ||
+                              _nikController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Harap isi semua data diri!')),
+                            );
+                            return;
+                          }
+
+                          final registrationData = {
+                            'owner_name': _namaPemilikController.text.trim(),
+                            'owner_phone': _nomorHpController.text.trim(),
+                            'ktp_name': _namaKtpController.text.trim(),
+                            'ktp_nik': _nikController.text.trim(),
+                          };
+
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const ProfilRestoPage()),
+                            MaterialPageRoute(
+                              builder: (context) => ProfilRestoPage(
+                                registrationData: registrationData,
+                              ),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(

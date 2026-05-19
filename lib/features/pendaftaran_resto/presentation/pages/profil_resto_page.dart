@@ -5,7 +5,9 @@ import 'lokasi_operasional_page.dart';
 import '../widgets/custom_registration_field.dart';
 
 class ProfilRestoPage extends StatefulWidget {
-  const ProfilRestoPage({super.key});
+  final Map<String, dynamic> registrationData;
+
+  const ProfilRestoPage({super.key, required this.registrationData});
 
   @override
   State<ProfilRestoPage> createState() => _ProfilRestoPageState();
@@ -134,9 +136,31 @@ class _ProfilRestoPageState extends State<ProfilRestoPage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
+                          if (_namaRestoController.text.isEmpty ||
+                              _deskripsiRestoController.text.isEmpty ||
+                              _detailBioController.text.isEmpty ||
+                              _selectedGenres.isEmpty ||
+                              _selectedFacilities.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Harap lengkapi semua profil resto, genre, dan fasilitas!')),
+                            );
+                            return;
+                          }
+
+                          final updatedData = Map<String, dynamic>.from(widget.registrationData);
+                          updatedData['nama'] = _namaRestoController.text.trim();
+                          updatedData['deskripsi'] = _deskripsiRestoController.text.trim();
+                          updatedData['bio'] = _detailBioController.text.trim();
+                          updatedData['genres'] = _selectedGenres;
+                          updatedData['facilities'] = _selectedFacilities;
+
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const LokasiOperasionalPage()),
+                            MaterialPageRoute(
+                              builder: (context) => LokasiOperasionalPage(
+                                registrationData: updatedData,
+                              ),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(

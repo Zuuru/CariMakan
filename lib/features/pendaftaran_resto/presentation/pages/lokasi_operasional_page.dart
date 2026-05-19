@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'status_pendaftaran_page.dart';
 
 class LokasiOperasionalPage extends StatefulWidget {
-  const LokasiOperasionalPage({Key? key}) : super(key: key);
+  final Map<String, dynamic> registrationData;
+
+  const LokasiOperasionalPage({Key? key, required this.registrationData}) : super(key: key);
 
   @override
   State<LokasiOperasionalPage> createState() => _LokasiOperasionalPageState();
 }
 
 class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
-  // State for days
+  final TextEditingController _alamatController = TextEditingController();
+  bool _isLoading = false;
+
   final List<Map<String, dynamic>> _operasionalDays = [
     {'day': 'Senin', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
     {'day': 'Selasa', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
@@ -20,6 +26,12 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
     {'day': 'Sabtu', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
     {'day': 'Minggu', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
   ];
+
+  @override
+  void dispose() {
+    _alamatController.dispose();
+    super.dispose();
+  }
 
   String _formatTime(TimeOfDay time) {
     final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
@@ -129,17 +141,76 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle Submit
-                          // Navigate to Status Page
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const StatusPendaftaranPage(
-                                initialStatus: RegistrationStatus.pending,
-                              ),
-                            ),
-                          );
+                        onPressed: _isLoading ? null : () async {
+                          if (_alamatController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Harap isi detail alamat resto kamu!')),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isLoading = true);
+                          try {
+                            final userId = FirebaseAuth.instance.currentUser?.uid;
+                            if (userId == null) throw Exception('User belum login');
+
+                            // Prepare operational schedule
+                            final opHours = _operasionalDays.map((day) {
+                              return {
+                                'day': day['day'],
+                                'isOpen': day['isOpen'],
+                                'openTime': '${day['openTime'].hour.toString().padLeft(2, '0')}:${day['openTime'].minute.toString().padLeft(2, '0')}',
+                                'closeTime': '${day['closeTime'].hour.toString().padLeft(2, '0')}:${day['closeTime'].minute.toString().padLeft(2, '0')}',
+                              };
+                            }).toList();
+
+                            // Generate new resto id
+                            final restoDocRef = FirebaseFirestore.instance.collection('restaurants').doc();
+
+                            final finalData = {
+                              'id': restoDocRef.id,
+                              'owner_id': userId,
+                              'nama': widget.registrationData['nama'],
+                              'deskripsi': widget.registrationData['deskripsi'],
+                              'bio': widget.registrationData['bio'],
+                              'genres': widget.registrationData['genres'],
+                              'badges': widget.registrationData['facilities'],
+                              'lokasi_alamat': _alamatController.text.trim(),
+                              'lokasi': const GeoPoint(-6.9825, 110.4285), // Mock GPS for now
+                              'status': 'pending',
+                              'created_at': FieldValue.serverTimestamp(),
+                              'owner_ktp_name': widget.registrationData['ktp_name'],
+                              'owner_ktp_nik': widget.registrationData['ktp_nik'],
+                              'url_whatsapp': widget.registrationData['owner_phone'],
+                              'avg_rating': 0.0,
+                              'total_review': 0,
+                            };
+
+                            // Save to Firestore
+                            await restoDocRef.set(finalData);
+
+                            // Save operational hours as sub-collection
+                            for (var op in opHours) {
+                              await restoDocRef.collection('operational_hours').doc(op['day']).set(op);
+                            }
+
+                            if (mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const StatusPendaftaranPage(
+                                    initialStatus: RegistrationStatus.pending,
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Gagal mengirim pendaftaran: $e')),
+                            );
+                          } finally {
+                            if (mounted) setState(() => _isLoading = false);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFC21111),
@@ -149,14 +220,20 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
                           ),
                           elevation: 0,
                         ),
-                        child: Text(
-                          'Kirim',
-                          style: GoogleFonts.outfit(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: _isLoading 
+                            ? const SizedBox(
+                                width: 24, 
+                                height: 24, 
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                              )
+                            : Text(
+                                'Kirim',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -297,6 +374,7 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
               ),
             ),
             child: TextField(
+              controller: _alamatController,
               maxLines: 3,
               style: GoogleFonts.outfit(
                 fontSize: 16,

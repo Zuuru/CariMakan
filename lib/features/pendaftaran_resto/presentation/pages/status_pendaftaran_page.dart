@@ -213,22 +213,6 @@ class _StatusPendaftaranPageState extends State<StatusPendaftaranPage> {
           ),
         ),
       ),
-      Positioned(
-        top: 20,
-        right: 20,
-        child: SafeArea(
-          child: IconButton(
-            icon: const Icon(Icons.fast_forward, color: Colors.grey),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const HomeRestoPage()),
-              );
-            },
-            tooltip: 'Bypass to Home',
-          ),
-        ),
-      ),
     ],
   ),
 );
