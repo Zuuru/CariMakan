@@ -2,9 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/widgets/custom_bottom_nav.dart';
 import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
+import '../../../pendaftaran_resto/presentation/pages/status_pendaftaran_page.dart';
+import '../../../home_resto/presentation/pages/home_resto_page.dart';
 import '../../../login/pages/login_page.dart';
 
 class CustomerProfilePage extends StatefulWidget {
@@ -360,6 +363,80 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
   }
 
+  Future<void> _checkRestoStatusAndNavigate() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User belum masuk/autentikasi!')),
+      );
+      return;
+    }
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      if (querySnapshot.docs.isEmpty) {
+        // No restaurant registration, go to registration flow
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ValidasiDiriPage()),
+        );
+      } else {
+        final restoData = querySnapshot.docs.first.data();
+        final statusStr = restoData['status'] as String?;
+
+        if (statusStr == 'approved') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeRestoPage()),
+          );
+        } else if (statusStr == 'rejected') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const StatusPendaftaranPage(
+                initialStatus: RegistrationStatus.rejected,
+              ),
+            ),
+          );
+        } else {
+          // default/pending
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const StatusPendaftaranPage(
+                initialStatus: RegistrationStatus.pending,
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog if open
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Terjadi kesalahan: $e')),
+        );
+      }
+    }
+  }
+
   Widget _buildBecomeOwnerButton() {
     return Container(
       width: double.infinity,
@@ -369,12 +446,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         border: Border.all(color: AppColors.primary, width: 1.5),
       ),
       child: ListTile(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ValidasiDiriPage()),
-          );
-        },
+        onTap: _checkRestoStatusAndNavigate,
         leading: Container(
           padding: const EdgeInsets.all(6),
           decoration: const BoxDecoration(
