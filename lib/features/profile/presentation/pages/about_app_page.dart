@@ -209,15 +209,15 @@ class AboutAppPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
       ),
       child: _buildItemCard(
-        icon: Icons.spa,
-        iconBackgroundColor: Colors.teal,
-        title: 'Healena',
-        subtitle: 'Your personal health companion',
+        imageAsset: 'assets/images/Icon/icon_carimakan.png',
+        iconBackgroundColor: Colors.transparent,
+        title: 'CariMakan',
+        subtitle: 'Aplikasi pencarian makanan terbaik',
         subtitleWidget: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Your personal health companion',
+              'Aplikasi pencarian makanan terbaik',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -228,16 +228,16 @@ class AboutAppPage extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Made with ',
+                  'Dibuat dengan ',
                   style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
                     color: Colors.black38,
                   ),
                 ),
-                const Icon(Icons.favorite, color: Colors.blue, size: 10),
+                const Icon(Icons.favorite, color: Colors.red, size: 10),
                 Text(
-                  ' for students',
+                  ' untuk mahasiswa',
                   style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
@@ -299,7 +299,8 @@ class AboutAppPage extends StatelessWidget {
   }
 
   Widget _buildItemCard({
-    required IconData icon,
+    IconData? icon,
+    String? imageAsset,
     required Color iconBackgroundColor,
     required String title,
     required String subtitle,
@@ -320,7 +321,9 @@ class AboutAppPage extends StatelessWidget {
               color: iconBackgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: imageAsset != null
+                ? Image.asset(imageAsset, width: 24, height: 24)
+                : Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
