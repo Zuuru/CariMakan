@@ -17,25 +17,70 @@ class _RegisterPageState extends State<RegisterPage> {
   final _namaController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _umurController = TextEditingController();
   final _telpController = TextEditingController();
+  DateTime? _tanggalLahir;
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
     _namaController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _umurController.dispose();
     _telpController.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
-    if (_namaController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tolong isi semua data utama ya!')));
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
+
+    if (_namaController.text.isEmpty || 
+        _emailController.text.isEmpty || 
+        _passwordController.text.isEmpty ||
+        _tanggalLahir == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tolong isi semua data utama termasuk tanggal lahir ya!')));
       return;
     }
+
+    final email = _emailController.text.trim();
+    if (!RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+      setState(() {
+        _emailError = 'Format email salah yakk!';
+      });
+      return;
+    }
+
+    final password = _passwordController.text;
+    if (password.length < 8) {
+      setState(() {
+        _passwordError = 'Password minimal harus 8 karakter yakk!';
+      });
+      return;
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      setState(() {
+        _passwordError = 'Password harus mengandung minimal 1 huruf kapital yakk!';
+      });
+      return;
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      setState(() {
+        _passwordError = 'Password harus mengandung minimal 1 angka yakk!';
+      });
+      return;
+    }
+    if (!RegExp(r'[!@#\$&*~_\-=\+]').hasMatch(password) && !RegExp(r'[^\w\s]').hasMatch(password)) {
+      setState(() {
+        _passwordError = 'Password harus mengandung minimal 1 simbol/karakter spesial yakk!';
+      });
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -50,7 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
           'email': _emailController.text.trim(),
           'role': 'customer',
           'url_whatsapp': _telpController.text.trim(),
-          'umur': _umurController.text.trim(), // additional field from UI
+          'tanggal_lahir': Timestamp.fromDate(_tanggalLahir!),
           'status': 'aktif',
           'poin_reward': 0,
           'created_at': FieldValue.serverTimestamp(),
@@ -75,9 +120,13 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     } on FirebaseAuthException catch (e) {
       String msg = 'Terjadi kesalahan';
-      if (e.code == 'weak-password') msg = 'Password terlalu lemah';
-      else if (e.code == 'email-already-in-use') msg = 'Email sudah terdaftar';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      if (e.code == 'weak-password') {
+        setState(() => _passwordError = 'Password terlalu lemah yakk!');
+      } else if (e.code == 'email-already-in-use') {
+        setState(() => _emailError = 'Email sudah terdaftar yakk!');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
@@ -135,9 +184,53 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 16),
                       _buildLabel("Email"),
                       _buildTextField("Masukkin email kamu yakk", controller: _emailController),
+                      if (_emailError != null) ...[
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Text(
+                              _emailError!,
+                              style: GoogleFonts.outfit(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       _buildLabel("Password"),
-                      _buildTextField("Masukkin password unik kamu", isPassword: true, controller: _passwordController),
+                      _buildTextField(
+                        "Masukkin password unik kamu",
+                        isPassword: true,
+                        obscureText: _obscurePassword,
+                        controller: _passwordController,
+                        onToggleVisibility: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      if (_passwordError != null) ...[
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Text(
+                              _passwordError!,
+                              style: GoogleFonts.outfit(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -145,8 +238,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildLabel("Umur"),
-                                _buildTextField("", controller: _umurController),
+                                _buildLabel("Tanggal Lahir"),
+                                _buildDatePickerField("Pilih tanggal", _tanggalLahir, _selectTanggalLahir),
                               ],
                             ),
                           ),
@@ -276,6 +369,67 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Future<void> _selectTanggalLahir() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.black, // header background color
+              onPrimary: Colors.white, // header text color
+              onSurface: Colors.black, // body text color
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black, // button text color
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _tanggalLahir) {
+      setState(() {
+        _tanggalLahir = picked;
+      });
+    }
+  }
+
+  Widget _buildDatePickerField(String hint, DateTime? selectedDate, VoidCallback onTap) {
+    String text = selectedDate != null
+        ? "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year}"
+        : hint;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              text,
+              style: GoogleFonts.outfit(
+                color: selectedDate != null ? Colors.black : Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+            const Icon(Icons.calendar_month, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
@@ -293,7 +447,13 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(String hint, {bool isPassword = false, TextEditingController? controller}) {
+  Widget _buildTextField(
+    String hint, {
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+    TextEditingController? controller,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -301,7 +461,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword ? obscureText : false,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: GoogleFonts.outfit(
@@ -310,6 +470,15 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
         ),
       ),
     );

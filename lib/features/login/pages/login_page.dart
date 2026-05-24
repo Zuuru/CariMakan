@@ -16,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -29,6 +30,15 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Isi email dan password dulu ya!')));
       return;
     }
+    
+    final email = _emailController.text.trim();
+    if (!RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Format email salah yakk!')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -112,7 +122,17 @@ class _LoginPageState extends State<LoginPage> {
                           _buildTextField("Masukkin email kamu yakk", controller: _emailController),
                           const SizedBox(height: 16),
                           _buildLabel("Password"),
-                          _buildTextField("Masukkin password unik kamu", isPassword: true, controller: _passwordController),
+                          _buildTextField(
+                            "Masukkin password unik kamu",
+                            isPassword: true,
+                            obscureText: _obscurePassword,
+                            controller: _passwordController,
+                            onToggleVisibility: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                           const SizedBox(height: 32),
                           // Gass Masuk Button
                           SizedBox(
@@ -245,7 +265,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField(String hint, {bool isPassword = false, TextEditingController? controller}) {
+  Widget _buildTextField(
+    String hint, {
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+    TextEditingController? controller,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -253,7 +279,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword ? obscureText : false,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: GoogleFonts.outfit(
@@ -262,6 +288,15 @@ class _LoginPageState extends State<LoginPage> {
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
         ),
       ),
     );
