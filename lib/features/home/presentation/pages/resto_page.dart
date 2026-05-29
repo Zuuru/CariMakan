@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/features/order/detail_page.dart';
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -346,7 +347,6 @@ class _RestoPageState extends State<RestoPage> {
                   ],
                 ),
               ),
-              
               const SizedBox(height: 32),
             ],
           ),
@@ -382,90 +382,104 @@ class _RestoPageState extends State<RestoPage> {
   }
 
   Widget _buildMenuCard(String name, String price, String imagePath, {bool isVertical = false}) {
-    return Container(
-      width: isVertical ? double.infinity : 150,
-      margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F1), // Cream/Pinkish
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  imagePath,
-                  height: 130,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPesananPage(
+              name: name,
+              price: price,
+              imagePath: imagePath,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: isVertical ? double.infinity : 150,
+        margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF1F1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    imagePath,
+                    height: 130,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
-                  child: const Icon(Icons.favorite_border, size: 16, color: Colors.black54),
                 ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE30613), // Red
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomRight: Radius.circular(16),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.favorite_border, size: 16, color: Colors.black54),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE30613),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(16),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 10),
+                        const SizedBox(width: 2),
+                        Text(
+                          '4.9 (999)',
+                          style: GoogleFonts.poppins(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 10),
-                      const SizedBox(width: 2),
-                      Text(
-                        '4.9 (999)',
-                        style: GoogleFonts.poppins(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              name,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.black87,
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            name,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.black87,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+                ),
+            const SizedBox(height: 4),
+            Text(
+              price,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            price,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
