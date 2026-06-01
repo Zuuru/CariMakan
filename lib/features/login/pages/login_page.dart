@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 import '../../home/presentation/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -133,7 +134,30 @@ class _LoginPageState extends State<LoginPage> {
                               });
                             },
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ForgotPasswordPage(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Lupa Password?",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
                           // Gass Masuk Button
                           SizedBox(
                             width: double.infinity,

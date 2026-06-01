@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../features/home_resto/presentation/pages/home_resto_page.dart';
 
@@ -19,11 +22,61 @@ class StatusPendaftaranPage extends StatefulWidget {
 
 class _StatusPendaftaranPageState extends State<StatusPendaftaranPage> {
   late RegistrationStatus _currentStatus;
+  StreamSubscription<QuerySnapshot>? _statusSubscription;
 
   @override
   void initState() {
     super.initState();
     _currentStatus = widget.initialStatus;
+    _listenToStatus();
+  }
+
+  void _listenToStatus() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    _statusSubscription = FirebaseFirestore.instance
+        .collection('restaurants')
+        .where('owner_id', isEqualTo: user.uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        final data = snapshot.docs.first.data() as Map<String, dynamic>;
+        final rawStatus = data['status'] as String?;
+        final statusString = rawStatus?.trim().toLowerCase();
+        
+        if (mounted) {
+          if (statusString == 'aktif' && _currentStatus != RegistrationStatus.approved) {
+            setState(() {
+              _currentStatus = RegistrationStatus.approved;
+            });
+            // Auto navigate after showing success briefly
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                Navigator.pushReplacement(
+                  context, 
+                  MaterialPageRoute(builder: (_) => const HomeRestoPage())
+                );
+              }
+            });
+          } else if (statusString == 'suspend' && _currentStatus != RegistrationStatus.rejected) {
+            setState(() {
+              _currentStatus = RegistrationStatus.rejected;
+            });
+          } else if (statusString == 'pending' && _currentStatus != RegistrationStatus.pending) {
+            setState(() {
+              _currentStatus = RegistrationStatus.pending;
+            });
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _statusSubscription?.cancel();
+    super.dispose();
   }
 
   // --- Helpers for Status Content ---
