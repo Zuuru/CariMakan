@@ -24,6 +24,96 @@ class CustomerProfilePage extends StatefulWidget {
 
 class _CustomerProfilePageState extends State<CustomerProfilePage> {
   int _currentIndex = 3; // Index for Profile
+  String _userName = 'Jett Heartcliff';
+  String _userEmail = 'babababamjett@gmail.com';
+  String _buttonText = 'Daftar sebagai owner resto';
+  bool _isOwner = false;
+  bool _isLoadingStatus = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserAndRestoStatus();
+  }
+
+  Future<void> _loadUserAndRestoStatus() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      if (mounted) {
+        setState(() {
+          _isLoadingStatus = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      // 1. Fetch user doc
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      String? role;
+      if (userDoc.exists) {
+        final userData = userDoc.data();
+        if (userData != null) {
+          role = userData['role'] as String?;
+          if (userData['nama'] != null) {
+            _userName = userData['nama'] as String;
+          }
+          if (userData['email'] != null) {
+            _userEmail = userData['email'] as String;
+          }
+        }
+      }
+
+      final normalizedRole = role?.trim().toLowerCase();
+      if (normalizedRole == 'owner' || normalizedRole == 'owner resto' || normalizedRole == 'owner_resto') {
+        if (mounted) {
+          setState(() {
+            _isOwner = true;
+            _buttonText = 'Masuk ke Dashboard Resto';
+            _isLoadingStatus = false;
+          });
+        }
+        return;
+      }
+
+      // 2. Fetch restaurant doc
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (mounted) {
+        setState(() {
+          if (querySnapshot.docs.isEmpty) {
+            _buttonText = 'Daftar sebagai owner resto';
+          } else {
+            final restoData = querySnapshot.docs.first.data();
+            final statusStr = (restoData['status'] as String?)?.trim().toLowerCase();
+            if (statusStr == 'aktif') {
+              _isOwner = true;
+              _buttonText = 'Masuk ke Dashboard Resto';
+            } else if (statusStr == 'rejected') {
+              _buttonText = 'Pendaftaran Ditolak (Cek Detail)';
+            } else {
+              _buttonText = 'Menunggu Konfirmasi Pendaftaran';
+            }
+          }
+          _isLoadingStatus = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingStatus = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +279,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Jett Heartcliff',
+                      _userName,
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -197,7 +287,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                       ),
                     ),
                     Text(
-                      'babababamjett@gmail.com',
+                      _userEmail,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w300,
@@ -365,6 +455,30 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
 
     try {
+      // 1. Fetch user doc first to check role
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!mounted) return;
+
+      String? role;
+      if (userDoc.exists) {
+        role = userDoc.data()?['role'] as String?;
+      }
+
+      final normalizedRole = role?.trim().toLowerCase();
+      if (normalizedRole == 'owner' || normalizedRole == 'owner resto' || normalizedRole == 'owner_resto') {
+        Navigator.pop(context); // Close loading dialog
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeRestoPage()),
+        );
+        return;
+      }
+
+      // 2. Otherwise check restaurant doc
       final querySnapshot = await FirebaseFirestore.instance
           .collection('restaurants')
           .where('owner_id', isEqualTo: userId)
@@ -382,9 +496,9 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         );
       } else {
         final restoData = querySnapshot.docs.first.data();
-        final statusStr = restoData['status'] as String?;
+        final statusStr = (restoData['status'] as String?)?.trim().toLowerCase();
 
-        if (statusStr == 'approved') {
+        if (statusStr == 'aktif') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const HomeRestoPage()),
@@ -439,7 +553,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           child: const Icon(Icons.restaurant, color: Colors.white, size: 18),
         ),
         title: Text(
-          'Daftar sebagai owner resto',
+          _buttonText,
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
