@@ -1,6 +1,11 @@
 import 'dart:ui';
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -10,9 +15,119 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final TextEditingController _nameController = TextEditingController(text: 'Jett Heartcliff');
-  final TextEditingController _emailController = TextEditingController(text: 'babababamjett@gmail.com');
-  final TextEditingController _phoneController = TextEditingController(text: '081234567890');
+  final TextEditingController _nameController = TextEditingController(text: '');
+  final TextEditingController _emailController = TextEditingController(text: '');
+  final TextEditingController _phoneController = TextEditingController(text: '');
+  
+  File? _imageFile;
+  String? _currentPhotoUrl;
+  String? _currentPhotoBase64;
+  bool _isLoading = false;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentData();
+  }
+
+  Future<void> _loadCurrentData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && mounted) {
+        final data = doc.data()!;
+        setState(() {
+          if (data['nama'] != null) _nameController.text = data['nama'];
+          if (data['email'] != null) _emailController.text = data['email'];
+          if (data['phone'] != null) _phoneController.text = data['phone'];
+          if (data['photoUrl'] != null) _currentPhotoUrl = data['photoUrl'];
+          if (data['photoBase64'] != null) _currentPhotoBase64 = data['photoBase64'];
+        });
+      }
+    } catch (e) {
+      // Abaikan jika error load
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Anda belum login.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      String? photoBase64;
+      
+      if (_imageFile != null) {
+        final bytes = await _imageFile!.readAsBytes();
+        photoBase64 = base64Encode(bytes);
+      }
+
+      final Map<String, dynamic> updateData = {
+        'nama': _nameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+      };
+
+      if (photoBase64 != null) {
+        updateData['photoBase64'] = photoBase64;
+      }
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+        updateData,
+        SetOptions(merge: true),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profil berhasil diperbarui!')),
+        );
+        Navigator.pop(context, true); // Pass true to indicate success
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Terjadi kesalahan: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 30, // Kompres ukuran file agar bisa muat di Firestore
+        maxWidth: 400,
+        maxHeight: 400,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar: $e')),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -129,8 +244,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFED001E), width: 2),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/profile.png'),
+              image: DecorationImage(
+                image: _imageFile != null 
+                    ? FileImage(_imageFile!) as ImageProvider
+                    : (_currentPhotoBase64 != null 
+                        ? MemoryImage(base64Decode(_currentPhotoBase64!)) as ImageProvider
+                        : (_currentPhotoUrl != null
+                            ? NetworkImage(_currentPhotoUrl!) as ImageProvider
+                            : const AssetImage('assets/images/profile.png'))),
                 fit: BoxFit.cover,
               ),
             ),
@@ -138,17 +259,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
           Positioned(
             bottom: 0,
             right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFED001E),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: const Icon(
-                Icons.camera_alt,
-                color: Colors.white,
-                size: 16,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFED001E),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Icon(
+                  Icons.camera_alt,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
           ),
@@ -207,18 +331,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Widget _buildSaveButton(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Logic to save profile changes
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil berhasil diperbarui!')),
-        );
-      },
+      onTap: _isLoading ? null : _saveProfile,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFED001E),
+          color: _isLoading ? Colors.grey : const Color(0xFFED001E),
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
@@ -229,14 +347,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ],
         ),
         child: Center(
-          child: Text(
-            'Simpan',
-            style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
+          child: _isLoading 
+            ? const SizedBox(
+                width: 24, 
+                height: 24, 
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+              )
+            : Text(
+                'Simpan',
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
         ),
       ),
     );
