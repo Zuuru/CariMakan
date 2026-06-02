@@ -12,6 +12,7 @@ import '../../../login/pages/login_page.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
 import 'wallet_payment.dart';
+import 'edit_profile_page.dart';
 import '../widgets/menu_item.dart';
 
 class CustomerProfilePage extends StatefulWidget {
@@ -333,10 +334,18 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
       ),
       child: Column(
         children: [
-          const ProfileMenuItem(
+          ProfileMenuItem(
             icon: Icons.person,
             title: 'Edit Profil',
             showDivider: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfilePage(),
+                ),
+              );
+            },
           ),
           ProfileMenuItem(
             icon: Icons.settings,
