@@ -36,8 +36,9 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final email = _emailController.text.trim();
-    if (!RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+    final input = _emailController.text.trim();
+    // Jika input mengandung '@', validasi sebagai email. Jika tidak, anggap sebagai username.
+    if (input.contains('@') && !RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(input)) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Format email salah yakk!')));
@@ -137,9 +138,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          _buildLabel("Email"),
+                          _buildLabel("Email / Username"),
                           _buildTextField(
-                            "Masukkin email kamu yakk",
+                            "Masukkin email atau username kamu yakk",
                             controller: _emailController,
                           ),
                           const SizedBox(height: 16),
