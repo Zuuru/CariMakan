@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +28,8 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
   int _currentIndex = 3; // Index for Profile
   String _userName = 'Jett Heartcliff';
   String _userEmail = 'babababamjett@gmail.com';
+  String? _photoUrl;
+  String? _photoBase64;
   String _buttonText = 'Daftar sebagai owner resto';
   bool _isOwner = false;
   bool _isLoadingStatus = true;
@@ -65,6 +68,12 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           }
           if (userData['email'] != null) {
             _userEmail = userData['email'] as String;
+          }
+          if (userData['photoUrl'] != null) {
+            _photoUrl = userData['photoUrl'] as String;
+          }
+          if (userData['photoBase64'] != null) {
+            _photoBase64 = userData['photoBase64'] as String;
           }
         }
       }
@@ -250,8 +259,12 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/profile.png'),
+                      image: DecorationImage(
+                        image: _photoBase64 != null
+                            ? MemoryImage(base64Decode(_photoBase64!)) as ImageProvider
+                            : (_photoUrl != null 
+                                ? NetworkImage(_photoUrl!) as ImageProvider
+                                : const AssetImage('assets/images/profile.png')),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -338,13 +351,16 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
             icon: Icons.person,
             title: 'Edit Profil',
             showDivider: true,
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const EditProfilePage(),
                 ),
               );
+              if (result == true) {
+                _loadUserAndRestoStatus();
+              }
             },
           ),
           ProfileMenuItem(
