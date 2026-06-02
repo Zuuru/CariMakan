@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'edit_profile_page.dart';
 import 'edit_profile_resto_page.dart';
 import 'manajemen_karyawan_page.dart';
+import '../../../home/presentation/pages/home_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -354,8 +355,14 @@ class _ProfilePageState extends State<ProfilePage> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          // Implement logout logic
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          final navigator = Navigator.of(context);
+          if (navigator.canPop()) {
+            navigator.popUntil((route) => route.isFirst);
+          } else {
+            navigator.pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFE53935), // Red

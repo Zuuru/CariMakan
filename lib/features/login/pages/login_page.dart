@@ -30,64 +30,63 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Isi email dan password dulu ya!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Isi email dan password dulu ya!')),
+      );
       return;
     }
-    
+
     final email = _emailController.text.trim();
     if (!RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Format email salah yakk!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Format email salah yakk!')));
       return;
     }
 
     setState(() => _isLoading = true);
     try {
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-      
-      Widget targetPage = const HomePage();
-      final user = userCredential.user;
-      if (user != null) {
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        if (userDoc.exists) {
-          final role = userDoc.data()?['role'] as String?;
-          final normalizedRole = role?.trim().toLowerCase();
-          if (normalizedRole == 'owner' || normalizedRole == 'owner resto' || normalizedRole == 'owner_resto') {
-            targetPage = const HomeRestoPage();
-          }
-        }
-      }
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
 
+      Widget targetPage = const HomePage();
       if (mounted) {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => targetPage,
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.easeInOutQuart;
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(position: animation.drive(tween), child: child);
-            },
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(0.0, 1.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOutQuart;
+                  var tween = Tween(
+                    begin: begin,
+                    end: end,
+                  ).chain(CurveTween(curve: curve));
+                  return SlideTransition(
+                    position: animation.drive(tween),
+                    child: child,
+                  );
+                },
             transitionDuration: const Duration(milliseconds: 800),
           ),
         );
       }
     } on FirebaseAuthException catch (e) {
       String msg = 'Gagal login, periksa email dan password.';
-      if (e.code == 'user-not-found') msg = 'Email tidak terdaftar.';
-      else if (e.code == 'wrong-password' || e.code == 'invalid-credential') msg = 'Email atau password salah.';
+      if (e.code == 'user-not-found')
+        msg = 'Email tidak terdaftar.';
+      else if (e.code == 'wrong-password' || e.code == 'invalid-credential')
+        msg = 'Email atau password salah.';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -139,7 +138,10 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 24),
                           _buildLabel("Email"),
-                          _buildTextField("Masukkin email kamu yakk", controller: _emailController),
+                          _buildTextField(
+                            "Masukkin email kamu yakk",
+                            controller: _emailController,
+                          ),
                           const SizedBox(height: 16),
                           _buildLabel("Password"),
                           _buildTextField(
@@ -161,7 +163,8 @@ class _LoginPageState extends State<LoginPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const ForgotPasswordPage(),
+                                    builder: (context) =>
+                                        const ForgotPasswordPage(),
                                   ),
                                 );
                               },
@@ -219,18 +222,22 @@ class _LoginPageState extends State<LoginPage> {
                                     onPressed: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const RegisterPage()),
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const RegisterPage(),
+                                        ),
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: Colors.black,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
                                     ),
-                                  ),
                                     child: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       child: Text(
@@ -251,7 +258,10 @@ class _LoginPageState extends State<LoginPage> {
                                   height: 50,
                                   child: ElevatedButton.icon(
                                     onPressed: () {},
-                                    icon: Image.asset('assets/images/Icon/google_logo.png', width: 24),
+                                    icon: Image.asset(
+                                      'assets/images/Icon/google_logo.png',
+                                      width: 24,
+                                    ),
                                     label: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       child: Text(
@@ -267,11 +277,14 @@ class _LoginPageState extends State<LoginPage> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(30),
                                       ),
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -325,12 +338,12 @@ class _LoginPageState extends State<LoginPage> {
         obscureText: isPassword ? obscureText : false,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.outfit(
-            color: Colors.grey,
-            fontSize: 14,
-          ),
+          hintStyle: GoogleFonts.outfit(color: Colors.grey, fontSize: 14),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 15,
+          ),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
