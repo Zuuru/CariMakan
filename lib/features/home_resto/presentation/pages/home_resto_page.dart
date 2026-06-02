@@ -5,6 +5,9 @@ import '../widgets/resto_bottom_navbar.dart';
 import '../widgets/rekap_harian_card.dart';
 import '../widgets/pesanan_aktif_card.dart';
 import '../widgets/menu_terlaris_card.dart';
+import '../../../menu_resto/presentation/pages/manajemen_menu_page.dart';
+import '../../../recap_resto/presentation/pages/recap_page.dart';
+import '../../../profile_resto/presentation/pages/profile_page.dart';
 
 class HomeRestoPage extends StatefulWidget {
   const HomeRestoPage({Key? key}) : super(key: key);
@@ -47,11 +50,29 @@ class _HomeRestoPageState extends State<HomeRestoPage> {
                 ),
               ),
               // Page 1: Manajemen Menu
-              _buildPlaceholderPage(1),
+              ManajemenMenuPage(
+                onBackPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+              ),
               // Page 2: Rekap / Keuangan
-              _buildPlaceholderPage(2),
+              RecapPage(
+                onBackPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+              ),
               // Page 3: Profil Resto
-              _buildPlaceholderPage(3),
+              ProfilePage(
+                onBackPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+              ),
             ],
           ),
           

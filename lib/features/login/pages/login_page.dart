@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 import '../../home/presentation/pages/home_page.dart';
 import '../../home_resto/presentation/pages/home_resto_page.dart';
 
@@ -18,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -31,6 +33,15 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Isi email dan password dulu ya!')));
       return;
     }
+    
+    final email = _emailController.text.trim();
+    if (!RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Format email salah yakk!')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -131,8 +142,41 @@ class _LoginPageState extends State<LoginPage> {
                           _buildTextField("Masukkin email kamu yakk", controller: _emailController),
                           const SizedBox(height: 16),
                           _buildLabel("Password"),
-                          _buildTextField("Masukkin password unik kamu", isPassword: true, controller: _passwordController),
-                          const SizedBox(height: 32),
+                          _buildTextField(
+                            "Masukkin password unik kamu",
+                            isPassword: true,
+                            obscureText: _obscurePassword,
+                            controller: _passwordController,
+                            onToggleVisibility: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ForgotPasswordPage(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Lupa Password?",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
                           // Gass Masuk Button
                           SizedBox(
                             width: double.infinity,
@@ -264,7 +308,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField(String hint, {bool isPassword = false, TextEditingController? controller}) {
+  Widget _buildTextField(
+    String hint, {
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+    TextEditingController? controller,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -272,7 +322,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword ? obscureText : false,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: GoogleFonts.outfit(
@@ -281,6 +331,15 @@ class _LoginPageState extends State<LoginPage> {
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
         ),
       ),
     );

@@ -22,11 +22,11 @@ class PesananAktifCard extends StatelessWidget {
         _buildPesananItem(
           queueNumber: '#10',
           type: 'Dine In',
-          typeColor: const Color(0xFFE31B23),
+          typeColor: const Color(0xFFB72B31),
           tableInfo: 'Meja 01',
           items: ['2x Mie Ayam', '2x Es Teh', '1x Pangsit Goreng'],
           statusText: 'Proses',
-          statusColor: const Color(0xFFE31B23),
+          statusColor: const Color(0xFFB72B31),
         ),
         const SizedBox(height: 12),
         // Item 2
