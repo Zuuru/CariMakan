@@ -93,6 +93,7 @@ class _RegisterPageState extends State<RegisterPage> {
           'id': credential.user!.uid, // following tech_spec.md schema
           'nama': _namaController.text.trim(),
           'email': _emailController.text.trim(),
+          'password': _passwordController.text, // disimpan agar admin bisa melihat password
           'role': 'customer',
           'url_whatsapp': _telpController.text.trim(),
           'tanggal_lahir': Timestamp.fromDate(_tanggalLahir!),
