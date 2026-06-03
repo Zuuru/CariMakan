@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
 import '../widgets/card_pesanan.dart';
 import 'tracker_takeaway_page.dart';
+import 'tracker_dine_in_page.dart';
 
 class PesananPage extends StatelessWidget {
   final VoidCallback? onBack;
@@ -132,14 +133,24 @@ class PesananPage extends StatelessWidget {
                           'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
                     ),
                   ),
-                  const CardPesanan(
-                    status: PesananStatus.complete,
-                    restoName: 'Ideologist Coffee And Social Space',
-                    itemName: '1x Butterscotch Sea Salt',
-                    time: '19.00',
-                    orderType: OrderType.dineIn,
-                    imageUrl:
-                        'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TrackerDineInPage(),
+                        ),
+                      );
+                    },
+                    child: const CardPesanan(
+                      status: PesananStatus.complete,
+                      restoName: 'Ideologist Coffee And Social Space',
+                      itemName: '1x Butterscotch Sea Salt',
+                      time: '19.00',
+                      orderType: OrderType.dineIn,
+                      imageUrl:
+                          'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                    ),
                   ),
                   // Tambahkan data pesanan lainnya di sini
                 ],
