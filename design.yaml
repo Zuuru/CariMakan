@@ -1,10 +1,31 @@
 metadata:
   name: Untitled
   components:
-    '2065:208':
-      id: '2065:208'
-      key: 22b79c6fc256ec1f92d68b464cf1556bedf28a33
-      name: Frame 13
+    '2155:1347':
+      id: '2155:1347'
+      key: f5a5efbb892f48ad85c2318988f86fdcf2436be5
+      name: Property 1=Variant3
+      componentSetId: '2155:1319'
+    '2155:1240':
+      id: '2155:1240'
+      key: 3d2abacc9a6c4e327ac15d911c684392539b8230
+      name: Property 1=lsicon:badge-promotion-outline
+      componentSetId: '2155:1242'
+    '2155:1238':
+      id: '2155:1238'
+      key: add7982f5293ef8d8022d875d550be90e4706e0c
+      name: Property 1=iconamoon:profile
+      componentSetId: '2155:1242'
+    '2155:1241':
+      id: '2155:1241'
+      key: df169a701b13f6c96abe19b8d372c04b8dc122e0
+      name: Property 1=boxicons:home
+      componentSetId: '2155:1242'
+    '2155:1239':
+      id: '2155:1239'
+      key: ce0ead557eca59724c3c935f912de23dca25710b
+      name: Property 1=hugeicons:note-01
+      componentSetId: '2155:1242'
     '2065:301':
       id: '2065:301'
       key: 57e63be8a13766c2cd47d069a1ef133b4b9df69c
@@ -14,523 +35,677 @@ metadata:
       id: '2065:383'
       key: 51ddb19de206b67eae2d554b1d20c018feb754f4
       name: Status bar - iPhone
-    '2065:9':
-      id: '2065:9'
-      key: 85652504264d29c6c3f5237b7d7dee91794c28c3
-      name: step tracking progress bar=Default
-      componentSetId: '2065:8'
-    '2065:38':
-      id: '2065:38'
-      key: 21fad52f8f3f7245306d163e78fb602bbced8ba5
-      name: Property 1=Default
-      componentSetId: '2065:37'
-    '2065:142':
-      id: '2065:142'
-      key: 4442f811da8ae66e099165df67dadfb0f02a5e02
-      name: Property 1=Default
-      componentSetId: '2065:141'
-    '2065:188':
-      id: '2065:188'
-      key: 8cf7ce1293cdfba6af11cf7441cec9b31a241691
-      name: Property 1=Variant2
-      componentSetId: '2065:183'
-    '2065:193':
-      id: '2065:193'
-      key: 550c21704810900d6f947ba17be9c1b05f02ac8e
-      name: Property 1=Default
-      componentSetId: '2065:192'
   componentSets:
+    '2155:1319':
+      id: '2155:1319'
+      key: 8c497dc6452078d7323acbe591b04e7182cc80c5
+      name: Component 75
+      description: ''
+    '2155:1242':
+      id: '2155:1242'
+      key: f6f378437febf9da251d638f3e69570d621c8558
+      name: Component 74
+      description: ''
     '2065:300':
       id: '2065:300'
       key: 7aafe068eb8261b9aa743403f83769ae78800a38
       name: Home Indicator
       description: ''
-    '2065:8':
-      id: '2065:8'
-      key: 9756203e2966a20872c318d85d5c362f8b5425f8
-      name: progress barr step
-      description: ''
-    '2065:37':
-      id: '2065:37'
-      key: ca2a5aedc8d41dd5ece8ff0566668048d763fcad
-      name: calorie burnt proggres bar
-      description: ''
-    '2065:141':
-      id: '2065:141'
-      key: 94b43dee88bd3e5e3b35773fc18c9c43f29848ea
-      name: heart beat for heart bpm
-      description: ''
-    '2065:183':
-      id: '2065:183'
-      key: de83554456fa7c42c40b3a7a41b030559863e52d
-      name: Sleep time bar
-      description: ''
-    '2065:192':
-      id: '2065:192'
-      key: 029fa17623c1d7561cd63633d3932a97ad7508ae
-      name: Frame 12
-      description: ''
 nodes:
-  - id: '2749:2232'
-    name: Change Password
+  - id: '2150:1509'
+    name: Order History
     type: FRAME
-    layout: layout_EIOBEZ
-    fills: color_F5FAFF
+    layout: layout_A7VZZ8
+    fills: color_FFFFFF
     children:
-      - id: '2749:2233'
-        name: bg 1
-        type: RECTANGLE
-        layout: layout_F5ENCF
-      - id: '2749:2234'
-        name: Frame 14
-        type: INSTANCE
-        layout: layout_OS2ZZD
-        componentId: '2065:208'
+      - id: '2155:2155'
+        name: Group 8433
+        type: GROUP
+        layout: layout_IW9IVI
         children:
-          - id: I2749:2234;176:530
-            name: Step Tracking Widget
+          - id: '2155:2156'
+            name: Group 8422
             type: GROUP
-            layout: layout_MJJGSX
+            layout: layout_ZBHHZP
             children:
-              - id: I2749:2234;176:461
-                name: Rectangle 43
+              - id: '2155:2157'
+                name: Rectangle 1818
                 type: RECTANGLE
-                layout: layout_ZWE4BJ
-                fills: color_FCFCFC
-                borderRadius: 30px
-              - id: I2749:2234;176:462
-                name: Step to wall
+                layout: layout_C1UJBD
+                fills: color_FFFBFB
+                borderRadius: 24px
+              - id: '2155:2158'
+                name: Mask group
+                type: GROUP
+                layout: layout_8RR352
+                children:
+                  - id: '2155:2159'
+                    name: Rectangle 61
+                    type: RECTANGLE
+                    layout: layout_89CFC3
+                    fills: color_FFFFFF
+                    borderRadius: 18.47058868408203px
+                  - id: '2155:2160'
+                    name: images 1
+                    type: RECTANGLE
+                    layout: layout_WKZU1H
+              - id: '2155:2161'
+                name: Ideologist Coffee And Social Space
                 type: TEXT
-                layout: layout_3RAYYL
-                fills: color_303030
-                text: Step to wall
-                textStyle: style_DJZHZ0
-              - id: I2749:2234;176:463
-                name: Steps
+                layout: layout_SBCHAK
+                fills: color_000000
+                text: Ideologist Coffee And Social Space
+                textStyle: style_1XA277
+              - id: '2155:2162'
+                name: 1x Butterscotch Sea Salt
                 type: TEXT
-                layout: layout_U9O0VT
-                fills: color_303030
-                text: Steps
-                textStyle: style_ULQ4YD
-              - id: I2749:2234;176:464
-                name: 5,400
-                type: TEXT
-                layout: layout_8JPAYO
-                fills: color_303030
-                text: '5,400 '
-                textStyle: style_VVNQS7
-              - id: I2749:2234;176:465
-                name: Rectangle 49
+                layout: layout_PL9JLZ
+                fills: color_000000
+                text: 1x Butterscotch Sea Salt
+                textStyle: style_B91SUX
+              - id: '2155:2163'
+                name: Rectangle 1819
                 type: RECTANGLE
-                layout: layout_7C5UUB
-                fills: color_FF8800
-                borderRadius: 20px
-              - id: I2749:2234;176:466
-                name: Ellipse 15
+                layout: layout_M78M5M
+                fills: color_CEE0FF
+                borderRadius: 24px
+              - id: '2155:2165'
+                name: Baru proses
+                type: TEXT
+                layout: layout_3O3YAB
+                fills: color_000000
+                text: Baru proses
+                textStyle: style_HHCGXW
+              - id: '2155:2166'
+                name: '19.00'
+                type: TEXT
+                layout: layout_F1L6MB
+                fills: color_000000
+                text: '19.00'
+                textStyle: style_U0DZU3
+              - id: '2155:2167'
+                name: Rectangle 1820
+                type: RECTANGLE
+                layout: layout_OGQBZW
+                fills: color_ED001E
+                borderRadius: 17px
+              - id: '2155:2168'
+                name: Dine In
+                type: TEXT
+                layout: layout_G1KQJU
+                fills: color_FFFFFF
+                text: Dine In
+                textStyle: style_4ZKDBY
+              - id: '2607:2250'
+                name: Group 8572
+                type: GROUP
+                layout: layout_748X4R
+                children:
+                  - id: '2155:2164'
+                    name: Ellipse 1366
+                    type: ELLIPSE
+                    layout: layout_Q6QPTH
+                    fills: color_F3AE1B
+                  - id: '2155:2169'
+                    name: arcticons:foodora
+                    type: FRAME
+                    layout: layout_V6TITB
+                    fills: color_FFFFFF
+                    children:
+                      - id: '2155:2170'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_3B093K
+                        strokes: stroke_FFFFFF
+                        strokeWeight: 1.5px
+                      - id: '2155:2171'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_UIJ14W
+                        strokes: stroke_FFFFFF
+                        strokeWeight: 1.5px
+          - id: '2155:2172'
+            name: Group 8428
+            type: GROUP
+            layout: layout_DXCV20
+            children:
+              - id: '2155:2173'
+                name: Rectangle 1818
+                type: RECTANGLE
+                layout: layout_MAT94O
+                fills: color_FFFBFB
+                borderRadius: 24px
+              - id: '2155:2174'
+                name: Mask group
+                type: GROUP
+                layout: layout_LKI8SZ
+                children:
+                  - id: '2155:2175'
+                    name: Rectangle 61
+                    type: RECTANGLE
+                    layout: layout_63F3ZC
+                    fills: color_FFFFFF
+                    borderRadius: 18.47058868408203px
+                  - id: '2155:2176'
+                    name: images 1
+                    type: RECTANGLE
+                    layout: layout_3JLWYL
+              - id: '2155:2177'
+                name: Ideologist Coffee And Social Space
+                type: TEXT
+                layout: layout_R6WE64
+                fills: color_000000
+                text: Ideologist Coffee And Social Space
+                textStyle: style_I5EXD8
+              - id: '2155:2178'
+                name: 1x Butterscotch Sea Salt
+                type: TEXT
+                layout: layout_41PKBT
+                fills: color_000000
+                text: 1x Butterscotch Sea Salt
+                textStyle: style_I4D5GH
+              - id: '2155:2179'
+                name: Rectangle 1819
+                type: RECTANGLE
+                layout: layout_GJ0XWL
+                fills: color_61CF61
+                borderRadius: 24px
+              - id: '2155:2181'
+                name: Completed
+                type: TEXT
+                layout: layout_GE5NDS
+                fills: color_000000
+                text: Completed
+                textStyle: style_8NLZF0
+              - id: '2155:2182'
+                name: '19.00'
+                type: TEXT
+                layout: layout_XEEKQD
+                fills: color_000000
+                text: '19.00'
+                textStyle: style_AAOLUF
+              - id: '2382:2158'
+                name: Group 8545
+                type: GROUP
+                layout: layout_627N1V
+                children:
+                  - id: '2155:2183'
+                    name: Rectangle 1820
+                    type: RECTANGLE
+                    layout: layout_1NYCNV
+                    fills: color_FF8800
+                    borderRadius: 17px
+                  - id: '2155:2184'
+                    name: Take Away
+                    type: TEXT
+                    layout: layout_ERWIGJ
+                    fills: color_FFFFFF
+                    text: Take Away
+                    textStyle: style_YZLXKN
+              - id: '2607:2251'
+                name: Group 8573
+                type: GROUP
+                layout: layout_FTXEEU
+                children:
+                  - id: '2155:2180'
+                    name: Ellipse 1366
+                    type: ELLIPSE
+                    layout: layout_TM4YED
+                    fills: color_2E8104
+                  - id: '2155:2185'
+                    name: mingcute:check-fill
+                    type: FRAME
+                    layout: layout_ARA2RK
+                    fills: color_FFFFFF
+                    children:
+                      - id: '2155:2186'
+                        name: Group
+                        type: GROUP
+                        layout: layout_FMIDZA
+                        children:
+                          - id: '2155:2187'
+                            name: Vector
+                            type: VECTOR
+                            layout: layout_N3DD1P
+                          - id: '2155:2188'
+                            name: Vector
+                            type: VECTOR
+                            layout: layout_CXI7K5
+                            fills: color_FFFFFF
+          - id: '2155:2189'
+            name: Group 8429
+            type: GROUP
+            layout: layout_3FUWGW
+            children:
+              - id: '2155:2190'
+                name: Rectangle 1818
+                type: RECTANGLE
+                layout: layout_UU5U9S
+                fills: color_FFFBFB
+                borderRadius: 24px
+              - id: '2155:2191'
+                name: Mask group
+                type: GROUP
+                layout: layout_HCLKTP
+                children:
+                  - id: '2155:2192'
+                    name: Rectangle 61
+                    type: RECTANGLE
+                    layout: layout_496RF6
+                    fills: color_FFFFFF
+                    borderRadius: 18.47058868408203px
+                  - id: '2155:2193'
+                    name: images 1
+                    type: RECTANGLE
+                    layout: layout_4K0GTD
+              - id: '2155:2194'
+                name: Ideologist Coffee And Social Space
+                type: TEXT
+                layout: layout_WOEVK7
+                fills: color_000000
+                text: Ideologist Coffee And Social Space
+                textStyle: style_PPYVP3
+              - id: '2155:2195'
+                name: 1x Butterscotch Sea Salt
+                type: TEXT
+                layout: layout_0UK7MC
+                fills: color_000000
+                text: 1x Butterscotch Sea Salt
+                textStyle: style_54E8BT
+              - id: '2155:2196'
+                name: Rectangle 1819
+                type: RECTANGLE
+                layout: layout_TEKKYA
+                fills: color_61CF61
+                borderRadius: 24px
+              - id: '2155:2197'
+                name: Ellipse 1366
                 type: ELLIPSE
-                layout: layout_NKVMFX
-                fills: color_E2E2E2
-              - id: I2749:2234;176:467
-                name: Ellipse 13
-                type: ELLIPSE
-                layout: layout_2D4ETB
-                fills: color_FF8800
-                borderRadius: 5px
-              - id: I2749:2234;176:468
-                name: Ellipse 16
-                type: ELLIPSE
-                layout: layout_T43EV6
-                fills: color_FF8800
-                borderRadius: 5px
-              - id: I2749:2234;176:469
-                name: Ellipse 17
-                type: ELLIPSE
-                layout: layout_ZR15BY
-                fills: color_FF8800
-                borderRadius: 5px
-              - id: I2749:2234;176:470
-                name: Ellipse 18
-                type: ELLIPSE
-                layout: layout_MN89Q4
-                fills: color_FF8800
-                borderRadius: 5px
-              - id: I2749:2234;176:471
-                name: Ellipse 14
-                type: ELLIPSE
-                layout: layout_J0OCK0
-                fills: color_FF8800
-              - id: I2749:2234;176:472
-                name: boxicons:footsteps-filled
+                layout: layout_X31PQV
+                fills: color_2E8104
+              - id: '2155:2198'
+                name: Completed
+                type: TEXT
+                layout: layout_SSW8HE
+                fills: color_000000
+                text: Completed
+                textStyle: style_PS8DAF
+              - id: '2155:2199'
+                name: '19.00'
+                type: TEXT
+                layout: layout_P6N2V1
+                fills: color_000000
+                text: '19.00'
+                textStyle: style_R5VRP0
+              - id: '2155:2200'
+                name: Rectangle 1820
+                type: RECTANGLE
+                layout: layout_PD7QGO
+                fills: color_E64F4F
+                borderRadius: 17px
+              - id: '2155:2201'
+                name: Dine In
+                type: TEXT
+                layout: layout_QDVT3V
+                fills: color_FFFFFF
+                text: Dine In
+                textStyle: style_HG4UWB
+              - id: '2155:2202'
+                name: mingcute:check-fill
                 type: FRAME
-                layout: layout_S0EG1F
+                layout: layout_NLNEBL
                 fills: color_FFFFFF
                 children:
-                  - id: I2749:2234;176:473
-                    name: Vector
-                    type: VECTOR
-                    layout: layout_K3FTMY
-                    fills: color_FCFCFC
-              - id: I2749:2234;176:474
-                name: Good!
+                  - id: '2155:2203'
+                    name: Group
+                    type: GROUP
+                    layout: layout_9BQ67M
+                    children:
+                      - id: '2155:2204'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_YH6JEC
+                      - id: '2155:2205'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_VWDJAN
+                        fills: color_FFFFFF
+          - id: '2155:2206'
+            name: Group 8430
+            type: GROUP
+            layout: layout_ESXNSS
+            children:
+              - id: '2155:2207'
+                name: Rectangle 1818
+                type: RECTANGLE
+                layout: layout_IOWJR9
+                fills: color_FFFBFB
+                borderRadius: 24px
+              - id: '2155:2208'
+                name: Mask group
+                type: GROUP
+                layout: layout_94KW13
+                children:
+                  - id: '2155:2209'
+                    name: Rectangle 61
+                    type: RECTANGLE
+                    layout: layout_03DLBK
+                    fills: color_FFFFFF
+                    borderRadius: 18.47058868408203px
+                  - id: '2155:2210'
+                    name: images 1
+                    type: RECTANGLE
+                    layout: layout_D8Z80U
+              - id: '2155:2211'
+                name: Ideologist Coffee And Social Space
                 type: TEXT
-                layout: layout_X610W4
-                fills: color_FCFCFC
-                text: Good!
-                textStyle: style_IKQN54
-              - id: I2749:2234;176:475
-                name: progress barr step
+                layout: layout_IWO4XN
+                fills: color_000000
+                text: Ideologist Coffee And Social Space
+                textStyle: style_N111M4
+              - id: '2155:2212'
+                name: 1x Butterscotch Sea Salt
+                type: TEXT
+                layout: layout_OURH8R
+                fills: color_000000
+                text: 1x Butterscotch Sea Salt
+                textStyle: style_8YX9O2
+              - id: '2155:2213'
+                name: Rectangle 1819
+                type: RECTANGLE
+                layout: layout_FACUZQ
+                fills: color_61CF61
+                borderRadius: 24px
+              - id: '2155:2214'
+                name: Ellipse 1366
+                type: ELLIPSE
+                layout: layout_XPAQ2R
+                fills: color_2E8104
+              - id: '2155:2215'
+                name: Completed
+                type: TEXT
+                layout: layout_CAV6SK
+                fills: color_000000
+                text: Completed
+                textStyle: style_IWO4GQ
+              - id: '2155:2216'
+                name: '19.00'
+                type: TEXT
+                layout: layout_U72CDI
+                fills: color_000000
+                text: '19.00'
+                textStyle: style_8SHXHM
+              - id: '2155:2217'
+                name: Rectangle 1820
+                type: RECTANGLE
+                layout: layout_IAKN22
+                fills: color_FF8800
+                borderRadius: 17px
+              - id: '2155:2218'
+                name: Take Away
+                type: TEXT
+                layout: layout_8G0267
+                fills: color_FFFFFF
+                text: Take Away
+                textStyle: style_FTKKUH
+              - id: '2155:2219'
+                name: mingcute:check-fill
+                type: FRAME
+                layout: layout_Q5UWQI
+                fills: color_FFFFFF
+                children:
+                  - id: '2155:2220'
+                    name: Group
+                    type: GROUP
+                    layout: layout_3MPYZW
+                    children:
+                      - id: '2155:2221'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_OYXL5D
+                      - id: '2155:2222'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_Q1SK3Q
+                        fills: color_FFFFFF
+      - id: '2155:1943'
+        name: Component 75
+        type: INSTANCE
+        layout: layout_DTKC9S
+        fills: color_FFFFFF
+        componentId: '2155:1347'
+        componentProperties:
+          - name: Property 1
+            value: Variant3
+            type: VARIANT
+        children:
+          - id: I2155:1943;2155:1348
+            name: Rectangle 1821
+            type: RECTANGLE
+            layout: layout_2XBR1W
+            fills: color_1C1C1C
+            borderRadius: 56.5px
+          - id: I2155:1943;2155:1353
+            name: Group 8435
+            type: GROUP
+            layout: layout_3EA2U8
+            children:
+              - id: I2155:1943;2155:1354
+                name: Rectangle 1823
+                type: RECTANGLE
+                layout: layout_UTSKCT
+                fills: color_353535
+                borderRadius: 56.5px
+              - id: I2155:1943;2155:1355
+                name: Component 74
                 type: INSTANCE
-                layout: layout_CK646E
-                componentId: '2065:9'
+                layout: layout_JDBL4F
+                fills: color_FFFFFF
+                componentId: '2155:1240'
                 componentProperties:
-                  - name: step tracking progress bar
-                    value: Default
+                  - name: Property 1
+                    value: lsicon:badge-promotion-outline
                     type: VARIANT
                 children:
-                  - id: I2749:2234;176:475;172:458
-                    name: Frame 11
-                    type: FRAME
-                    layout: layout_W6OR4D
-                    children:
-                      - id: I2749:2234;176:475;172:455
-                        name: Ellipse 19
-                        type: ELLIPSE
-                        layout: layout_FR7EK1
-                        fills: color_E2E2E2
-                      - id: I2749:2234;176:475;172:456
-                        name: Ellipse 20
-                        type: ELLIPSE
-                        layout: layout_TTVNOY
-                        fills: color_FF8800
-                        borderRadius: 5px
-                      - id: I2749:2234;176:475;172:460
-                        name: Ellipse 21
-                        type: ELLIPSE
-                        layout: layout_RT6TK0
-                        fills: color_FF8800
-                        borderRadius: 5px
-                      - id: I2749:2234;176:475;172:462
-                        name: Ellipse 22
-                        type: ELLIPSE
-                        layout: layout_WC4N48
-                        fills: color_FF8800
-                        borderRadius: 5px
-                      - id: I2749:2234;176:475;172:464
-                        name: Ellipse 23
-                        type: ELLIPSE
-                        layout: layout_580FXM
-                        fills: color_FF8800
-                        borderRadius: 5px
-          - id: I2749:2234;176:476
-            name: Cal burnt Widget
+                  - id: I2155:1943;2155:1355;2155:1219
+                    name: Vector
+                    type: VECTOR
+                    layout: layout_X421RN
+                    strokes: stroke_FFFFFF
+                    strokeWeight: 2.700000047683716px
+          - id: I2155:1943;2155:1359
+            name: Group 8437
             type: GROUP
-            layout: layout_7N0UWR
+            layout: layout_8IBMLT
             children:
-              - id: I2749:2234;176:477
-                name: Rectangle 43
+              - id: I2155:1943;2155:1360
+                name: Rectangle 1823
                 type: RECTANGLE
-                layout: layout_TK4N7Z
-                fills: color_FCFCFC
-                borderRadius: 30px
-              - id: I2749:2234;176:478
-                name: Cal burnt
-                type: TEXT
-                layout: layout_4DU7F5
-                fills: color_303030
-                text: Cal burnt
-                textStyle: style_2Q7Z7H
-              - id: I2749:2234;176:479
-                name: KCAL
-                type: TEXT
-                layout: layout_ZD6QES
-                fills: color_303030
-                text: KCAL
-                textStyle: style_ETRWPV
-              - id: I2749:2234;176:480
-                name: '312'
-                type: TEXT
-                layout: layout_9CEE0Z
-                fills: color_303030
-                text: '312'
-                textStyle: style_TQANT8
-              - id: I2749:2234;176:481
-                name: Rectangle 49
+                layout: layout_FVXYPT
+                fills: color_353535
+                borderRadius: 56.5px
+              - id: I2155:1943;2155:1361
+                name: Component 74
+                type: INSTANCE
+                layout: layout_84WLPD
+                fills: color_FFFFFF
+                componentId: '2155:1238'
+                componentProperties:
+                  - name: Property 1
+                    value: iconamoon:profile
+                    type: VARIANT
+                children:
+                  - id: I2155:1943;2155:1361;2155:1223
+                    name: Group
+                    type: GROUP
+                    layout: layout_L7015G
+                    children:
+                      - id: I2155:1943;2155:1361;2155:1224
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_7JZFAI
+                        strokes: stroke_FFFFFF
+                        strokeWeight: 2.5px
+                      - id: I2155:1943;2155:1361;2155:1225
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_03OK4G
+                        strokes: stroke_FFFFFF
+                        strokeWeight: 2.5px
+          - id: I2155:1943;2155:1737
+            name: Group 8434
+            type: GROUP
+            layout: layout_34ZZDB
+            children:
+              - id: I2155:1943;2155:1738
+                name: Rectangle 1822
                 type: RECTANGLE
-                layout: layout_9ZHGN2
-                fills: color_FF8800
-                borderRadius: 20px
-              - id: I2749:2234;176:482
-                name: Ellipse 14
+                layout: layout_UZ3D3J
+                fills: color_353535
+                borderRadius: 56.5px
+              - id: I2155:1943;2155:1739
+                name: Component 74
+                type: INSTANCE
+                layout: layout_TKXMXI
+                fills: color_FFFFFF
+                componentId: '2155:1241'
+                componentProperties:
+                  - name: Property 1
+                    value: boxicons:home
+                    type: VARIANT
+                children:
+                  - id: I2155:1943;2155:1739;2155:1217
+                    name: Vector
+                    type: VECTOR
+                    layout: layout_VT49YA
+                    fills: color_FFFFFF
+          - id: I2155:1943;2155:1773
+            name: Group 8436
+            type: GROUP
+            layout: layout_EEBA08
+            children:
+              - id: I2155:1943;2155:1774
+                name: Rectangle 1823
+                type: RECTANGLE
+                layout: layout_O7FR9Z
+                fills: color_ED001E
+                borderRadius: 56.5px
+              - id: I2155:1943;2155:1782
+                name: Pesanan kamu
+                type: TEXT
+                layout: layout_AUWLWP
+                fills: color_FFFFFF
+                text: |-
+                  Pesanan
+                  kamu
+                textStyle: style_BX6NRE
+              - id: I2155:1943;2155:1775
+                name: Component 74
+                type: INSTANCE
+                layout: layout_793HAJ
+                fills: color_FFFFFF
+                componentId: '2155:1239'
+                componentProperties:
+                  - name: Property 1
+                    value: hugeicons:note-01
+                    type: VARIANT
+                children:
+                  - id: I2155:1943;2155:1775;2155:1221
+                    name: Vector
+                    type: VECTOR
+                    layout: layout_EW2ECJ
+                    strokes: stroke_FFFFFF
+                    strokeWeight: 2.5px
+      - id: '2155:2223'
+        name: Group 4
+        type: GROUP
+        layout: layout_RUC7AJ
+        children:
+          - id: '2155:2224'
+            name: Group 8372
+            type: GROUP
+            layout: layout_OZSGL9
+            children:
+              - id: '2155:2225'
+                name: Rectangle 1749
+                type: RECTANGLE
+                layout: layout_D9N224
+                fills: color_FFFFFF
+              - id: '2155:2226'
+                name: Group 8432
+                type: GROUP
+                layout: layout_5GJE3H
+                children:
+                  - id: '2155:2227'
+                    name: Rectangle 2
+                    type: RECTANGLE
+                    layout: layout_NZ0ZBQ
+                    fills: color_FFFFFF
+                    borderRadius: 50px
+                  - id: '2155:2228'
+                    name: iconamoon:search-thin
+                    type: FRAME
+                    layout: layout_1WB4BP
+                    fills: color_FFFFFF
+                    children:
+                      - id: '2155:2229'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_AM5V32
+                        strokes: stroke_000000
+                        strokeWeight: 1px
+              - id: '2155:2230'
+                name: Group 29
+                type: GROUP
+                layout: layout_FZCTS6
+                children:
+                  - id: '2155:2231'
+                    name: Rectangle 61
+                    type: RECTANGLE
+                    layout: layout_W13CL3
+                    fills: color_FFFFFF
+                    borderRadius: 50px
+                  - id: '2155:2232'
+                    name: weui:back-filled
+                    type: FRAME
+                    layout: layout_WIR9M1
+                    fills: color_FFFFFF
+                    children:
+                      - id: '2155:2233'
+                        name: Vector
+                        type: VECTOR
+                        layout: layout_4O6SME
+                        fills: color_000000
+      - id: '2184:1383'
+        name: Group 5
+        type: GROUP
+        layout: layout_66XGMS
+        children:
+          - id: '2184:1384'
+            name: Group 3
+            type: GROUP
+            layout: layout_XK5HH1
+            children:
+              - id: '2184:1385'
+                name: Ellipse 3
                 type: ELLIPSE
-                layout: layout_N670T7
-                fills: color_FF8800
-              - id: I2749:2234;176:483
-                name: Average
-                type: TEXT
-                layout: layout_Z38FXY
-                fills: color_F8F8F8
-                text: Average
-                textStyle: style_12H3US
-              - id: I2749:2234;176:484
+                layout: layout_NHR2L9
+                fills: color_ED001E
+          - id: '2184:1386'
+            name: rivet-icons:filter
+            type: FRAME
+            layout: layout_G6DCT7
+            fills: color_FFFFFF
+            children:
+              - id: '2184:1387'
                 name: Vector
                 type: VECTOR
-                layout: layout_L5UEEO
-                fills: color_F24822
-              - id: I2749:2234;176:485
-                name: calorie burnt proggres bar
-                type: INSTANCE
-                layout: layout_RXEXQ4
-                componentId: '2065:38'
-                componentProperties:
-                  - name: Property 1
-                    value: Default
-                    type: VARIANT
-                children:
-                  - id: I2749:2234;176:485;174:539
-                    name: Ellipse 16
-                    type: ELLIPSE
-                    layout: layout_V06HMX
-                    fills: color_E2E2E2
-                  - id: I2749:2234;176:485;174:540
-                    name: Ellipse 17
-                    type: ELLIPSE
-                    layout: layout_30J742
-                    fills: color_FF8800
-                    borderRadius: 5px
-                  - id: I2749:2234;176:485;174:542
-                    name: Ellipse 22
-                    type: ELLIPSE
-                    layout: layout_3IYHI7
-                    fills: color_FF8800
-                    borderRadius: 5px
-                  - id: I2749:2234;176:485;174:544
-                    name: Ellipse 23
-                    type: ELLIPSE
-                    layout: layout_IX73I9
-                    fills: color_FF8800
-                    borderRadius: 5px
-                  - id: I2749:2234;176:485;174:546
-                    name: Ellipse 24
-                    type: ELLIPSE
-                    layout: layout_S9MRZB
-                    fills: color_FF8800
-                    borderRadius: 5px
-                  - id: I2749:2234;176:485;174:561
-                    name: Ellipse 25
-                    type: ELLIPSE
-                    layout: layout_0NA6PB
-                    fills: color_FF8800
-                    borderRadius: 5px
-                  - id: I2749:2234;176:485;174:590
-                    name: Ellipse 26
-                    type: ELLIPSE
-                    layout: layout_LVB3RS
-                    fills: color_FF8800
-                    borderRadius: 5px
-                  - id: I2749:2234;176:485;174:594
-                    name: Ellipse 27
-                    type: ELLIPSE
-                    layout: layout_NZW4WV
-                    fills: color_FF8800
-                    borderRadius: 5px
-          - id: I2749:2234;176:486
-            name: Heart Rate Widget
-            type: GROUP
-            layout: layout_WXGIL0
-            children:
-              - id: I2749:2234;176:487
-                name: Group 16
-                type: GROUP
-                layout: layout_2IEN5H
-                children:
-                  - id: I2749:2234;176:488
-                    name: Rectangle 43
-                    type: RECTANGLE
-                    layout: layout_55S6KC
-                    fills: color_FCFCFC
-                    borderRadius: 30px
-                  - id: I2749:2234;176:489
-                    name: Heart Rate
-                    type: TEXT
-                    layout: layout_LIZXW6
-                    fills: color_303030
-                    text: Heart Rate
-                    textStyle: style_LHCJE3
-                  - id: I2749:2234;176:490
-                    name: BPM
-                    type: TEXT
-                    layout: layout_OSNWWS
-                    fills: color_303030
-                    text: BPM
-                    textStyle: style_DNSCG1
-                  - id: I2749:2234;176:491
-                    name: '80'
-                    type: TEXT
-                    layout: layout_R1XDA4
-                    fills: color_303030
-                    text: '80'
-                    textStyle: style_WEEC2O
-                  - id: I2749:2234;176:492
-                    name: Rectangle 49
-                    type: RECTANGLE
-                    layout: layout_A6I6HG
-                    fills: color_EB5E5E
-                    borderRadius: 20px
-                  - id: I2749:2234;176:493
-                    name: Normal
-                    type: TEXT
-                    layout: layout_WAEI9K
-                    fills: color_FCFCFC
-                    text: Normal
-                    textStyle: style_BNKP84
-              - id: I2749:2234;176:494
-                name: heart beat for heart bpm
-                type: INSTANCE
-                layout: layout_N51I1Q
-                componentId: '2065:142'
-                componentProperties:
-                  - name: Property 1
-                    value: Default
-                    type: VARIANT
-                children:
-                  - id: I2749:2234;176:494;174:686
-                    name: Vector 3
-                    type: VECTOR
-                    layout: layout_OC4RGH
-                    strokes: stroke_EB5E5E
-                    strokeWeight: 1px
-                  - id: I2749:2234;176:494;174:688
-                    name: Ellipse 30
-                    type: ELLIPSE
-                    layout: layout_QYQXPK
-                    fills: color_EB5E5E
-          - id: I2749:2234;176:495
-            name: Sleep Tracking Widget
-            type: GROUP
-            layout: layout_DVKAO0
-            children:
-              - id: I2749:2234;176:496
-                name: Rectangle 43
-                type: RECTANGLE
-                layout: layout_XWM3CC
-                fills: color_002651
-                borderRadius: 30px
-              - id: I2749:2234;176:497
-                name: gradasi aja
-                type: RECTANGLE
-                layout: layout_7ZFR2T
-              - id: I2749:2234;176:498
-                name: Moon and stars icon
-                type: GROUP
-                layout: layout_VAFFQX
-                children:
-                  - id: I2749:2234;176:499
-                    name: Vector
-                    type: VECTOR
-                    layout: layout_RFOVFP
-                    fills: color_F5F5F5
-                    strokes: stroke_F5F5F5
-                    strokeWeight: 2px
-                  - id: I2749:2234;176:500
-                    name: Vector
-                    type: VECTOR
-                    layout: layout_PXFPT8
-                    strokes: stroke_F5F5F5
-                    strokeWeight: 2px
-              - id: I2749:2234;176:501
-                name: Quality
-                type: TEXT
-                layout: layout_6CM7HL
-                fills: color_A36DFF
-                text: Quality
-                textStyle: style_AEIXRV
-              - id: I2749:2234;176:502
-                name: Asleep
-                type: TEXT
-                layout: layout_BZGTAW
-                fills: color_F5F5F5
-                text: Asleep
-                textStyle: style_4PB4FI
-              - id: I2749:2234;176:503
-                name: 80%
-                type: TEXT
-                layout: layout_1QRHD5
-                fills: color_A36DFF
-                text: 80%
-                textStyle: style_T9GNQX
-              - id: I2749:2234;176:504
-                name: 8h 33m
-                type: TEXT
-                layout: layout_N7EH63
-                fills: color_F5F5F5
-                text: 8h 33m
-                textStyle: style_BDK018
-              - id: I2749:2234;176:505
-                name: Sleep time bar
-                type: INSTANCE
-                layout: layout_VC9CXV
+                layout: layout_LL1QD5
                 fills: color_FFFFFF
-                componentId: '2065:188'
-                componentProperties:
-                  - name: Property 1
-                    value: Variant2
-                    type: VARIANT
-                children:
-                  - id: I2749:2234;176:505;174:884
-                    name: Ellipse 26
-                    type: ELLIPSE
-                    layout: layout_K8EFCB
-                    fills: color_464646
-                    borderRadius: 30px
-                  - id: I2749:2234;176:505;174:885
-                    name: Ellipse 27
-                    type: ELLIPSE
-                    layout: layout_YVZ6H6
-                    fills: color_F5F5F5
-                    borderRadius: 30px
-                  - id: I2749:2234;176:505;174:886
-                    name: Ellipse 28
-                    type: ELLIPSE
-                    layout: layout_WTA6KQ
-                    fills: color_F5F5F5
-                    borderRadius: 30px
-              - id: I2749:2234;176:506
-                name: Sleep Quality bar
-                type: INSTANCE
-                layout: layout_GSFGT2
-                componentId: '2065:193'
-                componentProperties:
-                  - name: Property 1
-                    value: Default
-                    type: VARIANT
-                children:
-                  - id: I2749:2234;176:506;175:1043
-                    name: Ellipse 31
-                    type: ELLIPSE
-                    layout: layout_2HDM79
-                    fills: color_464646
-                  - id: I2749:2234;176:506;175:1045
-                    name: Ellipse 32
-                    type: ELLIPSE
-                    layout: layout_VEMRDR
-                    fills: color_A36DFF
-                    borderRadius: 30px
-                  - id: I2749:2234;176:506;175:1047
-                    name: Ellipse 33
-                    type: ELLIPSE
-                    layout: layout_UZ4R8R
-                    fills: color_A36DFF
-                    borderRadius: 30px
-                  - id: I2749:2234;176:506;175:1049
-                    name: Ellipse 34
-                    type: ELLIPSE
-                    layout: layout_IQTV83
-                    fills: color_A36DFF
-                    borderRadius: 30px
-      - id: '2749:2235'
+      - id: '2150:1555'
         name: Home Indicator
         type: INSTANCE
-        layout: layout_NIMNX2
+        layout: layout_SFBMJX
         componentId: '2065:301'
         componentProperties:
           - name: Show Home Indicator#5707:0
@@ -543,360 +718,75 @@ nodes:
             value: Portrait
             type: VARIANT
         children:
-          - id: I2749:2235;106:60028
+          - id: I2150:1555;106:60028
             name: Home Indicator
             type: RECTANGLE
-            layout: layout_FQKFMS
+            layout: layout_O93FFH
             fills: color_000000
             borderRadius: 100px
-      - id: '2749:2236'
-        name: Frame 116
-        type: FRAME
-        layout: layout_O70O7F
-        children:
-          - id: '2749:2237'
-            name: Group 29
-            type: GROUP
-            layout: layout_389P4D
-            children:
-              - id: '2749:2238'
-                name: Rectangle 61
-                type: RECTANGLE
-                layout: layout_B4NQVS
-                fills: color_FFFFFF
-                strokes: stroke_99BDD5
-                strokeWeight: 0.5px
-                borderRadius: 50px
-              - id: '2749:2239'
-                name: weui:back-filled
-                type: FRAME
-                layout: layout_K90VNO
-                fills: color_FFFFFF
-                children:
-                  - id: '2749:2240'
-                    name: Vector
-                    type: VECTOR
-                    layout: layout_ABEPR8
-                    fills: color_000000
-          - id: '2749:2241'
-            name: Rectangle 62
-            type: RECTANGLE
-            layout: layout_NSPL2P
-            fills: color_FFFFFF
-            strokes: stroke_99BDD5
-            strokeWeight: 0.5px
-            borderRadius: 50px
-          - id: '2749:2242'
-            name: Edit Profile
-            type: TEXT
-            layout: layout_6MJ2EB
-            fills: color_000000
-            text: Edit Profile
-            textStyle: style_SWC0AM
-      - id: '2749:2292'
-        name: Group 8350
-        type: GROUP
-        layout: layout_J4FPLO
-        children:
-          - id: '2749:2293'
-            name: Rectangle 1746
-            type: RECTANGLE
-            layout: layout_GFWCQS
-            fills: color_ED001E
-            borderRadius: 20px
-          - id: '2749:2294'
-            name: Update Profile
-            type: TEXT
-            layout: layout_0MWFFH
-            fills: color_FFFFFF
-            text: Update Profile
-            textStyle: style_B0ARNE
-      - id: '2749:2443'
-        name: Rectangle 1746
-        type: RECTANGLE
-        layout: layout_ZPC7I2
-        fills: color_FFFFFF
-        borderRadius: 20px
-      - id: '2749:2445'
-        name: Group 8359
-        type: GROUP
-        layout: layout_I2VTOX
-        children:
-          - id: '2749:2446'
-            name: Rectangle 1746
-            type: RECTANGLE
-            layout: layout_25KEI3
-            fills: color_F1F1F1
-            borderRadius: 10px
-          - id: '2749:2447'
-            name: Frame 8348
-            type: FRAME
-            layout: layout_IOS57U
-            fills: color_F1F1F1
-            borderRadius: 10px
-            children:
-              - id: '2749:2448'
-                name: Frame 8365
-                type: FRAME
-                layout: layout_RY9K5O
-                children:
-                  - id: '2749:2449'
-                    name: Foto Profil
-                    type: TEXT
-                    layout: layout_FTAESI
-                    fills: color_000000
-                    text: Foto Profil
-                    textStyle: style_VSDE7M
-      - id: '2750:2319'
-        name: Mask group
-        type: GROUP
-        layout: layout_B6ABOK
-        children:
-          - id: '2750:2320'
-            name: Ellipse 1
-            type: ELLIPSE
-            layout: layout_H0WVWS
-            fills: color_D9D9D9
-          - id: '2750:2321'
-            name: shin 1
-            type: RECTANGLE
-            layout: layout_V1UPXI
-      - id: '2750:2326'
-        name: weui:arrow-outlined
-        type: FRAME
-        layout: layout_WK3J1P
-        fills: color_FFFFFF
-        children:
-          - id: '2750:2327'
-            name: Vector
-            type: VECTOR
-            layout: layout_65Q6K6
-            fills: color_000000
-      - id: '2750:2336'
-        name: Group 8359
-        type: GROUP
-        layout: layout_0XL01I
-        children:
-          - id: '2750:2337'
-            name: Rectangle 1746
-            type: RECTANGLE
-            layout: layout_VWC8YC
-            fills: color_F1F1F1
-            borderRadius: 10px
-          - id: '2750:2338'
-            name: Frame 8348
-            type: FRAME
-            layout: layout_OEARNZ
-            fills: color_F1F1F1
-            children:
-              - id: '2750:2339'
-                name: Frame 8365
-                type: FRAME
-                layout: layout_BDFP03
-                children:
-                  - id: '2750:2346'
-                    name: Frame 8373
-                    type: FRAME
-                    layout: layout_OKXAAC
-                    children:
-                      - id: '2750:2340'
-                        name: Jett Heartcliff
-                        type: TEXT
-                        layout: layout_L3XC1Q
-                        fills: color_000000
-                        text: Jett Heartcliff
-                        textStyle: style_F213OK
-              - id: '2750:2341'
-                name: weui:eyes-off-filled
-                type: FRAME
-                layout: layout_221KHN
-                fills: color_FFFFFF
-      - id: '2750:2349'
-        name: Nama Lengkap
-        type: TEXT
-        layout: layout_WJLFKZ
-        fills: color_000000
-        text: Nama Lengkap
-        textStyle: style_CMHH8O
-      - id: '2750:2359'
-        name: Alamat Email
-        type: TEXT
-        layout: layout_K7GJRC
-        fills: color_000000
-        text: Alamat Email
-        textStyle: style_16Z4TE
-      - id: '2750:2361'
-        name: Rectangle 1878
-        type: VECTOR
-        layout: layout_W9WHOO
-        fills: color_F1F1F1
-        borderRadius: 10px
-      - id: '2750:2363'
-        name: Frame 8373
-        type: FRAME
-        layout: layout_9YU4IN
-        children:
-          - id: '2750:2364'
-            name: babababamjett@gmail.com
-            type: TEXT
-            layout: layout_88HFLR
-            fills: color_000000
-            text: babababamjett@gmail.com
-            textStyle: style_3YL9WQ
-      - id: '2750:2366'
-        name: weui:arrow-outlined
-        type: FRAME
-        layout: layout_1VN4ZM
-        fills: color_FFFFFF
-        children:
-          - id: '2750:2367'
-            name: Vector
-            type: VECTOR
-            layout: layout_3EL94B
-            fills: color_000000
-      - id: '2750:2369'
-        name: Rectangle 1879
-        type: VECTOR
-        layout: layout_IRT9QK
-        fills: color_F1F1F1
-        borderRadius: 10px
-      - id: '2750:2371'
-        name: No. Telepon
-        type: TEXT
-        layout: layout_RW3JTJ
-        fills: color_000000
-        text: No. Telepon
-        textStyle: style_X6R1Z9
-      - id: '2750:2373'
-        name: XXXXXXXXXXXX
-        type: TEXT
-        layout: layout_EK6DBC
-        fills: color_000000
-        text: XXXXXXXXXXXX
-        textStyle: style_5E9033
-      - id: '2749:2295'
+      - id: '2150:1556'
         name: Status bar - iPhone
         type: INSTANCE
-        layout: layout_8NCTOT
+        layout: layout_USZXAG
         componentId: '2065:383'
         componentProperties:
           - name: Time#5466:4
             value: '9:41'
             type: TEXT
         children:
-          - id: I2749:2295;5465:16808
+          - id: I2150:1556;5465:16808
             name: Time
             type: FRAME
-            layout: layout_0I9KSB
+            layout: layout_DR4CF0
             children:
-              - id: I2749:2295;5465:16809
+              - id: I2150:1556;5465:16809
                 name: Time
                 type: TEXT
-                layout: layout_K4LWOU
+                layout: layout_BI9L09
                 fills: color_000000
                 text: '9:41'
-                textStyle: style_OIT4SR
-          - id: I2749:2295;5465:16811
+                textStyle: style_JPK0SN
+          - id: I2150:1556;5465:16811
             name: Levels
             type: FRAME
-            layout: layout_N2RX1V
+            layout: layout_B1GBHG
             children:
-              - id: I2749:2295;5465:16812
+              - id: I2150:1556;5465:16812
                 name: Cellular Connection
                 type: VECTOR
-                layout: layout_WK8A4Q
+                layout: layout_UKJ2Q5
                 fills: color_000000
-              - id: I2749:2295;5465:16813
+              - id: I2150:1556;5465:16813
                 name: Wifi
                 type: VECTOR
-                layout: layout_0C4YZL
+                layout: layout_MYDYCM
                 fills: color_000000
-              - id: I2749:2295;6325:1760
+              - id: I2150:1556;6325:1760
                 name: Frame
                 type: FRAME
-                layout: layout_7PMKN1
+                layout: layout_KSV9M0
                 children:
-                  - id: I2749:2295;5465:16815
+                  - id: I2150:1556;5465:16815
                     name: Border
                     type: RECTANGLE
-                    layout: layout_M6JNXC
+                    layout: layout_2R76S2
                     strokes: stroke_000000
                     strokeWeight: 1px
                     borderRadius: 4.300000190734863px
-                  - id: I2749:2295;5465:16816
+                  - id: I2150:1556;5465:16816
                     name: Cap
                     type: VECTOR
-                    layout: layout_CBC02W
+                    layout: layout_5DGOF7
                     fills: color_000000
-                  - id: I2749:2295;5465:16817
+                  - id: I2150:1556;5465:16817
                     name: Capacity
                     type: RECTANGLE
-                    layout: layout_KNWXZO
-                    fills: color_000000
-                    borderRadius: 2.5px
-      - id: '2749:2296'
-        name: Status bar - iPhone
-        type: INSTANCE
-        layout: layout_IZUAHU
-        componentId: '2065:383'
-        componentProperties:
-          - name: Time#5466:4
-            value: '9:41'
-            type: TEXT
-        children:
-          - id: I2749:2296;5465:16808
-            name: Time
-            type: FRAME
-            layout: layout_OWBJZ5
-            children:
-              - id: I2749:2296;5465:16809
-                name: Time
-                type: TEXT
-                layout: layout_9LRNPZ
-                fills: color_000000
-                text: '9:41'
-                textStyle: style_Z7VPC3
-          - id: I2749:2296;5465:16811
-            name: Levels
-            type: FRAME
-            layout: layout_40X13P
-            children:
-              - id: I2749:2296;5465:16812
-                name: Cellular Connection
-                type: VECTOR
-                layout: layout_6JGB5K
-                fills: color_000000
-              - id: I2749:2296;5465:16813
-                name: Wifi
-                type: VECTOR
-                layout: layout_3ZI8EA
-                fills: color_000000
-              - id: I2749:2296;6325:1760
-                name: Frame
-                type: FRAME
-                layout: layout_E6OHF6
-                children:
-                  - id: I2749:2296;5465:16815
-                    name: Border
-                    type: RECTANGLE
-                    layout: layout_QPKZD3
-                    strokes: stroke_000000
-                    strokeWeight: 1px
-                    borderRadius: 4.300000190734863px
-                  - id: I2749:2296;5465:16816
-                    name: Cap
-                    type: VECTOR
-                    layout: layout_DAY5Q3
-                    fills: color_000000
-                  - id: I2749:2296;5465:16817
-                    name: Capacity
-                    type: RECTANGLE
-                    layout: layout_NJARX1
+                    layout: layout_11H7PK
                     fills: color_000000
                     borderRadius: 2.5px
 globalVars:
   styles:
-    layout_EIOBEZ:
+    layout_A7VZZ8:
       mode: none
       sizing:
         horizontal: fixed
@@ -906,21 +796,178 @@ globalVars:
       alignSelf: stretch
       dimensions:
         width: 430
-        height: 932
+        height: 1204
       locationRelativeToParent:
-        x: 1835
-        'y': 6389
-    color_F5FAFF:
-      - '#F5FAFF'
-    layout_F5ENCF:
+        x: -1417
+        'y': 4271
+    color_FFFFFF:
+      - '#FFFFFF'
+    layout_IW9IVI:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: -63
-        'y': -4
-    layout_OS2ZZD:
+        x: 20
+        'y': 160
+    layout_ZBHHZP:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 160
+    layout_C1UJBD:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 160
+    color_FFFBFB:
+      - '#FFFBFB'
+    layout_8RR352:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 231
+    layout_89CFC3:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 231
+    layout_WKZU1H:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 229
+    layout_SBCHAK:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 145
+        'y': 231
+    color_000000:
+      - '#000000'
+    style_1XA277:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 20
+      lineHeight: 1.00em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_PL9JLZ:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 339
+    style_B91SUX:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 15
+      lineHeight: 1.33em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_M78M5M:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 160
+    color_CEE0FF:
+      - '#CEE0FF'
+    layout_3O3YAB:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 114
+        'y': 180
+    style_HHCGXW:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_F1L6MB:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 342
+        'y': 180
+    style_U0DZU3:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_OGQBZW:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 287
+        'y': 340
+    color_ED001E:
+      - '#ED001E'
+    layout_G1KQJU:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 314
+        'y': 340
+    style_4ZKDBY:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 12
+      lineHeight: 1.67em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_748X4R:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 41
+        'y': 167
+    layout_Q6QPTH:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 41
+        'y': 167
+    color_F3AE1B:
+      - '#F3AE1B'
+    layout_V6TITB:
       mode: none
       sizing:
         horizontal: fixed
@@ -929,12 +976,738 @@ globalVars:
       alignItems: flex-start
       alignSelf: stretch
       dimensions:
-        width: 655
-        height: 161
+        width: 43
+        height: 43
       locationRelativeToParent:
-        x: -1017
-        'y': 422
-    layout_NIMNX2:
+        x: 44
+        'y': 168
+    layout_3B093K:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 4
+        'y': 9
+    stroke_FFFFFF:
+      - '#FFFFFF'
+    layout_UIJ14W:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 6
+        'y': 7
+    layout_DXCV20:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 394
+    layout_MAT94O:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 394
+    layout_LKI8SZ:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 465
+    layout_63F3ZC:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 465
+    layout_3JLWYL:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 463
+    layout_R6WE64:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 145
+        'y': 465
+    style_I5EXD8:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 20
+      lineHeight: 1.00em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_41PKBT:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 573
+    style_I4D5GH:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 15
+      lineHeight: 1.33em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_GJ0XWL:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 394
+    color_61CF61:
+      - '#61CF61'
+    layout_GE5NDS:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 104
+        'y': 414
+    style_8NLZF0:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_XEEKQD:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 342
+        'y': 414
+    style_AAOLUF:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_627N1V:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 287
+        'y': 574
+    layout_1NYCNV:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 287
+        'y': 574
+    color_FF8800:
+      - '#FF8800'
+    layout_ERWIGJ:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 303
+        'y': 574
+    style_YZLXKN:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 12
+      lineHeight: 1.67em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_FTXEEU:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 41
+        'y': 401
+    layout_TM4YED:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 41
+        'y': 401
+    color_2E8104:
+      - '#2E8104'
+    layout_ARA2RK:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 25
+        height: 26
+      locationRelativeToParent:
+        x: 53
+        'y': 412
+    layout_FMIDZA:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 2
+        'y': 5
+    layout_N3DD1P:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 13
+        'y': 25
+    layout_CXI7K5:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 2
+        'y': 5
+    layout_3FUWGW:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 628
+    layout_UU5U9S:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 628
+    layout_HCLKTP:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 699
+    layout_496RF6:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 699
+    layout_4K0GTD:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 697
+    layout_WOEVK7:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 145
+        'y': 699
+    style_PPYVP3:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 20
+      lineHeight: 1.00em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_0UK7MC:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 807
+    style_54E8BT:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 15
+      lineHeight: 1.33em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_TEKKYA:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 628
+    layout_X31PQV:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 41
+        'y': 635
+    layout_SSW8HE:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 104
+        'y': 648
+    style_PS8DAF:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_P6N2V1:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 342
+        'y': 648
+    style_R5VRP0:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_PD7QGO:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 287
+        'y': 808
+    color_E64F4F:
+      - '#E64F4F'
+    layout_QDVT3V:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 314
+        'y': 808
+    style_HG4UWB:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 12
+      lineHeight: 1.67em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_NLNEBL:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 25
+        height: 25
+      locationRelativeToParent:
+        x: 53
+        'y': 646
+    layout_9BQ67M:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 2
+        'y': 5
+    layout_YH6JEC:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 12
+        'y': 24
+    layout_VWDJAN:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 2
+        'y': 5
+    layout_ESXNSS:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 862
+    layout_IOWJR9:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 862
+    layout_94KW13:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 933
+    layout_03DLBK:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 933
+    layout_D8Z80U:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 931
+    layout_IWO4XN:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 145
+        'y': 933
+    style_N111M4:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 20
+      lineHeight: 1.00em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_OURH8R:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 36
+        'y': 1041
+    style_8YX9O2:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 15
+      lineHeight: 1.33em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_FACUZQ:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 20
+        'y': 862
+    layout_XPAQ2R:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 41
+        'y': 869
+    layout_CAV6SK:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 104
+        'y': 882
+    style_IWO4GQ:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_U72CDI:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 342
+        'y': 882
+    style_8SHXHM:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 14
+      lineHeight: 1.43em
+      textAlignHorizontal: CENTER
+      textAlignVertical: CENTER
+    layout_IAKN22:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 287
+        'y': 1042
+    layout_8G0267:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 303
+        'y': 1042
+    style_FTKKUH:
+      fontFamily: Outfit
+      fontWeight: 500
+      fontSize: 12
+      lineHeight: 1.67em
+      textAlignHorizontal: LEFT
+      textAlignVertical: CENTER
+    layout_Q5UWQI:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 25
+        height: 25
+      locationRelativeToParent:
+        x: 53
+        'y': 880
+    layout_3MPYZW:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 2
+        'y': 5
+    layout_OYXL5D:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 12
+        'y': 24
+    layout_Q1SK3Q:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 2
+        'y': 5
+    layout_DTKC9S:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 351
+        height: 82
+      locationRelativeToParent:
+        x: 40
+        'y': 822
+    layout_RUC7AJ:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+    layout_OZSGL9:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+    layout_D9N224:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+    layout_5GJE3H:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 81
+        'y': 74
+    layout_NZ0ZBQ:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 81
+        'y': 74
+    layout_1WB4BP:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 20
+        height: 20
+      locationRelativeToParent:
+        x: 102
+        'y': 90
+    layout_AM5V32:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 3
+        'y': 3
+    stroke_000000:
+      - '#000000'
+    layout_FZCTS6:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 21
+        'y': 74
+    layout_W13CL3:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 21
+        'y': 74
+    layout_WIR9M1:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 16
+        height: 32
+      locationRelativeToParent:
+        x: 36
+        'y': 83
+    layout_4O6SME:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 1
+        'y': 5
+    layout_66XGMS:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 355
+        'y': 74
+    layout_XK5HH1:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 355
+        'y': 74
+    layout_NHR2L9:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 355
+        'y': 74
+    layout_G6DCT7:
+      mode: none
+      sizing:
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 18
+        height: 18
+      locationRelativeToParent:
+        x: 371
+        'y': 91
+    layout_LL1QD5:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 0
+        'y': 1
+    layout_SFBMJX:
       mode: none
       gap: 10px
       padding: 21px 129px 8px 129px
@@ -948,9 +1721,46 @@ globalVars:
         width: 430
         height: 34
       locationRelativeToParent:
-        x: -1
+        x: 0
         'y': 895
-    layout_O70O7F:
+    layout_USZXAG:
+      mode: row
+      gap: 250px
+      padding: 21px 24px 19px 24px
+      sizing:
+        horizontal: fixed
+        vertical: hug
+      justifyContent: center
+      alignItems: center
+      alignSelf: stretch
+      dimensions:
+        width: 430
+    layout_2XBR1W:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+    color_1C1C1C:
+      - '#1C1C1C'
+    layout_3EA2U8:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 81
+        'y': 13
+    layout_UTSKCT:
+      mode: none
+      sizing:
+        horizontal: hug
+        vertical: hug
+      locationRelativeToParent:
+        x: 81
+        'y': 13
+    color_353535:
+      - '#353535'
+    layout_JDBL4F:
       mode: none
       sizing:
         horizontal: fixed
@@ -959,26 +1769,28 @@ globalVars:
       alignItems: flex-start
       alignSelf: stretch
       dimensions:
-        width: 380
-        height: 50
+        width: 35
+        height: 35
       locationRelativeToParent:
-        x: 16
-        'y': 74
-    layout_389P4D:
+        x: 92
+        'y': 24
+    layout_8IBMLT:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
-    layout_B4NQVS:
+      locationRelativeToParent:
+        x: 276
+        'y': 13
+    layout_FVXYPT:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
-    color_FFFFFF:
-      - '#FFFFFF'
-    stroke_99BDD5:
-      - '#99BDD5'
-    layout_K90VNO:
+      locationRelativeToParent:
+        x: 276
+        'y': 13
+    layout_84WLPD:
       mode: none
       sizing:
         horizontal: fixed
@@ -987,349 +1799,73 @@ globalVars:
       alignItems: flex-start
       alignSelf: stretch
       dimensions:
-        width: 16
-        height: 32
+        width: 36
+        height: 36
       locationRelativeToParent:
-        x: 16
-        'y': 9
-    layout_ABEPR8:
+        x: 286
+        'y': 23
+    layout_34ZZDB:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 1
-        'y': 5
-    color_000000:
-      - '#000000'
-    layout_NSPL2P:
+        x: 18
+        'y': 13
+    layout_UZ3D3J:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 64
-        'y': 0
-    layout_6MJ2EB:
+        x: 18
+        'y': 13
+    layout_TKXMXI:
       mode: none
       sizing:
-        horizontal: hug
-        vertical: hug
+        horizontal: fixed
+        vertical: fixed
+      justifyContent: flex-start
+      alignItems: flex-start
+      alignSelf: stretch
+      dimensions:
+        width: 35
+        height: 35
       locationRelativeToParent:
-        x: 119
-        'y': 14
-    style_SWC0AM:
-      fontFamily: Outfit
-      fontWeight: 500
-      fontSize: 26
-      lineHeight: 0.85em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_J4FPLO:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 17
-        'y': 558
-    layout_GFWCQS:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 17
-        'y': 558
-    color_ED001E:
-      - '#ED001E'
-    layout_0MWFFH:
+        x: 29
+        'y': 24
+    layout_EEBA08:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
         x: 144
-        'y': 572
-    style_B0ARNE:
-      fontFamily: Outfit
-      fontWeight: 700
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_ZPC7I2:
+        'y': 13
+    layout_O7FR9Z:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 18
-        'y': 142
-    layout_I2VTOX:
+        x: 144
+        'y': 13
+    layout_AUWLWP:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 27
-        'y': 150
-    layout_25KEI3:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 27
-        'y': 150
-    color_F1F1F1:
-      - '#F1F1F1'
-    layout_IOS57U:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: hug
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 336
-      locationRelativeToParent:
-        x: 44
-        'y': 160
-    layout_RY9K5O:
-      mode: none
-      sizing:
-        horizontal: fill
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        height: 39
-      locationRelativeToParent:
-        x: 40
-        'y': 0
-    layout_FTAESI:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 0
-        'y': 9
-    style_VSDE7M:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 14
-      lineHeight: 1.57em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_B6ABOK:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 41
-        'y': 157
-    layout_H0WVWS:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 41
-        'y': 157
-    color_D9D9D9:
-      - '#D9D9D9'
-    layout_V1UPXI:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 39
-        'y': 157
-    layout_WK3J1P:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 12
-        height: 24
-      locationRelativeToParent:
-        x: 372
-        'y': 165
-    layout_65Q6K6:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 10
-        'y': 18
-    layout_0XL01I:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 28
-        'y': 250
-    layout_VWC8YC:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 28
-        'y': 250
-    layout_OEARNZ:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: hug
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 336
-      locationRelativeToParent:
-        x: 45
-        'y': 252
-    layout_BDFP03:
-      mode: none
-      sizing:
-        horizontal: fill
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        height: 39
-      locationRelativeToParent:
-        x: 40
-        'y': 0
-    layout_OKXAAC:
-      mode: row
-      gap: 10px
-      padding: 10px
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: center
-      alignItems: center
-      alignSelf: stretch
-      dimensions:
-        width: 116
-        height: 36
-      locationRelativeToParent:
-        x: -34
-        'y': -0.0
-    layout_L3XC1Q:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: -2
-        'y': 7
-    style_F213OK:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_221KHN:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 25
-        height: 25
-      locationRelativeToParent:
-        x: 311
-        'y': 7
-    layout_WJLFKZ:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 32
-        'y': 223
-    style_CMHH8O:
-      fontFamily: Outfit
+        x: 195
+        'y': 26
+    style_BX6NRE:
+      fontFamily: Montserrat
       fontWeight: 500
-      fontSize: 20
-      lineHeight: 1.10em
+      fontSize: 15
+      lineHeight: 1.00em
       textAlignHorizontal: LEFT
       textAlignVertical: TOP
-    layout_K7GJRC:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 32
-        'y': 312
-    style_16Z4TE:
-      fontFamily: Outfit
-      fontWeight: 500
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_W9WHOO:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 28
-        'y': 339
-    layout_9YU4IN:
-      mode: row
-      gap: 10px
-      padding: 10px
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: center
-      alignItems: center
-      alignSelf: stretch
-      dimensions:
-        width: 116
-        height: 36
-      locationRelativeToParent:
-        x: 101
-        'y': 344
-    layout_88HFLR:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: -65
-        'y': 7
-    style_3YL9WQ:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_1VN4ZM:
+    layout_793HAJ:
       mode: none
       sizing:
         horizontal: fixed
@@ -1338,628 +1874,60 @@ globalVars:
       alignItems: flex-start
       alignSelf: stretch
       dimensions:
-        width: 12
-        height: 24
-      locationRelativeToParent:
-        x: 372
-        'y': 353
-    layout_3EL94B:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 10
-        'y': 18
-    layout_IRT9QK:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 27
-        'y': 430
-    layout_RW3JTJ:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 32
-        'y': 408
-    style_X6R1Z9:
-      fontFamily: Outfit
-      fontWeight: 500
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_EK6DBC:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 45
-        'y': 442
-    style_5E9033:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: LEFT
-      textAlignVertical: TOP
-    layout_8NCTOT:
-      mode: row
-      gap: 250px
-      padding: 21px 24px 19px 24px
-      sizing:
-        horizontal: fixed
-        vertical: hug
-      justifyContent: center
-      alignItems: center
-      alignSelf: stretch
-      dimensions:
-        width: 430
-    layout_IZUAHU:
-      mode: row
-      gap: 250px
-      padding: 21px 24px 19px 24px
-      sizing:
-        horizontal: fixed
-        vertical: hug
-      justifyContent: center
-      alignItems: center
-      alignSelf: stretch
-      dimensions:
-        width: 430
-    layout_MJJGSX:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 1
-        'y': 0
-    layout_ZWE4BJ:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 1
-        'y': 0
-    color_FCFCFC:
-      - '#FCFCFC'
-    layout_3RAYYL:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 19
-        'y': 17
-    color_303030:
-      - '#303030'
-    style_DJZHZ0:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 17
-      lineHeight: 1.29em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_U9O0VT:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 78
-        'y': 41
-    style_ULQ4YD:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 14
-      lineHeight: 1.57em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_8JPAYO:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 18
-        'y': 39
-    style_VVNQS7:
-      fontFamily: Outfit
-      fontWeight: 600
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_7C5UUB:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 18
-        'y': 126
-    color_FF8800:
-      - '#FF8800'
-    layout_NKVMFX:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 82
-        'y': 87
-    color_E2E2E2:
-      - '#E2E2E2'
-    layout_2D4ETB:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 82
-        'y': 87
-    layout_T43EV6:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 82
-        'y': 87
-    layout_ZR15BY:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 82
-        'y': 87
-    layout_MN89Q4:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 82
-        'y': 87
-    layout_J0OCK0:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 88
-        'y': 93
-    layout_S0EG1F:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 28
-        height: 28
-      locationRelativeToParent:
-        x: 98
-        'y': 103
-    layout_K3FTMY:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 2
-        'y': 1
-    layout_X610W4:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 22
-        'y': 125
-    style_IKQN54:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 11
-      lineHeight: 2.00em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_CK646E:
-      mode: row
-      gap: 10px
-      sizing:
-        horizontal: fixed
-        vertical: hug
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 60
-      locationRelativeToParent:
-        x: 82
-        'y': 87
-    layout_7N0UWR:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 169
-        'y': 0
-    layout_TK4N7Z:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 169
-        'y': 0
-    layout_4DU7F5:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 185
-        'y': 17
-    style_2Q7Z7H:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 17
-      lineHeight: 1.29em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_ZD6QES:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 220
-        'y': 41
-    style_ETRWPV:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 14
-      lineHeight: 1.57em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_9CEE0Z:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 185
-        'y': 39
-    style_TQANT8:
-      fontFamily: Outfit
-      fontWeight: 600
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_9ZHGN2:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 180
-        'y': 125
-    layout_N670T7:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 256
-        'y': 93
-    layout_Z38FXY:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 183
-        'y': 123
-    color_F8F8F8:
-      - '#F8F8F8'
-    style_12H3US:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 11
-      lineHeight: 2.00em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_L5UEEO:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 269
-        'y': 103
-    color_F24822:
-      - '#F24822'
-    layout_RXEXQ4:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 60
-        height: 60
-      locationRelativeToParent:
-        x: 250
-        'y': 87
-    layout_WXGIL0:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 337
-        'y': 1
-    layout_2IEN5H:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 337
-        'y': 1
-    layout_55S6KC:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 337
-        'y': 1
-    layout_LIZXW6:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 353
-        'y': 18
-    style_LHCJE3:
-      fontFamily: Outfit
-      fontWeight: 300
-      fontSize: 17
-      lineHeight: 1.29em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_OSNWWS:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 383
-        'y': 40
-    style_DNSCG1:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 14
-      lineHeight: 1.57em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_R1XDA4:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 353
-        'y': 40
-    style_WEEC2O:
-      fontFamily: Outfit
-      fontWeight: 600
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_A6I6HG:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 348
-        'y': 126
-    color_EB5E5E:
-      - '#EB5E5E'
-    layout_WAEI9K:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 351
-        'y': 124
-    style_BNKP84:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 11
-      lineHeight: 2.00em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_N51I1Q:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 137
+        width: 35
         height: 35
       locationRelativeToParent:
-        x: 343
-        'y': 74
-    layout_DVKAO0:
+        x: 155
+        'y': 24
+    layout_X421RN:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 505
-        'y': 0
-    layout_XWM3CC:
+        x: 4
+        'y': 3
+    layout_L7015G:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 505
-        'y': 0
-    color_002651:
-      - '#002651'
-    layout_7ZFR2T:
+        x: 6
+        'y': 6
+    layout_7JZFAI:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 505
-        'y': 28
-    layout_VAFFQX:
+        x: 6
+        'y': 21
+    layout_03OK4G:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 573
-        'y': 101
-    layout_RFOVFP:
+        x: 14
+        'y': 6
+    layout_VT49YA:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 573
-        'y': 101
-    color_F5F5F5:
-      - '#F5F5F5'
-    stroke_F5F5F5:
-      - '#F5F5F5'
-    layout_PXFPT8:
+        x: 3
+        'y': 3
+    layout_EW2ECJ:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
       locationRelativeToParent:
-        x: 583
-        'y': 102
-    layout_6CM7HL:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 564
-        'y': 13
-    color_A36DFF:
-      - '#A36DFF'
-    style_AEIXRV:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 14
-      lineHeight: 1.57em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_BZGTAW:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 592
-        'y': 40
-    style_4PB4FI:
-      fontFamily: Outfit
-      fontWeight: 400
-      fontSize: 14
-      lineHeight: 1.57em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_1QRHD5:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 521
-        'y': 13
-    style_T9GNQX:
-      fontFamily: Outfit
-      fontWeight: 600
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_N7EH63:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 521
-        'y': 38
-    style_BDK018:
-      fontFamily: Outfit
-      fontWeight: 600
-      fontSize: 20
-      lineHeight: 1.10em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_VC9CXV:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 56
-        height: 56
-      locationRelativeToParent:
-        x: 553
-        'y': 80
-    layout_GSFGT2:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 80
-        height: 80
-      locationRelativeToParent:
-        x: 541
-        'y': 68
-    layout_FQKFMS:
+        x: 6
+        'y': 3
+    layout_O93FFH:
       mode: none
       sizing:
         horizontal: hug
@@ -1967,7 +1935,7 @@ globalVars:
       locationRelativeToParent:
         x: 287
         'y': 21
-    layout_0I9KSB:
+    layout_DR4CF0:
       mode: row
       gap: 10px
       padding: 1.5px 0px 0px 0px
@@ -1982,7 +1950,7 @@ globalVars:
       locationRelativeToParent:
         x: 24
         'y': 21
-    layout_K4LWOU:
+    layout_BI9L09:
       mode: none
       sizing:
         horizontal: hug
@@ -1990,14 +1958,14 @@ globalVars:
       locationRelativeToParent:
         x: 15
         'y': 1
-    style_OIT4SR:
+    style_JPK0SN:
       fontFamily: SF Pro
       fontWeight: 400
       fontSize: 17
       lineHeight: 1.29em
       textAlignHorizontal: CENTER
       textAlignVertical: TOP
-    layout_N2RX1V:
+    layout_B1GBHG:
       mode: row
       gap: 7px
       padding: 1px 1px 0px 0px
@@ -2012,7 +1980,7 @@ globalVars:
       locationRelativeToParent:
         x: 340
         'y': 21
-    layout_WK8A4Q:
+    layout_UKJ2Q5:
       mode: none
       sizing:
         horizontal: hug
@@ -2020,7 +1988,7 @@ globalVars:
       locationRelativeToParent:
         x: -6
         'y': 5
-    layout_0C4YZL:
+    layout_MYDYCM:
       mode: none
       sizing:
         horizontal: hug
@@ -2028,7 +1996,7 @@ globalVars:
       locationRelativeToParent:
         x: 20
         'y': 5
-    layout_7PMKN1:
+    layout_KSV9M0:
       mode: none
       sizing:
         horizontal: fixed
@@ -2042,110 +2010,12 @@ globalVars:
       locationRelativeToParent:
         x: 44
         'y': 5
-    layout_M6JNXC:
+    layout_2R76S2:
       mode: none
       sizing:
         horizontal: hug
         vertical: hug
-    stroke_000000:
-      - '#000000'
-    layout_CBC02W:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 26
-        'y': 5
-    layout_KNWXZO:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 2
-        'y': 2
-    layout_OWBJZ5:
-      mode: row
-      gap: 10px
-      padding: 1.5px 0px 0px 0px
-      sizing:
-        horizontal: fill
-        vertical: fixed
-      justifyContent: center
-      alignItems: center
-      alignSelf: stretch
-      dimensions:
-        height: 22
-      locationRelativeToParent:
-        x: 24
-        'y': 21
-    layout_9LRNPZ:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 15
-        'y': 1
-    style_Z7VPC3:
-      fontFamily: SF Pro
-      fontWeight: 400
-      fontSize: 17
-      lineHeight: 1.29em
-      textAlignHorizontal: CENTER
-      textAlignVertical: TOP
-    layout_40X13P:
-      mode: row
-      gap: 7px
-      padding: 1px 1px 0px 0px
-      sizing:
-        horizontal: fill
-        vertical: fixed
-      justifyContent: center
-      alignItems: center
-      alignSelf: stretch
-      dimensions:
-        height: 22
-      locationRelativeToParent:
-        x: 340
-        'y': 21
-    layout_6JGB5K:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: -6
-        'y': 5
-    layout_3ZI8EA:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 20
-        'y': 5
-    layout_E6OHF6:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 27
-        height: 13
-      locationRelativeToParent:
-        x: 44
-        'y': 5
-    layout_QPKZD3:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_DAY5Q3:
+    layout_5DGOF7:
       mode: none
       sizing:
         horizontal: hug
@@ -2153,7 +2023,7 @@ globalVars:
       locationRelativeToParent:
         x: 26
         'y': 5
-    layout_NJARX1:
+    layout_11H7PK:
       mode: none
       sizing:
         horizontal: hug
@@ -2161,143 +2031,3 @@ globalVars:
       locationRelativeToParent:
         x: 2
         'y': 2
-    layout_W6OR4D:
-      mode: none
-      sizing:
-        horizontal: fixed
-        vertical: fixed
-      justifyContent: flex-start
-      alignItems: flex-start
-      alignSelf: stretch
-      dimensions:
-        width: 60
-        height: 60
-    layout_FR7EK1:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_TTVNOY:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_RT6TK0:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_WC4N48:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_580FXM:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_V06HMX:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_30J742:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_3IYHI7:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_IX73I9:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_S9MRZB:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_0NA6PB:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_LVB3RS:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_NZW4WV:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_OC4RGH:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 1
-        'y': 0
-    stroke_EB5E5E:
-      - '#EB5E5E'
-    layout_QYQXPK:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 0
-        'y': 19
-    layout_K8EFCB:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    color_464646:
-      - '#464646'
-    layout_YVZ6H6:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_WTA6KQ:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_2HDM79:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-    layout_VEMRDR:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 80
-        'y': 0
-    layout_UZ4R8R:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 80
-        'y': 0
-    layout_IQTV83:
-      mode: none
-      sizing:
-        horizontal: hug
-        vertical: hug
-      locationRelativeToParent:
-        x: 80
-        'y': 0
