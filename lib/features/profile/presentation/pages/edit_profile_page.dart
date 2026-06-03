@@ -18,6 +18,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _nameController = TextEditingController(text: '');
   final TextEditingController _emailController = TextEditingController(text: '');
   final TextEditingController _phoneController = TextEditingController(text: '');
+  final TextEditingController _dobController = TextEditingController(text: '');
   
   File? _imageFile;
   String? _currentPhotoUrl;
@@ -43,6 +44,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           if (data['nama'] != null) _nameController.text = data['nama'];
           if (data['email'] != null) _emailController.text = data['email'];
           if (data['phone'] != null) _phoneController.text = data['phone'];
+          if (data['tanggalLahir'] != null) _dobController.text = data['tanggalLahir'];
           if (data['photoUrl'] != null) _currentPhotoUrl = data['photoUrl'];
           if (data['photoBase64'] != null) _currentPhotoBase64 = data['photoBase64'];
         });
@@ -77,6 +79,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'nama': _nameController.text,
         'email': _emailController.text,
         'phone': _phoneController.text,
+        'tanggalLahir': _dobController.text,
       };
 
       if (photoBase64 != null) {
@@ -134,6 +137,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _dobController.dispose();
     super.dispose();
   }
 
@@ -166,6 +170,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     _buildTextField('Email', 'Masukkan email kamu', _emailController),
                     const SizedBox(height: 16),
                     _buildTextField('No. Telepon', 'Masukkan nomor telepon', _phoneController),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      'Tanggal Lahir', 
+                      'Pilih tanggal lahir', 
+                      _dobController,
+                      readOnly: true,
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.light(
+                                  primary: Color(0xFFED001E),
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (pickedDate != null) {
+                          String formattedDate = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
+                          setState(() {
+                            _dobController.text = formattedDate;
+                          });
+                        }
+                      },
+                    ),
                     const SizedBox(height: 40),
                     _buildSaveButton(context),
                   ],
@@ -281,7 +316,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, TextEditingController controller) {
+  Widget _buildTextField(String label, String hint, TextEditingController controller, {bool readOnly = false, VoidCallback? onTap}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -296,6 +331,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          readOnly: readOnly,
+          onTap: onTap,
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w400,
