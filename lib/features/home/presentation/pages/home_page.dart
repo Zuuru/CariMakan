@@ -9,6 +9,8 @@ import '../widgets/icon_makanan.dart';
 import '../widgets/user_points.dart';
 import 'scan_page.dart';
 import 'resto_page.dart';
+import 'search_page.dart';
+import 'location_picker_page.dart';
 import '../../../promo/presentation/pages/promo_page.dart';
 import '../../../pesanan/presentation/pages/pesanan_page.dart';
 import 'package:carimakan/features/map/pages/map_screen.dart';
@@ -17,6 +19,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:latlong2/latlong.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -82,6 +85,8 @@ class _HomeContentState extends State<HomeContent> {
   String _userName = 'Guest';
   String _userAddress = 'Mencari lokasi...';
   String? _customAddress;
+  double? _customLat;
+  double? _customLng;
 
   @override
   void initState() {
@@ -148,40 +153,27 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> _setCustomLocation() async {
-    final controller = TextEditingController(text: _userAddress == 'Mencari lokasi...' || _userAddress == 'Gagal memuat lokasi' ? '' : _userAddress);
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Atur Lokasi Anda', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: 'Masukkan alamat baru...',
-            hintStyle: GoogleFonts.poppins(fontSize: 14),
-          ),
-          style: GoogleFonts.poppins(fontSize: 14),
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationPickerPage(
+          initialAddress: (_userAddress == 'Mencari lokasi...' || _userAddress == 'Gagal memuat lokasi')
+              ? null
+              : _userAddress,
+          initialLocation: (_customLat != null && _customLng != null)
+              ? LatLng(_customLat!, _customLng!)
+              : null,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Batal', style: GoogleFonts.poppins(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                setState(() {
-                  _userAddress = controller.text.trim();
-                  _customAddress = _userAddress;
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: Text('Simpan', style: GoogleFonts.poppins(color: Colors.white)),
-          ),
-        ],
       ),
     );
+    if (result != null && mounted) {
+      setState(() {
+        _userAddress = result['address'] as String? ?? _userAddress;
+        _customAddress = _userAddress;
+        _customLat = result['latitude'] as double?;
+        _customLng = result['longitude'] as double?;
+      });
+    }
   }
 
   @override
@@ -339,18 +331,17 @@ class _HomeContentState extends State<HomeContent> {
         ],
       ),
       child: TextField(
-        onSubmitted: (value) {
-          if (value.trim().isNotEmpty) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MapScreen(initialSearchQuery: value.trim()),
-              ),
-            );
-          }
+        readOnly: true,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SearchPage(),
+            ),
+          );
         },
         decoration: InputDecoration(
-          hintText: 'Cari restoran atau tempat...',
+          hintText: 'Cari resto atau menu...',
           hintStyle: GoogleFonts.poppins(
             color: AppColors.textSecondary,
             fontSize: 14,
@@ -390,26 +381,6 @@ class _HomeContentState extends State<HomeContent> {
               MaterialPageRoute(builder: (context) => const MapScreen()),
             );
           },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMapMarker() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.restaurant, color: Colors.white, size: 12),
-        ),
-        Container(
-          width: 2,
-          height: 5,
-          color: AppColors.primary,
         ),
       ],
     );
