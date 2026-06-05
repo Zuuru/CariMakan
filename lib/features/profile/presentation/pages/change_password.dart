@@ -36,24 +36,26 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Pattern
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/bg 1.png',
-              fit: BoxFit.cover,
-            ),
+    return Stack(
+      children: [
+        // Background Pattern
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/background/bg 1.png',
+            fit: BoxFit.cover,
           ),
+        ),
 
-          // Main Content
-          SafeArea(
+        // Main Content
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
             child: Column(
               children: [
                 _buildAppBar(context),
                 Expanded(
                   child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 30),
                     child: Column(
@@ -121,8 +123,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

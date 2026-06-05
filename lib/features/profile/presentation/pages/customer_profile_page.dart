@@ -143,6 +143,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               _buildAppBar(context),
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
