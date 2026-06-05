@@ -168,7 +168,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: 40),
                     _buildProfilePicture(),
                     const SizedBox(height: 40),
-                    _buildTextField('Nama Lengkap', 'Masukkan nama lengkap kamu', _nameController),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTextField('Nama Lengkap', 'Masukkan nama lengkap kamu', _nameController),
                     const SizedBox(height: 16),
                     _buildTextField('Email', 'Masukkan email kamu', _emailController),
                     const SizedBox(height: 16),
@@ -203,6 +212,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           });
                         }
                       },
+                    ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 40),
                     _buildSaveButton(context),

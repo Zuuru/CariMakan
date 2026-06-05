@@ -59,7 +59,16 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLabel('Kata sandi sekarang'),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Kata sandi sekarang'),
                         const SizedBox(height: 8),
                         _buildPasswordField(
                           hint: 'Masukkan password yang sekarang',
@@ -99,6 +108,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               _obscureConfirm = !_obscureConfirm;
                             });
                           },
+                        ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 40),
                         _buildUpdateButton(),
