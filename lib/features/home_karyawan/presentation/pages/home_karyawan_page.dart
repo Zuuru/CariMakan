@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/order_karyawan_card.dart';
 import '../widgets/order_detail_bottom_sheet.dart';
 import '../../../login/pages/login_page.dart'; // To navigate on logout
 
 class KaryawanHomePage extends StatefulWidget {
-  const KaryawanHomePage({Key? key}) : super(key: key);
+  final String restoId;
+  final String namaKaryawan;
+
+  const KaryawanHomePage({
+    Key? key,
+    required this.restoId,
+    required this.namaKaryawan,
+  }) : super(key: key);
 
   @override
   State<KaryawanHomePage> createState() => _KaryawanHomePageState();
@@ -18,8 +25,11 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
   // Tab State
   String _selectedTab = 'Dine In'; // 'Dine In' or 'Take Away'
 
-  // Mock Data for Orders
-  List<Map<String, dynamic>> _orders = [
+  // Nama resto dari Firestore
+  String _namaResto = 'Resto';
+
+  // Mock Data for Orders (nanti bisa diganti Firestore stream)
+  final List<Map<String, dynamic>> _orders = [
     {
       'id': '1',
       'queueNumber': '#10',
@@ -73,6 +83,30 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
       ]
     }
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRestoName();
+  }
+
+  /// Load nama resto dari Firestore berdasarkan restoId
+  Future<void> _loadRestoName() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(widget.restoId)
+          .get();
+
+      if (doc.exists && mounted) {
+        setState(() {
+          _namaResto = doc.data()?['nama'] ?? 'Resto';
+        });
+      }
+    } catch (e) {
+      // Gunakan default "Resto"
+    }
+  }
 
   void _showOrderDetail(BuildContext context, Map<String, dynamic> order) {
     showModalBottomSheet(
@@ -153,12 +187,42 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
     );
   }
 
-  void _handleLogout() {
-    // Basic logout handling
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
+  Future<void> _handleLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Logout', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text(
+          'Apakah Anda yakin ingin keluar?',
+          style: GoogleFonts.outfit(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Batal', style: GoogleFonts.outfit(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53935),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('Logout', style: GoogleFonts.outfit(color: Colors.white)),
+          ),
+        ],
+      ),
     );
+
+    if (confirm != true) return;
+
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -225,11 +289,21 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
               Container(
                 width: 50,
                 height: 50,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/Icon/icon_carimakan.png'),
-                    fit: BoxFit.cover,
+                  color: const Color(0xFFF3F4F6),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Center(
+                  child: Text(
+                    widget.namaKaryawan.isNotEmpty
+                        ? widget.namaKaryawan[0].toUpperCase()
+                        : '?',
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFB72B31),
+                    ),
                   ),
                 ),
               ),
@@ -238,7 +312,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Resto Bintang 5',
+                    _namaResto,
                     style: GoogleFonts.outfit(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -257,7 +331,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Budi (Karyawan)',
+                        '${widget.namaKaryawan} (Karyawan)',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -290,7 +364,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
