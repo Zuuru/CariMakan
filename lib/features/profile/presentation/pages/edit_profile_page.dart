@@ -146,35 +146,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SizedBox.expand(
-        child: Stack(
-          children: [
-            // Background Pattern
-            Positioned.fill(
-              child: Image.asset(
-                'assets/images/background/bg 1.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-            // Main Content
-            SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: Column(
+    return Stack(
+      children: [
+        // Background Pattern
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/background/bg 1.png',
+            fit: BoxFit.cover,
+          ),
+        ),
+        // Main Content
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(context),
                     const SizedBox(height: 40),
                     _buildProfilePicture(),
                     const SizedBox(height: 40),
-                    _buildTextField('Nama Lengkap', 'Masukkan nama lengkap kamu', _nameController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Email', 'Masukkan email kamu', _emailController),
-                    const SizedBox(height: 16),
-                    _buildTextField('No. Telepon', 'Masukkan nomor telepon', _phoneController),
-                    const SizedBox(height: 16),
-                    _buildTextField(
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTextField('Nama Lengkap', 'Masukkan nama lengkap kamu', _nameController),
+                          const SizedBox(height: 16),
+                          _buildTextField('Email', 'Masukkan email kamu', _emailController),
+                          const SizedBox(height: 16),
+                          _buildTextField('No. Telepon', 'Masukkan nomor telepon', _phoneController),
+                          const SizedBox(height: 16),
+                          _buildTextField(
                       'Tanggal Lahir', 
                       'Pilih tanggal lahir', 
                       _dobController,
@@ -204,15 +214,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         }
                       },
                     ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 40),
                     _buildSaveButton(context),
                   ],
                 ),
               ),
             ),
-          ],
         ),
-      ),
+      ],
     );
   }
 

@@ -12,7 +12,6 @@ import '../../../home_resto/presentation/pages/home_resto_page.dart';
 import '../../../login/pages/login_page.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
-import 'wallet_payment.dart';
 import 'edit_profile_page.dart';
 import '../widgets/menu_item.dart';
 
@@ -150,8 +149,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                       const SizedBox(height: 25),
                       _buildProfileCard(),
                       const SizedBox(height: 25),
-                      _buildWalletItem(),
-                      const SizedBox(height: 16),
                       _buildMenuSection(),
                       const SizedBox(height: 16),
                       _buildToggleSection(),
@@ -314,27 +311,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildWalletItem() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F1).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ProfileMenuItem(
-        icon: Icons.account_balance_wallet,
-        title: 'Wallet',
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const WalletPaymentPage(),
-            ),
-          );
-        },
       ),
     );
   }

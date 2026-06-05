@@ -36,30 +36,41 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Pattern
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/bg 1.png',
-              fit: BoxFit.cover,
-            ),
+    return Stack(
+      children: [
+        // Background Pattern
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/background/bg 1.png',
+            fit: BoxFit.cover,
           ),
+        ),
 
-          // Main Content
-          SafeArea(
+        // Main Content
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
             child: Column(
               children: [
                 _buildAppBar(context),
                 Expanded(
                   child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 30),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLabel('Kata sandi sekarang'),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Kata sandi sekarang'),
                         const SizedBox(height: 8),
                         _buildPasswordField(
                           hint: 'Masukkan password yang sekarang',
@@ -100,6 +111,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             });
                           },
                         ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 40),
                         _buildUpdateButton(),
                       ],
@@ -109,8 +123,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
