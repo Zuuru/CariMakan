@@ -9,8 +9,8 @@ class TrackerDineInPage extends StatefulWidget {
 }
 
 class _TrackerDineInPageState extends State<TrackerDineInPage> {
-  // Mock current step (0 = pending, 1 = preparing, 2 = ready)
-  int currentStep = 1;
+  // Mock current step (0 = pending, 1 = preparing, 2 = ready, 3 = completed)
+  int currentStep = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -23,36 +23,31 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
           Expanded(
             flex: 2,
             child: Center(
-              child: Image.asset(
-                'assets/images/icon_pesanan/takeaway_cover.png',
-                errorBuilder: (context, error, stackTrace) {
-                  return Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      const Icon(
-                        Icons.room_service,
-                        size: 200,
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  const Icon(
+                    Icons.room_service,
+                    size: 200,
+                    color: Color(0xFFED001E),
+                  ),
+                  Positioned(
+                    top: 40,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFED001E), width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.access_time,
                         color: Color(0xFFED001E),
+                        size: 24,
                       ),
-                      Positioned(
-                        top: 40,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFED001E), width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.access_time,
-                            color: Color(0xFFED001E),
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -154,7 +149,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
-              'assets/images/menu/kopi_susu.jpg', // Replace with actual image
+              'assets/images/menu/makanan/Chicken Cordon Bleu.jpg', // Replace with actual image
               width: 70,
               height: 70,
               fit: BoxFit.cover,
@@ -174,7 +169,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pesananlu lagi disiapin nih',
+                  'Pesananlu udah selesai nih',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,

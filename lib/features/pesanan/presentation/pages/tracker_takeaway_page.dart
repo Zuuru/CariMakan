@@ -23,36 +23,31 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
           Expanded(
             flex: 2,
             child: Center(
-              child: Image.asset(
-                'assets/images/icon_pesanan/takeaway_cover.png',
-                errorBuilder: (context, error, stackTrace) {
-                  return Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      const Icon(
-                        Icons.room_service,
-                        size: 200,
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  const Icon(
+                    Icons.room_service,
+                    size: 200,
+                    color: Color(0xFFED001E),
+                  ),
+                  Positioned(
+                    top: 40,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFED001E), width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.access_time,
                         color: Color(0xFFED001E),
+                        size: 24,
                       ),
-                      Positioned(
-                        top: 40,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFED001E), width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.access_time,
-                            color: Color(0xFFED001E),
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -154,7 +149,7 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
-              'assets/images/menu/kopi_susu.jpg', // Replace with actual image
+              'assets/images/menu/makanan/Chicken Cordon Bleu.jpg', // Replace with actual image
               width: 70,
               height: 70,
               fit: BoxFit.cover,

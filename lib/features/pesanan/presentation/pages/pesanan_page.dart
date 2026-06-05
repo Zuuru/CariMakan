@@ -115,6 +115,7 @@ class PesananPage extends StatelessWidget {
                 ), // Padding bottom for nav
                 children: [
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -134,6 +135,7 @@ class PesananPage extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       Navigator.push(
                         context,
