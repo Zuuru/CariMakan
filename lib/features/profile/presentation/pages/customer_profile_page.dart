@@ -143,6 +143,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               _buildAppBar(context),
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
@@ -317,12 +318,18 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
 
   Widget _buildMenuSection() {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F1).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
-        children: [
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F1F1).withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
           ProfileMenuItem(
             icon: Icons.person,
             title: 'Edit Profil',
@@ -372,18 +379,25 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           ),
         ],
       ),
+      ),
     );
   }
 
 
   Widget _buildToggleSection() {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F1).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
-        children: [
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F1F1).withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
           _buildToggleItem(
             icon: Icons.notifications,
             title: 'Notifikasi',
@@ -395,6 +409,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           ),
           _buildToggleItem(icon: Icons.download, title: 'Update', value: true),
         ],
+      ),
       ),
     );
   }
