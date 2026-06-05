@@ -11,6 +11,12 @@ import 'scan_page.dart';
 import 'resto_page.dart';
 import '../../../promo/presentation/pages/promo_page.dart';
 import '../../../pesanan/presentation/pages/pesanan_page.dart';
+import 'package:carimakan/features/map/pages/map_screen.dart';
+import '../widgets/mini_map_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -64,9 +70,119 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   final VoidCallback onProfileTap;
   const HomeContent({super.key, required this.onProfileTap});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  String _userName = 'Guest';
+  String _userAddress = 'Mencari lokasi...';
+  String? _customAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+    _loadLocation();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          final fullName = doc.data()?['nama'] as String? ?? 'Guest';
+          // Ambil nama depan saja
+          final firstName = fullName.split(' ').first;
+          if (mounted) {
+            setState(() {
+              _userName = firstName;
+            });
+          }
+        }
+      } catch (e) {
+        // Abaikan
+      }
+    }
+  }
+
+  Future<void> _loadLocation() async {
+    if (_customAddress != null) return;
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
+
+      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        final address = '${place.street ?? place.name}, ${place.subLocality ?? place.locality}';
+        if (mounted && _customAddress == null) {
+          setState(() {
+            _userAddress = address;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted && _customAddress == null) {
+        setState(() {
+          _userAddress = 'Gagal memuat lokasi';
+        });
+      }
+    }
+  }
+
+  Future<void> _setCustomLocation() async {
+    final controller = TextEditingController(text: _userAddress == 'Mencari lokasi...' || _userAddress == 'Gagal memuat lokasi' ? '' : _userAddress);
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Atur Lokasi Anda', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: 'Masukkan alamat baru...',
+            hintStyle: GoogleFonts.poppins(fontSize: 14),
+          ),
+          style: GoogleFonts.poppins(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Batal', style: GoogleFonts.poppins(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                setState(() {
+                  _userAddress = controller.text.trim();
+                  _customAddress = _userAddress;
+                });
+              }
+              Navigator.pop(context);
+            },
+            child: Text('Simpan', style: GoogleFonts.poppins(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,11 +198,11 @@ class HomeContent extends StatelessWidget {
               const SizedBox(height: 20),
               _buildGreeting(),
               const SizedBox(height: 15),
-              _buildSearchBar(),
+              _buildSearchBar(context),
               const SizedBox(height: 25),
               _buildPromotionSection(),
               const SizedBox(height: 25),
-              _buildMapSection(),
+              _buildMapSection(context),
               const SizedBox(height: 25),
               const IconMakanan(),
               const SizedBox(height: 25),
@@ -103,7 +219,7 @@ class HomeContent extends StatelessWidget {
     return Row(
       children: [
         GestureDetector(
-          onTap: onProfileTap,
+          onTap: widget.onProfileTap,
           child: CircleAvatar(
             radius: 25,
             backgroundColor: Colors.grey[200],
@@ -111,28 +227,42 @@ class HomeContent extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Yo, Jett',
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMain,
-              ),
+        Expanded(
+          child: GestureDetector(
+            onTap: _setCustomLocation,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Yo, $_userName',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMain,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _userAddress,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_drop_down, size: 16, color: AppColors.textSecondary),
+                  ],
+                ),
+              ],
             ),
-            Text(
-              'Jl. Baskoro 38 Tembala...',
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
+          ),
         ),
-        const Spacer(),
         _buildHeaderIcon(Icons.notifications_none_outlined),
         const SizedBox(width: 10),
         GestureDetector(
@@ -193,52 +323,47 @@ class HomeContent extends StatelessWidget {
   }
 
 
-  Widget _buildSearchBar() {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(50),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari makan atau tempat nih',
-                hintStyle: GoogleFonts.poppins(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: AppColors.textMain,
-              ),
-            ),
+  Widget _buildSearchBar(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
-        ),
-        const SizedBox(width: 10),
-        Container(
-          height: 50,
-          width: 50,
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
+        ],
+      ),
+      child: TextField(
+        onSubmitted: (value) {
+          if (value.trim().isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MapScreen(initialSearchQuery: value.trim()),
+              ),
+            );
+          }
+        },
+        decoration: InputDecoration(
+          hintText: 'Cari restoran atau tempat...',
+          hintStyle: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 14,
           ),
-          child: const Icon(Icons.tune, color: Colors.white),
+          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
-      ],
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          color: AppColors.textMain,
+        ),
+      ),
     );
   }
 
@@ -246,7 +371,7 @@ class HomeContent extends StatelessWidget {
     return const PromoBanner();
   }
 
-  Widget _buildMapSection() {
+  Widget _buildMapSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -258,31 +383,13 @@ class HomeContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 15),
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.grey[200],
-            image: const DecorationImage(
-              image: NetworkImage('https://via.placeholder.com/400x200?text=Map+View+Placeholder'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 50,
-                left: 100,
-                child: _buildMapMarker(),
-              ),
-              Positioned(
-                bottom: 60,
-                right: 80,
-                child: _buildMapMarker(),
-              ),
-            ],
-          ),
+        MiniMapWidget(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MapScreen()),
+            );
+          },
         ),
       ],
     );
