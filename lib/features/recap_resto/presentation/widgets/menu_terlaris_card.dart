@@ -68,7 +68,7 @@ class MenuTerlarisCard extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.local_fire_department_rounded,
-                  color: Color(0xFFB72B31),
+                  color: Color(0xFFED001E),
                   size: 18,
                 ),
               ),

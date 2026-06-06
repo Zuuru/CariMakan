@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'edit_profile_page.dart';
 import 'edit_profile_resto_page.dart';
 import 'manajemen_karyawan_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import '../../../splash/pages/splash_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -57,21 +59,41 @@ class _ProfilePageState extends State<ProfilePage> {
         if (widget.onBackPressed != null)
           GestureDetector(
             onTap: widget.onBackPressed,
-            child: const Icon(
-              Icons.arrow_back,
-              color: Color(0xFFB72B31),
-              size: 28,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios_new,
+                size: 20,
+                color: Colors.black,
+              ),
+            ),
+          )
+        else
+          const SizedBox(width: 44),
+        Expanded(
+          child: Center(
+            child: Text(
+              'Profil Resto',
+              style: GoogleFonts.outfit(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFFED001E),
+              ),
             ),
           ),
-        if (widget.onBackPressed != null) const SizedBox(width: 16),
-        Text(
-          'Profil Resto',
-          style: GoogleFonts.outfit(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFFB72B31),
-          ),
         ),
+        const SizedBox(width: 44),
       ],
     );
   }
@@ -88,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
             border: Border.all(color: Colors.white, width: 4),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                color: const Color(0xFFED001E).withValues(alpha: 0.1),
                 blurRadius: 20,
                 spreadRadius: 5,
               )
@@ -189,12 +211,12 @@ class _ProfilePageState extends State<ProfilePage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                color: const Color(0xFFED001E).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFFB72B31),
+                color: const Color(0xFFED001E),
                 size: 24,
               ),
             ),
@@ -354,13 +376,15 @@ class _ProfilePageState extends State<ProfilePage> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          final navigator = Navigator.of(context);
-          if (navigator.canPop()) {
-            navigator.popUntil((route) => route.isFirst);
-          } else {
-            navigator.pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomePage()),
+        onPressed: () async {
+          await FirebaseAuth.instance.signOut();
+          if (context.mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SplashScreen(showLoginImmediately: true),
+              ),
+              (route) => false,
             );
           }
         },

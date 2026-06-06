@@ -274,7 +274,7 @@ class _RecapPageState extends State<RecapPage> {
                 border: Border(
                   bottom: BorderSide(
                     color: isSelected
-                        ? const Color(0xFFB72B31)
+                        ? const Color(0xFFED001E)
                         : Colors.transparent,
                     width: 2.5,
                   ),
@@ -287,7 +287,7 @@ class _RecapPageState extends State<RecapPage> {
                   fontWeight:
                       isSelected ? FontWeight.bold : FontWeight.w500,
                   color: isSelected
-                      ? const Color(0xFFB72B31)
+                      ? const Color(0xFFED001E)
                       : const Color(0xFF9E9E9E),
                 ),
               ),

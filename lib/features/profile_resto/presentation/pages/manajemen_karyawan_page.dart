@@ -68,7 +68,7 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
               });
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB72B31)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFED001E)),
             child: Text('Hapus', style: GoogleFonts.outfit(color: Colors.white)),
           ),
         ],
@@ -113,7 +113,7 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
             MaterialPageRoute(builder: (_) => const TambahKaryawanPage()),
           );
         },
-        backgroundColor: const Color(0xFFB72B31),
+        backgroundColor: const Color(0xFFED001E),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

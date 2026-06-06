@@ -10,6 +10,7 @@ import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
 import '../../../pendaftaran_resto/presentation/pages/status_pendaftaran_page.dart';
 import '../../../home_resto/presentation/pages/home_resto_page.dart';
 import '../../../login/pages/login_page.dart';
+import '../../../splash/pages/splash_screen.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
 import 'edit_profile_page.dart';
@@ -173,7 +174,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
             onTap: widget.onBack ?? () => Navigator.pop(context),
@@ -182,10 +182,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF99BDD5).withOpacity(0.3),
-                  width: 1,
-                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -201,30 +197,14 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               ),
             ),
           ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(40),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 45,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  'Profil',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
+          Expanded(
+            child: Center(
+              child: Text(
+                'Profil',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textMain,
                 ),
               ),
             ),
@@ -589,7 +569,9 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
+            MaterialPageRoute(
+              builder: (context) => const SplashScreen(showLoginImmediately: true),
+            ),
             (route) => false,
           );
         }

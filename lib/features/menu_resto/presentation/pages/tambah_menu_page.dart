@@ -140,7 +140,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _selectedImageUrl == item['url']
-                                ? const Color(0xFFB72B31)
+                                ? const Color(0xFFED001E)
                                 : Colors.grey[200]!,
                             width: _selectedImageUrl == item['url'] ? 2.5 : 1.5,
                           ),
@@ -228,7 +228,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
           style: GoogleFonts.outfit(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFFB72B31),
+            color: const Color(0xFFED001E),
           ),
         ),
         centerTitle: false,
@@ -314,7 +314,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                                           ),
                                           child: const Icon(
                                             Icons.add_a_photo_outlined,
-                                            color: Color(0xFFB72B31),
+                                            color: Color(0xFFED001E),
                                             size: 26,
                                           ),
                                         ),
@@ -478,7 +478,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFFB72B31)
+                                      ? const Color(0xFFED001E)
                                       : Colors.transparent,
                                   width: 1.5,
                                 ),
@@ -487,7 +487,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                                 category,
                                 style: GoogleFonts.outfit(
                                   color: isSelected
-                                      ? const Color(0xFFB72B31)
+                                      ? const Color(0xFFED001E)
                                       : const Color(0xFF555555),
                                   fontWeight: isSelected
                                       ? FontWeight.bold
@@ -572,7 +572,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                                   _isAvailable = value;
                                 });
                               },
-                              activeColor: const Color(0xFFB72B31),
+                              activeColor: const Color(0xFFED001E),
                               activeTrackColor: const Color(0xFFFBEBEB),
                             ),
                           ],
@@ -604,7 +604,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB72B31),
+                  backgroundColor: const Color(0xFFED001E),
                   minimumSize: const Size(double.infinity, 54),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),

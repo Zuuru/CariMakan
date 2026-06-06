@@ -73,7 +73,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFB72B31),
+                        color: Color(0xFFED001E),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -128,7 +128,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB72B31),
+                  backgroundColor: const Color(0xFFED001E),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -204,7 +204,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFB72B31)),
+              borderSide: const BorderSide(color: Color(0xFFED001E)),
             ),
           ),
         ),

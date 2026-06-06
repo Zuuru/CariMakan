@@ -87,7 +87,7 @@ class PromoPage extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
@@ -97,7 +97,7 @@ class PromoPage extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              child: const Icon(
+                               child: const Icon(
                                 Icons.arrow_back_ios_new,
                                 size: 20,
                                 color: Colors.black,
@@ -109,7 +109,7 @@ class PromoPage extends StatelessWidget {
                               child: Text(
                                 'Promo',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 32,
+                                  fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textMain,
                                 ),

@@ -87,7 +87,7 @@ class MenuCard extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFFB72B31),
+                    color: const Color(0xFFED001E),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -114,7 +114,7 @@ class MenuCard extends StatelessWidget {
                           value: isAvailable,
                           onChanged: onAvailabilityChanged,
                           activeColor: Colors.white,
-                          activeTrackColor: const Color(0xFFB72B31),
+                          activeTrackColor: const Color(0xFFED001E),
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: const Color(0xFFD9D9D9),
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -163,7 +163,7 @@ class MenuCard extends StatelessWidget {
                           child: const Icon(
                             Icons.delete_outline_rounded,
                             size: 16,
-                            color: Color(0xFFB72B31),
+                            color: Color(0xFFED001E),
                           ),
                         ),
                       ),

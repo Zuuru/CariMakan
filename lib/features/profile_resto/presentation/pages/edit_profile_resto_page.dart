@@ -35,7 +35,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFB72B31), // header background color
+              primary: Color(0xFFED001E), // header background color
               onPrimary: Colors.white, // header text color
               onSurface: Colors.black, // body text color
             ),
@@ -114,7 +114,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFB72B31),
+                        color: Color(0xFFED001E),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -209,13 +209,13 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                   ),
                   selected: isSelected,
                   onSelected: (_) => _toggleFasilitas(fasilitas),
-                  selectedColor: const Color(0xFFB72B31),
+                  selectedColor: const Color(0xFFED001E),
                   backgroundColor: Colors.white,
                   checkmarkColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFFB72B31) : const Color(0xFFE5E7EB),
+                      color: isSelected ? const Color(0xFFED001E) : const Color(0xFFE5E7EB),
                     ),
                   ),
                 );
@@ -246,10 +246,10 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                      color: const Color(0xFFED001E).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.location_on, color: Color(0xFFB72B31)),
+                    child: const Icon(Icons.location_on, color: Color(0xFFED001E)),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -284,7 +284,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                       'Update',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFFB72B31),
+                        color: const Color(0xFFED001E),
                       ),
                     ),
                   ),
@@ -303,7 +303,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB72B31),
+                  backgroundColor: const Color(0xFFED001E),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -363,7 +363,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFB72B31)),
+              borderSide: const BorderSide(color: Color(0xFFED001E)),
             ),
           ),
         ),

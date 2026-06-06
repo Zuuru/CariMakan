@@ -6,6 +6,7 @@ import 'dart:math';
 import '../widgets/order_karyawan_card.dart';
 import '../widgets/order_detail_bottom_sheet.dart';
 import '../../../login/pages/login_page.dart'; // To navigate on logout
+import '../../../splash/pages/splash_screen.dart';
 
 class KaryawanHomePage extends StatefulWidget {
   const KaryawanHomePage({Key? key}) : super(key: key);
@@ -145,7 +146,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
               _removeOrder(id);
               _showSnackBar('QR Valid! Pesanan selesai dan diserahkan.');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB72B31)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFED001E)),
             child: Text('Simulasi Berhasil', style: GoogleFonts.outfit(color: Colors.white)),
           ),
         ],
@@ -154,9 +155,10 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
   }
 
   void _handleLogout() {
-    // Basic logout handling
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
+      MaterialPageRoute(
+        builder: (_) => const SplashScreen(showLoginImmediately: true),
+      ),
       (route) => false,
     );
   }
@@ -272,7 +274,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
           ),
           IconButton(
             onPressed: _handleLogout,
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFFB72B31)),
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFED001E)),
             tooltip: 'Logout',
           ),
         ],
@@ -304,7 +306,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 'Dine In' ? const Color(0xFFB72B31) : Colors.transparent,
+                    color: _selectedTab == 'Dine In' ? const Color(0xFFED001E) : Colors.transparent,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   alignment: Alignment.center,
@@ -325,7 +327,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 'Take Away' ? const Color(0xFFB72B31) : Colors.transparent,
+                    color: _selectedTab == 'Take Away' ? const Color(0xFFED001E) : Colors.transparent,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   alignment: Alignment.center,

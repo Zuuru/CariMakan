@@ -141,7 +141,7 @@ class OrderDetailBottomSheet extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFB72B31),
+                      color: const Color(0xFFED001E),
                     ),
                   ),
                 ),
@@ -276,7 +276,7 @@ class OrderDetailBottomSheet extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onScanQR,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFB72B31), // Red for final action
+            backgroundColor: const Color(0xFFED001E), // Red for final action
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),

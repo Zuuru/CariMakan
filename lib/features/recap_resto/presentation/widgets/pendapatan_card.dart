@@ -33,14 +33,14 @@ class PendapatanCard extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFB72B31), Color(0xFF8B1C21)],
+              colors: [Color(0xFFED001E), Color(0xFFB30016)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFB72B31).withOpacity(0.35),
+                color: const Color(0xFFED001E).withOpacity(0.35),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),

@@ -52,13 +52,13 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                color: const Color(0xFFED001E).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.person_add_alt_1_rounded,
                 size: 64,
-                color: Color(0xFFB72B31),
+                color: Color(0xFFED001E),
               ),
             ),
             const SizedBox(height: 32),
@@ -101,7 +101,7 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB72B31),
+                  backgroundColor: const Color(0xFFED001E),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -177,7 +177,7 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFB72B31)),
+              borderSide: const BorderSide(color: Color(0xFFED001E)),
             ),
           ),
         ),
