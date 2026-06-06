@@ -76,15 +76,6 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
             child: Text('Batal', style: GoogleFonts.outfit(color: Colors.grey)),
           ),
           ElevatedButton(
-<<<<<<< HEAD
-            onPressed: () {
-              setState(() {
-                _listKaryawan.removeAt(index);
-              });
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFED001E)),
-=======
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: isCurrentlyActive
@@ -154,7 +145,6 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
               backgroundColor: const Color(0xFFE53935),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
->>>>>>> c3e6a1110c7aa267f7aa23879a4396f61248688d
             child: Text('Hapus', style: GoogleFonts.outfit(color: Colors.white)),
           ),
         ],
@@ -226,27 +216,6 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
           ),
         ),
       ),
-<<<<<<< HEAD
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _listKaryawan.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final karyawan = _listKaryawan[index];
-          return _buildKaryawanCard(karyawan, index);
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const TambahKaryawanPage()),
-          );
-        },
-        backgroundColor: const Color(0xFFED001E),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-=======
       body: _isLoadingRestoId
           ? const Center(child: CircularProgressIndicator(color: Color(0xFFB72B31)))
           : _restoId == null
@@ -289,7 +258,6 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
               ),
             )
           : null,
->>>>>>> c3e6a1110c7aa267f7aa23879a4396f61248688d
     );
   }
 

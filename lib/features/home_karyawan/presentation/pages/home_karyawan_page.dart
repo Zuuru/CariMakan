@@ -188,14 +188,6 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
     );
   }
 
-<<<<<<< HEAD
-  void _handleLogout() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const SplashScreen(showLoginImmediately: true),
-      ),
-      (route) => false,
-=======
   Future<void> _handleLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -221,7 +213,6 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
           ),
         ],
       ),
->>>>>>> c3e6a1110c7aa267f7aa23879a4396f61248688d
     );
 
     if (confirm != true) return;
@@ -229,7 +220,9 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
     await FirebaseAuth.instance.signOut();
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
+        MaterialPageRoute(
+          builder: (_) => const SplashScreen(showLoginImmediately: true),
+        ),
         (route) => false,
       );
     }

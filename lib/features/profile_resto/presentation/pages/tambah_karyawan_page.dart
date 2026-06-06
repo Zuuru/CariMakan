@@ -102,21 +102,6 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-<<<<<<< HEAD
-        child: Column(
-          children: [
-            // Icon Illustration
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFED001E).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.person_add_alt_1_rounded,
-                size: 64,
-                color: Color(0xFFED001E),
-=======
         child: Form(
           key: _formKey,
           child: Column(
@@ -141,7 +126,6 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
                   fontSize: 14,
                   color: const Color(0xFF6B7280),
                 ),
->>>>>>> c3e6a1110c7aa267f7aa23879a4396f61248688d
               ),
               const SizedBox(height: 32),
 
@@ -157,14 +141,6 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
                   }
                   return null;
                 },
-<<<<<<< HEAD
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFED001E),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-=======
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -211,7 +187,6 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
                   color: const Color(0xFFFEF3C7),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
->>>>>>> c3e6a1110c7aa267f7aa23879a4396f61248688d
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
