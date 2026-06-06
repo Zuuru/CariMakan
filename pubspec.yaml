@@ -48,6 +48,7 @@ dependencies:
   geolocator: ^11.0.0
   geocoding: ^3.0.0
   wechat_assets_picker: ^10.1.2
+  http: ^1.4.0
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,7 @@ import 'register_page.dart';
 import 'forgot_password_page.dart';
 import '../../home/presentation/pages/home_page.dart';
 import '../../home_resto/presentation/pages/home_resto_page.dart';
+import '../../home_karyawan/presentation/pages/home_karyawan_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -36,8 +37,9 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final email = _emailController.text.trim();
-    if (!RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+    final input = _emailController.text.trim();
+    // Jika input mengandung '@', validasi sebagai email. Jika tidak, anggap sebagai username.
+    if (input.contains('@') && !RegExp(r"^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$").hasMatch(input)) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Format email salah yakk!')));
@@ -52,7 +54,44 @@ class _LoginPageState extends State<LoginPage> {
             password: _passwordController.text,
           );
 
-      Widget targetPage = const HomePage();
+      // Ambil dokumen user dari Firestore untuk cek role
+      final uid = userCredential.user!.uid;
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      Widget targetPage = const HomePage(); // default: customer
+
+      if (userDoc.exists) {
+        final data = userDoc.data()!;
+        final role = data['role'] ?? 'customer';
+        final status = data['status'] ?? 'aktif';
+
+        if (role == 'owner') {
+          targetPage = const HomeRestoPage();
+        } else if (role == 'karyawan') {
+          // Cek apakah karyawan di-suspend
+          if (status == 'suspend') {
+            await FirebaseAuth.instance.signOut();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Akun Anda telah di-suspend oleh owner. Hubungi owner untuk informasi lebih lanjut.'),
+                  duration: Duration(seconds: 4),
+                ),
+              );
+              setState(() => _isLoading = false);
+            }
+            return;
+          }
+          final restoId = data['resto_id'] ?? '';
+          final namaKaryawan = data['nama'] ?? 'Karyawan';
+          targetPage = KaryawanHomePage(restoId: restoId, namaKaryawan: namaKaryawan);
+        }
+        // else: customer → HomePage (default)
+      }
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -82,6 +121,8 @@ class _LoginPageState extends State<LoginPage> {
         msg = 'Email tidak terdaftar.';
       else if (e.code == 'wrong-password' || e.code == 'invalid-credential')
         msg = 'Email atau password salah.';
+      else if (e.code == 'user-disabled')
+        msg = 'Akun Anda telah di-suspend. Hubungi owner untuk informasi lebih lanjut.';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       ScaffoldMessenger.of(
@@ -137,9 +178,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          _buildLabel("Email"),
+                          _buildLabel("Email / Username"),
                           _buildTextField(
-                            "Masukkin email kamu yakk",
+                            "Masukkin email atau username kamu yakk",
                             controller: _emailController,
                           ),
                           const SizedBox(height: 16),
