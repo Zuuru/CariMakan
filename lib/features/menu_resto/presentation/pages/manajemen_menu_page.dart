@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../data/menu_model.dart';
+import '../../data/menu_service.dart';
 import '../widgets/menu_card.dart';
 import 'tambah_menu_page.dart';
 
@@ -12,26 +17,6 @@ class ManajemenMenuPage extends StatefulWidget {
   State<ManajemenMenuPage> createState() => _ManajemenMenuPageState();
 }
 
-class ItemMenu {
-  String id;
-  String title;
-  double price;
-  bool isAvailable;
-  String? imageUrl;
-  String category;
-  String description;
-
-  ItemMenu({
-    required this.id,
-    required this.title,
-    required this.price,
-    required this.isAvailable,
-    this.imageUrl,
-    this.category = 'Makanan',
-    this.description = '',
-  });
-}
-
 class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
@@ -40,50 +25,15 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   String _selectedFilter = 'Semua';
   final List<String> _mejaList = ['Meja 01', 'Meja 02', 'Meja 03'];
 
-  // Mock initial menus based on typical resto items with Unsplash high-fidelity images
-  final List<ItemMenu> _menus = [
-    ItemMenu(
-      id: '1',
-      title: 'Mie Ayam',
-      price: 10000,
-      isAvailable: true,
-      imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500',
-      category: 'Makanan',
-      description: 'Mie dengan potongan ayam gurih dan bumbu khas.',
-    ),
-    ItemMenu(
-      id: '2',
-      title: 'Mie Ayam Pangsit',
-      price: 12000,
-      isAvailable: true,
-      imageUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500',
-      category: 'Makanan',
-      description: 'Mie ayam lezat ditambah dengan pangsit basah yang lembut.',
-    ),
-    ItemMenu(
-      id: '3',
-      title: 'Nasi Goreng Resto',
-      price: 15000,
-      isAvailable: true,
-      imageUrl: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=500',
-      category: 'Makanan',
-      description: 'Nasi goreng khas restoran dengan bumbu rempah pilihan.',
-    ),
-    ItemMenu(
-      id: '4',
-      title: 'Es Teh Manis',
-      price: 3000,
-      isAvailable: false,
-      imageUrl: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500',
-      category: 'Minuman',
-      description: 'Minuman teh segar manis dengan es batu melimpah.',
-    ),
-  ];
+  // Firestore state
+  String? _restoId;
+  bool _isLoadingRestoId = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadRestoId();
   }
 
   @override
@@ -94,21 +44,37 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
     super.dispose();
   }
 
+  /// Cari resto_id milik owner yang sedang login
+  Future<void> _loadRestoId() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty && mounted) {
+        setState(() {
+          _restoId = snapshot.docs.first.id;
+          _isLoadingRestoId = false;
+        });
+      } else {
+        if (mounted) setState(() => _isLoadingRestoId = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingRestoId = false);
+    }
+  }
+
   // Format price helper (e.g. 10000 -> Rp 10.000)
-  String _formatRupiah(double value) {
-    final String valStr = value.toInt().toString();
+  String _formatRupiah(int value) {
+    final String valStr = value.toString();
     final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
     final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
     return 'Rp $formatted';
-  }
-
-  // Filtered menus based on live search input and category filter
-  List<ItemMenu> get _filteredMenus {
-    return _menus.where((menu) {
-      final matchesSearch = menu.title.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory = _selectedFilter == 'Semua' || menu.category == _selectedFilter;
-      return matchesSearch && matchesCategory;
-    }).toList();
   }
 
   @override
@@ -224,20 +190,24 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
             ),
           ),
           const Spacer(),
-          // Resto Profile Picture
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFED001E),
-                width: 1.5,
+          // Seed Template Button (Development only)
+          GestureDetector(
+            onTap: _seedTemplates,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFBEBEB),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFED001E),
+                  width: 1.5,
+                ),
               ),
-              image: const DecorationImage(
-                image: NetworkImage('https://i.pravatar.cc/150?img=33'),
-                fit: BoxFit.cover,
+              child: const Icon(
+                Icons.cloud_upload_outlined,
+                color: Color(0xFFED001E),
+                size: 22,
               ),
             ),
           ),
@@ -246,8 +216,72 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
     );
   }
 
+  /// Seed variant templates ke Firestore (tombol development)
+  Future<void> _seedTemplates() async {
+    try {
+      await MenuService.seedVariantTemplates();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Template variant berhasil di-seed! 🎉',
+              style: GoogleFonts.outfit(),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF2E7D32),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Gagal seed template: $e',
+              style: GoogleFonts.outfit(),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFED001E),
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildDaftarMenuTab() {
-    final menusToDisplay = _filteredMenus;
+    if (_isLoadingRestoId) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+      );
+    }
+
+    if (_restoId == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.store_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Resto tidak ditemukan',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Pastikan akun Anda terdaftar sebagai owner resto',
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       children: [
@@ -260,7 +294,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -319,7 +353,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                     ),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: const Color(0xFFED001E).withOpacity(0.15),
+                        color: const Color(0xFFED001E).withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       )
@@ -340,53 +374,151 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
         ),
         const SizedBox(height: 16),
 
-        // List View of Menu Cards
+        // List View of Menu Cards — StreamBuilder dari Firestore
         Expanded(
-          child: menusToDisplay.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    top: 8,
-                    bottom: 160, // Padding to avoid covering components by bottom navigation
+          child: StreamBuilder<List<MenuModel>>(
+            stream: MenuService.getMenusByResto(_restoId!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Gagal memuat menu',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
-                  itemCount: menusToDisplay.length,
-                  itemBuilder: (context, index) {
-                    final menu = menusToDisplay[index];
-                    return MenuCard(
-                      key: ValueKey(menu.id),
-                      title: menu.title,
-                      price: _formatRupiah(menu.price),
-                      imageUrl: menu.imageUrl,
-                      isAvailable: menu.isAvailable,
-                      onAvailabilityChanged: (val) {
-                        setState(() {
-                          menu.isAvailable = val;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Menu ${menu.title} sekarang ${val ? 'Tersedia' : 'Tidak Tersedia'}',
-                              style: GoogleFonts.outfit(),
-                            ),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: const Color(0xFF1C1C1C),
-                          ),
-                        );
-                      },
-                      onEditPressed: () => _showEditMenuDialog(menu),
-                      onDeletePressed: () => _showDeleteConfirmation(menu),
-                    );
-                  },
+                );
+              }
+
+              final allMenus = snapshot.data ?? [];
+              
+              // Client-side filter
+              final filteredMenus = allMenus.where((menu) {
+                final matchesSearch = menu.nama.toLowerCase().contains(_searchQuery.toLowerCase());
+                final matchesCategory = _selectedFilter == 'Semua' || menu.kategori == _selectedFilter;
+                return matchesSearch && matchesCategory;
+              }).toList();
+
+              if (filteredMenus.isEmpty) {
+                if (allMenus.isEmpty) {
+                  return _buildEmptyStateNoMenu();
+                }
+                return _buildEmptyStateSearch();
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 8,
+                  bottom: 160,
                 ),
+                itemCount: filteredMenus.length,
+                itemBuilder: (context, index) {
+                  final menu = filteredMenus[index];
+                  return MenuCard(
+                    key: ValueKey(menu.id),
+                    title: menu.nama,
+                    price: _formatRupiah(menu.harga),
+                    imageUrl: menu.imageUrl,
+                    isAvailable: menu.isAvailable,
+                    menuId: menu.id,
+                    onAvailabilityChanged: (val) async {
+                      try {
+                        await MenuService.toggleAvailability(menu.id, val);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Menu ${menu.nama} sekarang ${val ? 'Tersedia' : 'Tidak Tersedia'}',
+                                style: GoogleFonts.outfit(),
+                              ),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: const Color(0xFF1C1C1C),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Gagal update ketersediaan: $e', style: GoogleFonts.outfit()),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: const Color(0xFFED001E),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    onEditPressed: () => _showEditMenuDialog(menu),
+                    onDeletePressed: () => _showDeleteConfirmation(menu),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyStateNoMenu() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFBEBEB),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.restaurant_menu_rounded,
+              size: 40,
+              color: Color(0xFFED001E),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada menu',
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap tombol + untuk menambahkan menu pertama',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyStateSearch() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -437,7 +569,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -574,7 +706,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -662,7 +794,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFED001E).withOpacity(0.1),
+                                backgroundColor: const Color(0xFFED001E).withValues(alpha: 0.1),
                                 foregroundColor: const Color(0xFFED001E),
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 minimumSize: const Size(double.infinity, 32),
@@ -684,83 +816,61 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
     );
   }
 
-  Widget _buildPresetThumb(String url, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
-          image: DecorationImage(
-            image: NetworkImage(url),
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    );
-  }
-
   // Show Add Menu Page
   void _showAddMenuDialog() async {
-    final newMenu = await Navigator.push<ItemMenu>(
+    if (_restoId == null) return;
+
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => const TambahMenuPage(),
+        builder: (context) => TambahMenuPage(restoId: _restoId!),
       ),
     );
 
-    if (newMenu != null) {
-      setState(() {
-        _menus.add(newMenu);
-      });
+    if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Menu ${newMenu.title} berhasil ditambahkan!',
+            'Menu berhasil ditambahkan! 🎉',
             style: GoogleFonts.outfit(),
           ),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFFED001E),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
     }
   }
 
   // Show Edit Menu Page
-  void _showEditMenuDialog(ItemMenu menu) async {
-    final updatedMenu = await Navigator.push<ItemMenu>(
+  void _showEditMenuDialog(MenuModel menu) async {
+    if (_restoId == null) return;
+
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => TambahMenuPage(menu: menu),
+        builder: (context) => TambahMenuPage(
+          restoId: _restoId!,
+          existingMenu: menu,
+        ),
       ),
     );
 
-    if (updatedMenu != null) {
-      setState(() {
-        menu.title = updatedMenu.title;
-        menu.price = updatedMenu.price;
-        menu.imageUrl = updatedMenu.imageUrl;
-        menu.category = updatedMenu.category;
-        menu.description = updatedMenu.description;
-        menu.isAvailable = updatedMenu.isAvailable;
-      });
+    if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Menu ${updatedMenu.title} berhasil diperbarui!',
+            'Menu ${menu.nama} berhasil diperbarui!',
             style: GoogleFonts.outfit(),
           ),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFFED001E),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
     }
   }
 
   // Show Delete Confirmation Modal
-  void _showDeleteConfirmation(ItemMenu menu) {
+  void _showDeleteConfirmation(MenuModel menu) {
     showDialog(
       context: context,
       builder: (context) {
@@ -773,7 +883,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
             style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'Apakah Anda yakin ingin menghapus menu "${menu.title}"?',
+            'Apakah Anda yakin ingin menghapus menu "${menu.nama}"?\n\nSemua kustomisasi yang terkait juga akan dihapus.',
             style: GoogleFonts.outfit(),
           ),
           actions: [
@@ -785,21 +895,33 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _menus.removeWhere((item) => item.id == menu.id);
-                });
+              onPressed: () async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Menu "${menu.title}" berhasil dihapus!',
-                      style: GoogleFonts.outfit(),
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: const Color(0xFFED001E),
-                  ),
-                );
+                try {
+                  await MenuService.hapusMenu(menu.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Menu "${menu.nama}" berhasil dihapus!',
+                          style: GoogleFonts.outfit(),
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus menu: $e', style: GoogleFonts.outfit()),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFED001E),
