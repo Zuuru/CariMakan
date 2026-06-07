@@ -7,6 +7,7 @@ import 'edit_profile_resto_page.dart';
 import 'manajemen_karyawan_page.dart';
 import '../../../promo/presentation/pages/manajemen_promo_page.dart';
 import '../../../splash/pages/splash_screen.dart';
+import '../../../home/presentation/pages/home_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -47,6 +48,10 @@ class _ProfilePageState extends State<ProfilePage> {
               // Informasi Resto
               _buildInformasiResto(),
               const SizedBox(height: 30),
+              
+              // Switch to Customer Button
+              _buildSwitchToCustomerButton(context),
+              const SizedBox(height: 16),
               
               // Logout Button
               _buildLogoutButton(context),
@@ -400,6 +405,47 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSwitchToCustomerButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          } else {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+            );
+          }
+        },
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFED001E), width: 2),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          foregroundColor: const Color(0xFFED001E),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.swap_horiz_rounded, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              'Kembali ke Menu Customer',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
