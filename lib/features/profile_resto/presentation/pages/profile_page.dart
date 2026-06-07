@@ -5,13 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'edit_profile_page.dart';
 import 'edit_profile_resto_page.dart';
 import 'manajemen_karyawan_page.dart';
-import '../../../home/presentation/pages/home_page.dart';
+import '../../../promo/presentation/pages/manajemen_promo_page.dart';
 import '../../../splash/pages/splash_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onBackPressed;
 
-  const ProfilePage({Key? key, this.onBackPressed}) : super(key: key);
+  const ProfilePage({super.key, this.onBackPressed});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -36,8 +36,12 @@ class _ProfilePageState extends State<ProfilePage> {
               _buildProfileHeader(),
               const SizedBox(height: 30),
               
-              // Menu Actions
+              // Menu Actions (Profil, Resto, Promo)
               _buildMenuActions(context),
+              const SizedBox(height: 16),
+              
+              // Menu Karyawan (Terpisah)
+              _buildKaryawanMenu(context),
               const SizedBox(height: 30),
               
               // Informasi Resto
@@ -182,16 +186,43 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const Divider(height: 1, color: Color(0xFFF3F4F6)),
           _buildMenuItem(
-            icon: Icons.badge_outlined,
-            title: 'Manajemen Karyawan',
+            icon: Icons.discount_outlined,
+            title: 'Manajemen Promo',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ManajemenKaryawanPage()),
+                MaterialPageRoute(builder: (_) => const ManajemenPromoPage()),
               );
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildKaryawanMenu(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: _buildMenuItem(
+        icon: Icons.badge_outlined,
+        title: 'Manajemen Karyawan',
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ManajemenKaryawanPage()),
+          );
+        },
       ),
     );
   }

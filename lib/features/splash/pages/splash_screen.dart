@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/presentation/pages/home_page.dart';
-import '../../login/pages/forgot_password_page.dart';
+import 'forgot_password_page.dart';
 
 class SplashScreen extends StatefulWidget {
   final bool showLoginImmediately;

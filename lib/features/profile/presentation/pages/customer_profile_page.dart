@@ -9,7 +9,6 @@ import '../../../home/presentation/widgets/custom_bottom_nav.dart';
 import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
 import '../../../pendaftaran_resto/presentation/pages/status_pendaftaran_page.dart';
 import '../../../home_resto/presentation/pages/home_resto_page.dart';
-import '../../../login/pages/login_page.dart';
 import '../../../splash/pages/splash_screen.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
