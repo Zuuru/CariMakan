@@ -80,7 +80,6 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/images/promo/
     - assets/images/icon_makanan/
     - assets/images/icon_pesanan/
     - assets/images/background/

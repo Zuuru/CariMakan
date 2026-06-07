@@ -61,4 +61,20 @@ class PromoService {
         .get();
     return snapshot.count ?? 0;
   }
+
+  /// Stream real-time semua promo aktif yang belum kadaluarsa.
+  /// Digunakan oleh Customer PromoPage & PromoBanner.
+  static Stream<List<PromoModel>> getActivePromos() {
+    return _db
+        .collection(_collection)
+        .where('is_active', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => PromoModel.fromFirestore(doc))
+              .where((promo) => !promo.isExpired && !promo.isUpcoming)
+              .toList()
+              ..sort((a, b) => b.mulai.compareTo(a.mulai));
+        });
+  }
 }

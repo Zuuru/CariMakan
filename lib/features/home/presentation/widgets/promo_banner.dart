@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/theme/app_colors.dart';
+import 'package:carimakan/features/promo/data/promo_model.dart';
+import 'package:carimakan/features/promo/data/promo_service.dart';
 
 class PromoBanner extends StatefulWidget {
   const PromoBanner({super.key});
@@ -9,44 +13,31 @@ class PromoBanner extends StatefulWidget {
 }
 
 class _PromoBannerState extends State<PromoBanner> {
-  static const List<String> promoImages = [
-    'assets/images/promo/temcyy.png',
-    'assets/images/promo/butterhub.jpeg',
-    'assets/images/promo/sarapan sehat.png',
-    'assets/images/promo/ngopi kalcer.png',
-    'assets/images/promo/WhatsApp Image 2026-04-15 at 2.38.46 PM.jpeg',
-  ];
-
   late final PageController _pageController;
   Timer? _timer;
   int _currentPage = 0;
+  List<PromoModel> _activePromos = [];
 
   @override
   void initState() {
     super.initState();
-    // viewportFraction 0.9 makes the next item slightly visible
     _pageController = PageController(viewportFraction: 0.9, initialPage: 0);
-    _startAutoSlide();
   }
 
-  void _startAutoSlide() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+  void _startAutoSlide(int itemCount) {
+    _timer?.cancel();
+    if (itemCount <= 1) return;
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_pageController.hasClients) {
         _currentPage++;
-        if (_currentPage >= promoImages.length) {
+        if (_currentPage >= itemCount) {
           _currentPage = 0;
-          _pageController.animateToPage(
-            _currentPage,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.fastOutSlowIn,
-          );
-        } else {
-          _pageController.animateToPage(
-            _currentPage,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.fastOutSlowIn,
-          );
         }
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastOutSlowIn,
+        );
       }
     });
   }
@@ -60,28 +51,239 @@ class _PromoBannerState extends State<PromoBanner> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 166,
-      child: PageView.builder(
-        controller: _pageController,
-        padEnds: false, // Ensures the first item aligns to the left
-        onPageChanged: (int page) {
-          _currentPage = page;
-        },
-        itemCount: promoImages.length,
-        itemBuilder: (context, index) {
+    return StreamBuilder<List<PromoModel>>(
+      stream: PromoService.getActivePromos(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const SizedBox.shrink(); // Hide banner if database error occurs
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting && _activePromos.isEmpty) {
           return Container(
-            margin: const EdgeInsets.only(right: 15),
+            height: 166,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
+
+        final promos = snapshot.data ?? [];
+        
+        // Restart timer and update list if count changes
+        if (promos.length != _activePromos.length) {
+          _activePromos = promos;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _startAutoSlide(_activePromos.length);
+          });
+        }
+
+        if (_activePromos.isEmpty) {
+          // Display an aesthetic brand banner if there are no promos in Firestore
+          return Container(
+            height: 166,
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              image: DecorationImage(
-                image: AssetImage(promoImages[index]),
-                fit: BoxFit.cover,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFED001E), Color(0xFFFF4E50)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFED001E).withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'CariMakan Promo',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Diskon & Penawaran Spesial!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Nantikan promo menarik dari restoran favorit Anda segera.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
-        },
-      ),
+        }
+
+        return SizedBox(
+          height: 166,
+          child: PageView.builder(
+            controller: _pageController,
+            padEnds: false,
+            onPageChanged: (int page) {
+              _currentPage = page;
+            },
+            itemCount: _activePromos.length,
+            itemBuilder: (context, index) {
+              final promo = _activePromos[index];
+              return Container(
+                margin: const EdgeInsets.only(right: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
+                      // Background Image or default Gradient
+                      Positioned.fill(
+                        child: (promo.imageUrl != null && promo.imageUrl!.isNotEmpty)
+                            ? (promo.imageUrl!.startsWith('http')
+                                ? Image.network(
+                                    promo.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: AppColors.cardBackground,
+                                      child: const Center(
+                                        child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 40),
+                                      ),
+                                    ),
+                                  )
+                                : Image.asset(
+                                    promo.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: AppColors.cardBackground,
+                                      child: const Center(
+                                        child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 40),
+                                      ),
+                                    ),
+                                  ))
+                            : Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFFED001E), Color(0xFFFF4E50)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
+                              ),
+                      ),
+
+                      // Dark overlay for text clarity
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withValues(alpha: 0.85),
+                                Colors.black.withValues(alpha: 0.3),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.bottomLeft,
+                              end: Alignment.topRight,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Promo details text overlay
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  promo.isPercent
+                                      ? 'DISKON ${promo.nilaiDiskon}%'
+                                      : 'POTONGAN Rp ${PromoModel.formatNumber(promo.nilaiDiskon)}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                promo.nama,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                promo.deskripsi,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
