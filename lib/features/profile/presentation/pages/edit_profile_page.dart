@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -232,25 +233,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF99BDD5).withOpacity(0.5),
-                width: 1,
-              ),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new,
-              size: 20,
-              color: Colors.black,
-            ),
-          ),
-        ),
+        const CustomBackButton(),
         ClipRRect(
           borderRadius: BorderRadius.circular(40),
           child: BackdropFilter(

@@ -9,6 +9,7 @@ import '../models/restaurant.dart';
 import '../services/firestore_service.dart';
 import '../services/map_service.dart';
 import '../widgets/restaurant_marker.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'package:carimakan/features/home/presentation/pages/resto_page.dart';
 
 class MapScreen extends StatefulWidget {
@@ -451,23 +452,7 @@ class _MapScreenState extends State<MapScreen> {
                   // Search & Back button row
                   Row(
                     children: [
-                      Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.black),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ),
+                      const CustomBackButton(),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Container(

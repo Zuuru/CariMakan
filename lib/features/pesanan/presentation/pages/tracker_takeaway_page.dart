@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 
 class TrackerTakeawayPage extends StatefulWidget {
   const TrackerTakeawayPage({Key? key}) : super(key: key);
@@ -90,22 +91,7 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
       centerTitle: true,
       leading: Padding(
         padding: const EdgeInsets.only(left: 16.0),
-        child: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.withOpacity(0.3)),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_new,
-              color: Colors.black,
-              size: 16,
-            ),
-          ),
-        ),
+        child: const Center(child: CustomBackButton()),
       ),
       title: Column(
         children: [

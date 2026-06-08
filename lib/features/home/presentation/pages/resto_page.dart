@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -32,16 +33,7 @@ class _RestoPageState extends State<RestoPage> {
         centerTitle: true,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.blue.withOpacity(0.3)),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
+          child: const Center(child: CustomBackButton()),
         ),
         title: Text(
           widget.name,

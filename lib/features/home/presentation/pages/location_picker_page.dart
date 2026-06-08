@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 
 class LocationPickerPage extends StatefulWidget {
   final LatLng? initialLocation;
@@ -196,23 +197,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
               child: Row(
                 children: [
                   // Back button
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
+                  const CustomBackButton(),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Container(

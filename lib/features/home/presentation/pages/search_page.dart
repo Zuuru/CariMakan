@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'resto_page.dart';
 import 'package:carimakan/features/map/services/firestore_service.dart';
 import 'package:carimakan/features/map/models/restaurant.dart';
@@ -248,16 +249,7 @@ class _SearchPageState extends State<SearchPage> {
                   child: Row(
                     children: [
                       // Back Button
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ),
+                      const CustomBackButton(),
                       const SizedBox(width: 12),
                       // Search Bar Field
                       Expanded(

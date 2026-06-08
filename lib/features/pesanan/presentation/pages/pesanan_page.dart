@@ -4,6 +4,7 @@ import 'package:carimakan/core/theme/app_colors.dart';
 import '../widgets/card_pesanan.dart';
 import 'tracker_takeaway_page.dart';
 import 'tracker_dine_in_page.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 
 class _OrderData {
   final PesananStatus status;
@@ -292,28 +293,7 @@ class _PesananPageState extends State<PesananPage> {
                 children: [
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: widget.onBack,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            size: 20,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                      CustomBackButton(onPressed: widget.onBack),
                       Expanded(
                         child: Center(
                           child: Text(

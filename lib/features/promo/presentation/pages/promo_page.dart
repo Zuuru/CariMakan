@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
 import 'package:carimakan/features/promo/data/promo_model.dart';
 import 'package:carimakan/features/promo/data/promo_service.dart';
@@ -131,28 +132,7 @@ class PromoPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
                       child: Row(
                         children: [
-                          GestureDetector(
-                            onTap: onBack,
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.arrow_back_ios_new,
-                                size: 20,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
+                          CustomBackButton(onPressed: onBack),
                           Expanded(
                             child: Center(
                               child: Text(
