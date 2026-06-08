@@ -147,19 +147,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Background Pattern
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/background/bg 1.png',
-            fit: BoxFit.cover,
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background Pattern
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/background/bg 1.png',
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        // Main Content
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
+          // Main Content
+          SafeArea(
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -224,8 +223,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
             ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
