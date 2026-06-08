@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/resto_bottom_navbar.dart';
 import '../widgets/rekap_harian_card.dart';
-import '../widgets/pesanan_aktif_card.dart';
+import '../widgets/ulasan_resto_card.dart';
 import '../widgets/menu_terlaris_card.dart';
 import '../../../menu_resto/presentation/pages/manajemen_menu_page.dart';
 import '../../../recap_resto/presentation/pages/recap_page.dart';
@@ -114,7 +114,7 @@ class _HomeRestoPageState extends State<HomeRestoPage> {
         const SizedBox(height: 30),
         const RekapHarianCard(),
         const SizedBox(height: 30),
-        const PesananAktifCard(),
+        const UlasanRestoCard(),
         const SizedBox(height: 30),
         const MenuTerlarisCard(),
       ],
