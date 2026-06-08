@@ -194,8 +194,15 @@ class MenuService {
   // ════════════════════════════════════════════════════════════════
 
   /// Ambil semua template variant dari Firestore.
+  /// Jika database kosong, otomatis melakukan seeding data bawaan.
   static Future<List<VariantTemplateModel>> getVariantTemplates() async {
-    final snapshot = await _db.collection(_templateCollection).get();
+    var snapshot = await _db.collection(_templateCollection).get();
+    
+    if (snapshot.docs.isEmpty) {
+      await seedVariantTemplates();
+      snapshot = await _db.collection(_templateCollection).get();
+    }
+    
     return snapshot.docs
         .map((doc) => VariantTemplateModel.fromFirestore(doc))
         .toList();

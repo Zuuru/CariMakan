@@ -190,62 +190,10 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
             ),
           ),
           const Spacer(),
-          // Seed Template Button (Development only)
-          GestureDetector(
-            onTap: _seedTemplates,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFBEBEB),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFED001E),
-                  width: 1.5,
-                ),
-              ),
-              child: const Icon(
-                Icons.cloud_upload_outlined,
-                color: Color(0xFFED001E),
-                size: 22,
-              ),
-            ),
-          ),
+          const SizedBox(width: 44),
         ],
       ),
     );
-  }
-
-  /// Seed variant templates ke Firestore (tombol development)
-  Future<void> _seedTemplates() async {
-    try {
-      await MenuService.seedVariantTemplates();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Template variant berhasil di-seed! 🎉',
-              style: GoogleFonts.outfit(),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: const Color(0xFF2E7D32),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Gagal seed template: $e',
-              style: GoogleFonts.outfit(),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: const Color(0xFFED001E),
-          ),
-        );
-      }
-    }
   }
 
   Widget _buildDaftarMenuTab() {
