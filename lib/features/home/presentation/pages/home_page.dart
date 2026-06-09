@@ -22,8 +22,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:carimakan/features/map/services/firestore_service.dart';
-import 'package:carimakan/features/map/models/restaurant.dart' as carimakan_restaurant;
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -92,12 +91,7 @@ class _HomeContentState extends State<HomeContent> {
   String? _customAddress;
   double? _customLat;
   double? _customLng;
-  double? _userLat;
-  double? _userLng;
 
-  double? get activeLat => _customLat ?? _userLat;
-  double? get activeLng => _customLng ?? _userLng;
-  
   StreamSubscription<DocumentSnapshot>? _userSubscription;
 
   @override
@@ -159,8 +153,6 @@ class _HomeContentState extends State<HomeContent> {
         if (mounted && _customAddress == null) {
           setState(() {
             _userAddress = address;
-            _userLat = position.latitude;
-            _userLng = position.longitude;
           });
         }
       }
@@ -432,67 +424,67 @@ class _HomeContentState extends State<HomeContent> {
         const SizedBox(height: 15),
         SizedBox(
           height: 240,
-          child: StreamBuilder<List<carimakan_restaurant.Restaurant>>(
-            stream: FirestoreService().streamRestaurants(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.primary));
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text('Gagal memuat restoran: ${snapshot.error}'));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('Belum ada restoran terdekat'));
-              }
-
-              final restos = snapshot.data!;
-
-              // Optionally sort by distance if location is available
-              if (activeLat != null && activeLng != null) {
-                restos.sort((a, b) {
-                  double distA = Geolocator.distanceBetween(activeLat!, activeLng!, a.latitude, a.longitude);
-                  double distB = Geolocator.distanceBetween(activeLat!, activeLng!, b.latitude, b.longitude);
-                  return distA.compareTo(distB);
-                });
-              }
-
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: restos.length,
-                itemBuilder: (context, index) {
-                  final resto = restos[index];
-                  String distanceStr = '- km';
-
-                  if (activeLat != null && activeLng != null) {
-                    double distanceMeters = Geolocator.distanceBetween(
-                      activeLat!, activeLng!, resto.latitude, resto.longitude
-                    );
-                    distanceStr = '${(distanceMeters / 1000).toStringAsFixed(2)} km';
-                  }
-
-                  return CardResto(
-                    imageUrl: resto.imageUrl.isNotEmpty ? resto.imageUrl : 'https://via.placeholder.com/250x120',
-                    name: resto.name,
-                    distance: distanceStr,
-                    queueCount: resto.queueCount,
-                    rating: resto.rating,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RestoPage(
-                            name: resto.name,
-                            imageUrl: resto.imageUrl.isNotEmpty ? resto.imageUrl : 'https://via.placeholder.com/250x120',
-                            distance: distanceStr,
-                            queueCount: resto.queueCount,
-                          ),
-                        ),
-                      );
-                    },
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              CardResto(
+                imageUrl: 'assets/images/ideologist.jpg',
+                name: 'Ideologist Coffee And Social Space',
+                distance: '2,14 km',
+                queueCount: 4,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RestoPage(
+                        name: 'Ideologist Coffee And Social Space',
+                        imageUrl: 'assets/images/ideologist.jpg',
+                        distance: '2,14 km',
+                        queueCount: 4,
+                      ),
+                    ),
                   );
                 },
-              );
-            },
+              ),
+              CardResto(
+                imageUrl: 'assets/images/parjo sipodang.jpg',
+                name: 'Burjo Parjo Sipodang',
+                distance: '0,95 km',
+                queueCount: 8,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RestoPage(
+                        name: 'Burjo Parjo Sipodang',
+                        imageUrl: 'assets/images/parjo sipodang.jpg',
+                        distance: '0,95 km',
+                        queueCount: 8,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              CardResto(
+                imageUrl: 'https://via.placeholder.com/250x120',
+                name: 'Warmindo Berkah',
+                distance: '1,2 km',
+                queueCount: 2,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RestoPage(
+                        name: 'Warmindo Berkah',
+                        imageUrl: 'https://via.placeholder.com/250x120',
+                        distance: '1,2 km',
+                        queueCount: 2,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ],
