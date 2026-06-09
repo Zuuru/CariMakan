@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
+import 'detail_menu_page.dart';
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -237,12 +239,14 @@ class _RestoPageState extends State<RestoPage> {
                       'Butterscotch Sea Salt',
                       'Rp 37.000',
                       'assets/images/menu/minuman/images.jpg',
+                      rawPrice: 37000.0,
                     ),
                     const SizedBox(width: 16),
                     _buildMenuCard(
                       'Chicken Cordon Bleu',
                       'Rp 45.000',
                       'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                      rawPrice: 45000.0,
                     ),
                   ],
                 ),
@@ -307,35 +311,79 @@ class _RestoPageState extends State<RestoPage> {
 
               // Filtered Content
               Center(
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    if (_selectedCategory == 'Makanan') ...[
-                      _buildMenuCard(
-                        'Chicken Cordon Bleu',
-                        'Rp 45.000',
-                        'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
-                      ),
-                      _buildMenuCard(
-                        'Chicken Cordon Bleu',
-                        'Rp 45.000',
-                        'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
-                      ),
-                    ] else if (_selectedCategory == 'Minuman') ...[
-                      _buildMenuCard(
-                        'Butterscotch Sea Salt',
-                        'Rp 37.000',
-                        'assets/images/menu/minuman/images.jpg',
-                      ),
-                      _buildMenuCard(
-                        'Butterscotch Sea Salt',
-                        'Rp 37.000',
-                        'assets/images/menu/minuman/images.jpg',
-                      ),
-                    ],
-                  ],
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('menus')
+                      .where('restaurantName', isEqualTo: widget.name)
+                      .where('category', isEqualTo: _selectedCategory)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                      );
+                    }
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      return Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        alignment: WrapAlignment.center,
+                        children: snapshot.data!.docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          final rawPrice = (data['price'] ?? 0).toDouble();
+                          
+                          // format price
+                          final String valStr = rawPrice.toInt().toString();
+                          final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+                          final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
+                          final priceStr = 'Rp $formatted';
+
+                          return _buildMenuCard(
+                            data['name'] ?? 'Unknown',
+                            priceStr,
+                            data['imagePath'] ?? 'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                            rawPrice: rawPrice,
+                          );
+                        }).toList(),
+                      );
+                    }
+                    // Fallback to dummy data if empty or error
+                    return Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        if (_selectedCategory == 'Makanan') ...[
+                          _buildMenuCard(
+                            'Chicken Cordon Bleu',
+                            'Rp 45.000',
+                            'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                            rawPrice: 45000.0,
+                          ),
+                          _buildMenuCard(
+                            'Chicken Cordon Bleu',
+                            'Rp 45.000',
+                            'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                            rawPrice: 45000.0,
+                          ),
+                        ] else if (_selectedCategory == 'Minuman') ...[
+                          _buildMenuCard(
+                            'Butterscotch Sea Salt',
+                            'Rp 37.000',
+                            'assets/images/menu/minuman/images.jpg',
+                            rawPrice: 37000.0,
+                          ),
+                          _buildMenuCard(
+                            'Butterscotch Sea Salt',
+                            'Rp 37.000',
+                            'assets/images/menu/minuman/images.jpg',
+                            rawPrice: 37000.0,
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
               ),
               
@@ -373,18 +421,33 @@ class _RestoPageState extends State<RestoPage> {
     );
   }
 
-  Widget _buildMenuCard(String name, String price, String imagePath, {bool isVertical = false}) {
-    return Container(
-      width: isVertical ? double.infinity : 150,
-      margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F1), // Cream/Pinkish
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+  Widget _buildMenuCard(String name, String price, String imagePath, {bool isVertical = false, double rawPrice = 0.0}) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailMenuPage(
+              restoName: widget.name,
+              menuName: name,
+              menuImage: imagePath,
+              menuPrice: rawPrice > 0 ? rawPrice : double.tryParse(price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0.0,
+              description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: isVertical ? double.infinity : 150,
+        margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF1F1), // Cream/Pinkish
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Stack(
             children: [
               ClipRRect(
@@ -459,6 +522,8 @@ class _RestoPageState extends State<RestoPage> {
           ),
         ],
       ),
-    );
+    ),
+   );
   }
 }
+
