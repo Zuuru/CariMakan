@@ -534,21 +534,23 @@ class _SearchPageState extends State<SearchPage> {
             // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: resto.imageUrl.startsWith('http')
-                  ? Image.network(
-                      resto.imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-                    )
-                  : Image.asset(
-                      resto.imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-                    ),
+              child: resto.imageUrl.isEmpty
+                  ? _buildFallbackImage()
+                  : resto.imageUrl.startsWith('http')
+                      ? Image.network(
+                          resto.imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
+                        )
+                      : Image.asset(
+                          resto.imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
+                        ),
             ),
             const SizedBox(width: 12),
             // Details
@@ -684,21 +686,23 @@ class _SearchPageState extends State<SearchPage> {
             // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: item.imageUrl.startsWith('http')
-                  ? Image.network(
-                      item.imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-                    )
-                  : Image.asset(
-                      item.imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
-                    ),
+              child: item.imageUrl.isEmpty
+                  ? _buildFallbackImage()
+                  : item.imageUrl.startsWith('http')
+                      ? Image.network(
+                          item.imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
+                        )
+                      : Image.asset(
+                          item.imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildFallbackImage(),
+                        ),
             ),
             const SizedBox(width: 12),
             // Details

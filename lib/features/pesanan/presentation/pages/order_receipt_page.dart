@@ -23,10 +23,22 @@ class OrderReceiptPage extends StatelessWidget {
     return 'Rp $formatted';
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leadingWidth: 72,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 16.0),
+          child: Center(child: CustomBackButton()),
+        ),
+      ),
       body: Stack(
         children: [
           // Background Pattern

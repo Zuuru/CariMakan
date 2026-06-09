@@ -39,6 +39,7 @@ class _QrisScanPageState extends State<QrisScanPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        leadingWidth: 72,
         leading: const Padding(
           padding: EdgeInsets.only(left: 16.0),
           child: Center(child: CustomBackButton()),

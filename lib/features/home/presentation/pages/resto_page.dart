@@ -33,9 +33,10 @@ class _RestoPageState extends State<RestoPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: const Center(child: CustomBackButton()),
+        leadingWidth: 72,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 16.0),
+          child: Center(child: CustomBackButton()),
         ),
         title: Text(
           widget.name,

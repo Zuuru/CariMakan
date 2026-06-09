@@ -424,67 +424,53 @@ class _HomeContentState extends State<HomeContent> {
         const SizedBox(height: 15),
         SizedBox(
           height: 240,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              CardResto(
-                imageUrl: 'assets/images/ideologist.jpg',
-                name: 'Ideologist Coffee And Social Space',
-                distance: '2,14 km',
-                queueCount: 4,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestoPage(
-                        name: 'Ideologist Coffee And Social Space',
-                        imageUrl: 'assets/images/ideologist.jpg',
-                        distance: '2,14 km',
-                        queueCount: 4,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              CardResto(
-                imageUrl: 'assets/images/parjo sipodang.jpg',
-                name: 'Burjo Parjo Sipodang',
-                distance: '0,95 km',
-                queueCount: 8,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestoPage(
-                        name: 'Burjo Parjo Sipodang',
-                        imageUrl: 'assets/images/parjo sipodang.jpg',
-                        distance: '0,95 km',
-                        queueCount: 8,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              CardResto(
-                imageUrl: 'https://via.placeholder.com/250x120',
-                name: 'Warmindo Berkah',
-                distance: '1,2 km',
-                queueCount: 2,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestoPage(
-                        name: 'Warmindo Berkah',
-                        imageUrl: 'https://via.placeholder.com/250x120',
-                        distance: '1,2 km',
-                        queueCount: 2,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('restaurants').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: Color(0xFFE30613)));
+              }
+
+              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: snapshot.data!.docs.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return CardResto(
+                      imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                      name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
+                      distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
+                      queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RestoPage(
+                              name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
+                              imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                              distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
+                              queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                );
+              }
+
+              // Empty state
+              return Center(
+                child: Text(
+                  'Belum ada resto yang terdaftar di area kamu nih',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
           ),
         ),
       ],
