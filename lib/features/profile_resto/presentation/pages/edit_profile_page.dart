@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -9,12 +11,93 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final _namaController = TextEditingController(text: 'Jett Heartcliff');
-  final _emailController = TextEditingController(text: 'jett.heartcliff@gourmet.com');
+  final _namaController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _waController = TextEditingController(text: '081234567890');
+  final _waController = TextEditingController();
   
   bool _obscurePassword = true;
+  bool _isLoading = true;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists && mounted) {
+        final data = doc.data()!;
+        _namaController.text = data['nama'] ?? '';
+        _emailController.text = data['email'] ?? '';
+        _waController.text = data['phone'] ?? '';
+      }
+    } catch (e) {
+      // Ignore
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    if (_namaController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama lengkap tidak boleh kosong!')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // 1. Update password if filled
+      if (_passwordController.text.trim().isNotEmpty) {
+        await user.updatePassword(_passwordController.text.trim());
+      }
+
+      // 2. Update Firestore 'users' collection
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'nama': _namaController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _waController.text.trim(),
+      }, SetOptions(merge: true));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profil berhasil disimpan! 🎉', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFF2E7D32),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan profil: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -46,7 +129,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFED001E)))
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
@@ -123,10 +208,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Save logic
-                  Navigator.pop(context);
-                },
+                onPressed: _isSaving ? null : _saveUserData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFED001E),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -134,14 +216,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
-                  'Simpan Perubahan',
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        'Simpan Perubahan',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],

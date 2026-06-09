@@ -22,6 +22,8 @@ class _ProfilePageState extends State<ProfilePage> {
   String? _status;
   double _rating = 0.0;
   int _totalReview = 0;
+  String? _userName;
+  String? _userEmail;
 
   @override
   void initState() {
@@ -33,6 +35,16 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
+
+      // Load user profile details
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (userDoc.exists && mounted) {
+        final userData = userDoc.data();
+        setState(() {
+          _userName = userData?['nama'] as String?;
+          _userEmail = userData?['email'] as String?;
+        });
+      }
 
       final snapshot = await FirebaseFirestore.instance
           .collection('restaurants')
@@ -218,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Jett Heartcliff',
+          _userName ?? 'Memuat...',
           style: GoogleFonts.outfit(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -227,7 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 4),
         Text(
-          'jett.heartcliff@gourmet.com',
+          _userEmail ?? 'Memuat...',
           style: GoogleFonts.outfit(
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -257,11 +269,14 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildMenuItem(
             icon: Icons.person_outline,
             title: 'Edit Profil',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const EditProfilePage()),
               );
+              if (result == true) {
+                _loadRestoProfile();
+              }
             },
           ),
           const Divider(height: 1, color: Color(0xFFF3F4F6)),
