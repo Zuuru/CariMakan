@@ -191,6 +191,8 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   }
 
   Widget _buildAppBar() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -221,18 +223,43 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 12),
           // Restaurant Name
-          Text(
-            'Nama Resto',
-            style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          Expanded(
+            child: Center(
+              child: uid == null
+                  ? MarqueeText(
+                      text: 'Nama Resto',
+                      style: GoogleFonts.outfit(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    )
+                  : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('restaurants')
+                          .where('owner_id', isEqualTo: uid)
+                          .limit(1)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        String name = 'Nama Resto';
+                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                          name = snapshot.data!.docs.first.data()['nama'] ?? 'Nama Resto';
+                        }
+                        return MarqueeText(
+                          text: name,
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        );
+                      },
+                    ),
             ),
           ),
-          const Spacer(),
-          const SizedBox(width: 44),
+          const SizedBox(width: 52),
         ],
       ),
     );
@@ -1145,6 +1172,73 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
           ],
         );
       },
+    );
+  }
+}
+
+class MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const MarqueeText({Key? key, required this.text, required this.style}) : super(key: key);
+
+  @override
+  State<MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<MarqueeText> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startScrolling());
+  }
+
+  void _startScrolling() async {
+    if (!_scrollController.hasClients) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted || !_scrollController.hasClients) return;
+    
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    if (maxScrollExtent <= 0) return;
+
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted || !_scrollController.hasClients) break;
+      await _scrollController.animateTo(
+        maxScrollExtent,
+        duration: Duration(milliseconds: (maxScrollExtent * 40).toInt()),
+        curve: Curves.linear,
+      );
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted || !_scrollController.hasClients) break;
+      await _scrollController.animateTo(
+        0.0,
+        duration: Duration(milliseconds: (maxScrollExtent * 40).toInt()),
+        curve: Curves.linear,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: Text(
+        widget.text,
+        style: widget.style,
+        maxLines: 1,
+      ),
     );
   }
 }

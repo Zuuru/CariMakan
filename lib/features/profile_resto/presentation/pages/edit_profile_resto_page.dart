@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EditProfileRestoPage extends StatefulWidget {
   const EditProfileRestoPage({Key? key}) : super(key: key);
@@ -9,15 +11,166 @@ class EditProfileRestoPage extends StatefulWidget {
 }
 
 class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
-  final _namaRestController = TextEditingController(text: 'Gourmet Haven');
-  final _deskripsiController = TextEditingController(text: 'Menyajikan hidangan terbaik dengan cita rasa otentik.');
-  final _waRestController = TextEditingController(text: '081234567890');
+  final _namaRestController = TextEditingController();
+  final _deskripsiController = TextEditingController();
+  final _waRestController = TextEditingController();
   
   TimeOfDay _jamBuka = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _jamTutup = const TimeOfDay(hour: 22, minute: 0);
 
   final List<String> _fasilitasTersedia = ['WiFi', 'AC', 'Smoking Area', 'Parkir Luas', 'Mushola', 'Toilet', 'VIP Room'];
-  final List<String> _fasilitasTerpilih = ['WiFi', 'AC', 'Parkir Luas'];
+  final List<String> _fasilitasTerpilih = [];
+
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String? _restoId;
+  double? _latitude;
+  double? _longitude;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRestoData();
+  }
+
+  Future<void> _loadRestoData() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty && mounted) {
+        final doc = snapshot.docs.first;
+        final data = doc.data();
+        _restoId = doc.id;
+        
+        _namaRestController.text = data['nama'] ?? '';
+        _deskripsiController.text = data['deskripsi'] ?? '';
+        _waRestController.text = data['url_whatsapp'] ?? '';
+        
+        if (data['lokasi'] is GeoPoint) {
+          final geo = data['lokasi'] as GeoPoint;
+          _latitude = geo.latitude;
+          _longitude = geo.longitude;
+        }
+
+        // Badges / Facilities
+        final badges = data['badges'] as List<dynamic>?;
+        if (badges != null) {
+          _fasilitasTerpilih.clear();
+          for (var item in badges) {
+            if (_fasilitasTersedia.contains(item.toString())) {
+              _fasilitasTerpilih.add(item.toString());
+            }
+          }
+        }
+
+        // Load operational hours from subcollection 'operational_hours'
+        final opHoursSnapshot = await doc.reference.collection('operational_hours').get();
+        if (opHoursSnapshot.docs.isNotEmpty) {
+          final opDoc = opHoursSnapshot.docs.first;
+          final opData = opDoc.data();
+          final openTimeStr = opData['openTime'] as String?;
+          final closeTimeStr = opData['closeTime'] as String?;
+          
+          if (openTimeStr != null && openTimeStr.contains(':')) {
+            final parts = openTimeStr.split(':');
+            _jamBuka = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+          }
+          if (closeTimeStr != null && closeTimeStr.contains(':')) {
+            final parts = closeTimeStr.split(':');
+            _jamTutup = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+          }
+        }
+
+        setState(() {
+          _isLoading = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat profil resto: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveRestoData() async {
+    if (_restoId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ID restoran tidak ditemukan!')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final docRef = FirebaseFirestore.instance.collection('restaurants').doc(_restoId);
+      
+      // Update restaurant doc
+      await docRef.update({
+        'nama': _namaRestController.text.trim(),
+        'deskripsi': _deskripsiController.text.trim(),
+        'url_whatsapp': _waRestController.text.trim(),
+        'badges': _fasilitasTerpilih,
+      });
+
+      // Update operational hours for all days in the subcollection
+      final days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+      final openTimeStr = '${_jamBuka.hour.toString().padLeft(2, '0')}:${_jamBuka.minute.toString().padLeft(2, '0')}';
+      final closeTimeStr = '${_jamTutup.hour.toString().padLeft(2, '0')}:${_jamTutup.minute.toString().padLeft(2, '0')}';
+
+      final batch = FirebaseFirestore.instance.batch();
+      for (var day in days) {
+        final dayRef = docRef.collection('operational_hours').doc(day);
+        batch.set(dayRef, {
+          'day': day,
+          'isOpen': true,
+          'openTime': openTimeStr,
+          'closeTime': closeTimeStr,
+        }, SetOptions(merge: true));
+      }
+      await batch.commit();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profil restoran berhasil disimpan! 🎉', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFF2E7D32),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan perubahan: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -86,7 +239,11 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFED001E)),
+            )
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +421,9 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                           ),
                         ),
                         Text(
-                          '-6.200000, 106.816666',
+                          _latitude != null && _longitude != null
+                              ? '${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}'
+                              : '-6.200000, 106.816666',
                           style: GoogleFonts.outfit(
                             fontSize: 12,
                             color: const Color(0xFF6B7280),
@@ -298,10 +457,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Save logic
-                  Navigator.pop(context);
-                },
+                onPressed: _isSaving ? null : _saveRestoData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFED001E),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -309,14 +465,20 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
-                  'Simpan Perubahan',
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        'Simpan Perubahan',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],
