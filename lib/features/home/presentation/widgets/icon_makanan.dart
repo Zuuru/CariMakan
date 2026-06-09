@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
+import 'package:carimakan/features/home/data/category_service.dart';
+import 'package:carimakan/features/home/data/category_model.dart';
 
 class IconMakanan extends StatefulWidget {
   const IconMakanan({super.key});
@@ -13,7 +15,7 @@ class _IconMakananState extends State<IconMakanan> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<Map<String, String>> categories = [
+  final List<Map<String, String>> defaultCategories = [
     {'name': 'Aneka Nasi', 'image': 'assets/images/icon_makanan/aneka nasi.png'},
     {'name': 'Sate', 'image': 'assets/images/icon_makanan/sate.png'},
     {'name': 'Geprek', 'image': 'assets/images/icon_makanan/geprek.png'},
@@ -52,101 +54,131 @@ class _IconMakananState extends State<IconMakanan> {
           ),
         ),
         const SizedBox(height: 20),
-        SizedBox(
-          height: 250, // Sedikit ditambah agar lebih aman dari overflow
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (int page) {
-              setState(() {
-                _currentPage = page;
-              });
-            },
-            itemCount: (categories.length / 8).ceil(),
-            itemBuilder: (context, pageIndex) {
-              final startIndex = pageIndex * 8;
-              final endIndex = (startIndex + 8) > categories.length 
-                  ? categories.length 
-                  : startIndex + 8;
-              final pageItems = categories.sublist(startIndex, endIndex);
+        StreamBuilder<List<CategoryModel>>(
+          stream: CategoryService.getCategories(),
+          builder: (context, snapshot) {
+            List<Map<String, String>> categoriesToUse = defaultCategories;
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 0,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 0.65,
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              categoriesToUse = snapshot.data!.map((cat) => {
+                'name': cat.name,
+                'image': cat.image,
+              }).toList();
+            }
+
+            return Column(
+              children: [
+                SizedBox(
+                  height: 250, // Sedikit ditambah agar lebih aman dari overflow
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (int page) {
+                      setState(() {
+                        _currentPage = page;
+                      });
+                    },
+                    itemCount: (categoriesToUse.length / 8).ceil(),
+                    itemBuilder: (context, pageIndex) {
+                      final startIndex = pageIndex * 8;
+                      final endIndex = (startIndex + 8) > categoriesToUse.length 
+                          ? categoriesToUse.length 
+                          : startIndex + 8;
+                      final pageItems = categoriesToUse.sublist(startIndex, endIndex);
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          mainAxisSpacing: 0,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 0.65,
+                        ),
+                        itemCount: pageItems.length,
+                        itemBuilder: (context, index) {
+                          final item = pageItems[index];
+                          final isNetworkImage = item['image']!.startsWith('http');
+                          
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 75,
+                                width: 75,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: isNetworkImage
+                                    ? Image.network(
+                                        item['image']!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => _buildErrorIcon(),
+                                      )
+                                    : Image.asset(
+                                        item['image']!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => _buildErrorIcon(),
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item['name']!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textMain,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
-                itemCount: pageItems.length,
-                itemBuilder: (context, index) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        height: 75,
-                        width: 75,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            pageItems[index]['image']!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.fastfood, color: Colors.grey),
-                              );
-                            },
-                          ),
-                        ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    (categoriesToUse.length / 8).ceil(),
+                    (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: _currentPage == index 
+                            ? AppColors.primary 
+                            : Colors.grey[300],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        pageItems[index]['name']!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMain,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            (categories.length / 8).ceil(),
-            (index) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: _currentPage == index ? 24 : 8,
-              height: 8,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: _currentPage == index 
-                    ? AppColors.primary 
-                    : Colors.grey[300],
-              ),
-            ),
-          ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
   }
+
+  Widget _buildErrorIcon() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Icon(Icons.fastfood, color: Colors.grey),
+    );
+  }
 }
+
