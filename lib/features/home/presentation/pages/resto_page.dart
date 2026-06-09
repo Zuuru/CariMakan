@@ -6,6 +6,8 @@ class RestoPage extends StatefulWidget {
   final String imageUrl;
   final String distance;
   final int queueCount;
+  final String? tableId;
+  final String? nomorMeja;
 
   const RestoPage({
     super.key,
@@ -13,6 +15,8 @@ class RestoPage extends StatefulWidget {
     required this.imageUrl,
     required this.distance,
     required this.queueCount,
+    this.tableId,
+    this.nomorMeja,
   });
 
   @override
@@ -69,9 +73,48 @@ class _RestoPageState extends State<RestoPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      body: Column(
+        children: [
+          if (widget.nomorMeja != null && widget.nomorMeja!.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              color: const Color(0xFFED001E),
+              child: Row(
+                children: [
+                  const Icon(Icons.table_restaurant_rounded, color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Anda Terhubung di Meja ${widget.nomorMeja}',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Sesi Aktif',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -352,6 +395,9 @@ class _RestoPageState extends State<RestoPage> {
           ),
         ),
       ),
+    ),
+  ],
+),
     );
   }
 

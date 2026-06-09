@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'resto_page.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
@@ -59,6 +61,82 @@ class _ScanPageState extends State<ScanPage> {
                   setState(() => isScanning = false);
                   debugPrint('Barcode found! $code');
                   
+                  // Deteksi apakah ini QR Meja CariMakan (mengandung restoId dan tableId)
+                  bool isTableQR = code.contains('restoId=') && code.contains('tableId=');
+                  
+                  if (isTableQR) {
+                    // Tampilkan loading dialog
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(
+                        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                      ),
+                    );
+
+                    try {
+                      final uri = Uri.parse(code);
+                      final restoId = uri.queryParameters['restoId'];
+                      final tableId = uri.queryParameters['tableId'];
+
+                      if (restoId != null && tableId != null) {
+                        // Ambil detail resto dari Firestore
+                        final restoDoc = await FirebaseFirestore.instance
+                            .collection('restaurants')
+                            .doc(restoId)
+                            .get();
+
+                        if (restoDoc.exists && mounted) {
+                          final data = restoDoc.data()!;
+                          final name = data['nama'] ?? data['name'] ?? 'Resto';
+                          final imageUrl = data['gambar'] ?? data['imageUrl'] ?? 'assets/images/placeholder.jpg';
+                          
+                          // Ambil detail nomor meja
+                          String nomorMeja = '';
+                          final tableDoc = await FirebaseFirestore.instance
+                              .collection('restaurants')
+                              .doc(restoId)
+                              .collection('tables')
+                              .doc(tableId)
+                              .get();
+                          
+                          if (tableDoc.exists) {
+                            nomorMeja = tableDoc.data()?['nomor_meja'] ?? '';
+                          }
+
+                          if (!mounted) return;
+
+                          // Pop loading dialog
+                          Navigator.pop(context);
+
+                          // Redirect langsung ke RestoPage dengan info meja terkunci
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RestoPage(
+                                name: name,
+                                imageUrl: imageUrl,
+                                distance: '0.1 km',
+                                queueCount: data['queueCount'] ?? 0,
+                                tableId: tableId,
+                                nomorMeja: nomorMeja,
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                      }
+                    } catch (e) {
+                      debugPrint('Error parsing table QR: $e');
+                    }
+
+                    // Jika gagal memuat, pop loading dan biarkan mengalir ke launcher default
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
+                  }
+
+                  // Default Fallback
                   if (code.startsWith('http')) {
                     await _launchURL(code);
                   } else {

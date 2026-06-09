@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'edit_profile_page.dart';
 import 'edit_profile_resto_page.dart';
 import 'manajemen_karyawan_page.dart';
-import '../../../promo/presentation/pages/manajemen_promo_page.dart';
 import '../../../splash/pages/splash_screen.dart';
 import '../../../home/presentation/pages/home_page.dart';
 
@@ -186,17 +185,6 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const EditProfileRestoPage()),
-              );
-            },
-          ),
-          const Divider(height: 1, color: Color(0xFFF3F4F6)),
-          _buildMenuItem(
-            icon: Icons.discount_outlined,
-            title: 'Manajemen Promo',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ManajemenPromoPage()),
               );
             },
           ),

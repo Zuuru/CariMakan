@@ -5,8 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../data/menu_model.dart';
 import '../../data/menu_service.dart';
+import '../../data/table_model.dart';
+import '../../data/table_service.dart';
 import '../widgets/menu_card.dart';
 import 'tambah_menu_page.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import '../../../promo/presentation/pages/manajemen_promo_page.dart';
+import '../../../promo/presentation/pages/tambah_promo_page.dart';
 
 class ManajemenMenuPage extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -23,7 +28,8 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   final TextEditingController _mejaController = TextEditingController();
   String _searchQuery = "";
   String _selectedFilter = 'Semua';
-  final List<String> _mejaList = ['Meja 01', 'Meja 02', 'Meja 03'];
+  bool _isGeneratingQR = false;
+  int _currentTab = 0;
 
   // Firestore state
   String? _restoId;
@@ -32,7 +38,13 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      setState(() {
+        _currentTab = _tabController.index;
+      });
+    });
     _loadRestoId();
   }
 
@@ -107,8 +119,9 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                   fontWeight: FontWeight.w600,
                 ),
                 tabs: const [
-                  Tab(text: 'Daftar Menu'),
-                  Tab(text: 'Manajemen Meja'),
+                  Tab(text: 'Menu'),
+                  Tab(text: 'Promo'),
+                  Tab(text: 'Meja'),
                 ],
               ),
             ),
@@ -118,10 +131,13 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // Tab 1: Daftar Menu
+                  // Tab 1: Menu
                   _buildDaftarMenuTab(),
 
-                  // Tab 2: Manajemen Meja
+                  // Tab 2: Promo
+                  ManajemenPromoPage(isEmbedded: true),
+
+                  // Tab 3: Meja
                   _buildManajemenMejaTab(),
                 ],
               ),
@@ -130,21 +146,47 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
         ),
       ),
       // Floating Action Button
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90.0), // Elevate above the floating bottom navigation bar
-        child: FloatingActionButton(
-          onPressed: _showAddMenuDialog,
-          backgroundColor: const Color(0xFFED001E),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 28,
-          ),
-        ),
-      ),
+      floatingActionButton: _currentTab == 0
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 90.0), // Elevate above the floating bottom navigation bar
+              child: FloatingActionButton(
+                onPressed: _showAddMenuDialog,
+                backgroundColor: const Color(0xFFED001E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            )
+          : _currentTab == 1
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 90.0),
+                  child: FloatingActionButton.extended(
+                    onPressed: () async {
+                      if (_restoId == null) return;
+                      await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TambahPromoPage(restoId: _restoId!),
+                        ),
+                      );
+                    },
+                    backgroundColor: const Color(0xFFED001E),
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: Text(
+                      'Buat Promo',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              : null,
     );
   }
 
@@ -499,6 +541,25 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   }
 
   Widget _buildManajemenMejaTab() {
+    if (_isLoadingRestoId) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+      );
+    }
+
+    if (_restoId == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
+            'Gagal memuat data restoran. Pastikan Anda masuk sebagai Owner.',
+            style: GoogleFonts.outfit(color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
         left: 24,
@@ -546,8 +607,10 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                 const SizedBox(height: 8),
                 TextField(
                   controller: _mejaController,
+                  enabled: !_isGeneratingQR,
+                  style: GoogleFonts.outfit(),
                   decoration: InputDecoration(
-                    hintText: 'Contoh: Meja 01',
+                    hintText: 'Contoh: 01, 02A, 12',
                     hintStyle: GoogleFonts.outfit(
                       color: const Color(0xFFADADAD),
                       fontSize: 14,
@@ -571,27 +634,71 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    if (_mejaController.text.trim().isNotEmpty) {
-                      setState(() {
-                        _mejaList.add(_mejaController.text.trim());
-                        _mejaController.clear();
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'QR Code berhasil digenerate',
-                            style: GoogleFonts.outfit(),
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: const Color(0xFF1C1C1C),
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 20),
+                  onPressed: _isGeneratingQR
+                      ? null
+                      : () async {
+                          final nomorMeja = _mejaController.text.trim();
+                          if (nomorMeja.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Nomor meja tidak boleh kosong!',
+                                  style: GoogleFonts.outfit(),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                backgroundColor: const Color(0xFFED001E),
+                              ),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isGeneratingQR = true);
+                          try {
+                            final exists = await TableService.checkTableExists(_restoId!, nomorMeja);
+                            if (exists) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Meja $nomorMeja sudah terdaftar!'),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: const Color(0xFFED001E),
+                                  ),
+                                );
+                              }
+                            } else {
+                              await TableService.tambahMeja(_restoId!, nomorMeja);
+                              _mejaController.clear();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('QR Code Meja $nomorMeja berhasil dibuat! 🎉'),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: const Color(0xFF2E7D32),
+                                  ),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Gagal membuat meja: $e')),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isGeneratingQR = false);
+                            }
+                          }
+                        },
+                  icon: _isGeneratingQR
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 20),
                   label: Text(
-                    'Generate QR',
+                    _isGeneratingQR ? 'Memproses...' : 'Generate QR',
                     style: GoogleFonts.outfit(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -624,8 +731,22 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
           ),
           const SizedBox(height: 16),
           
-          _mejaList.isEmpty
-              ? Center(
+          StreamBuilder<List<TableModel>>(
+            stream: TableService.getTablesStream(_restoId!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                  ),
+                );
+              }
+
+              final tables = snapshot.data ?? [];
+
+              if (tables.isEmpty) {
+                return Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32),
                     child: Text(
@@ -635,132 +756,271 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                       ),
                     ),
                   ),
-                )
-              : GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemCount: _mejaList.length,
-                  itemBuilder: (context, index) {
-                    final namaMeja = _mejaList[index];
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Header (Nama Meja + Delete Icon)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12, right: 4, top: 4),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    namaMeja,
-                                    style: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _mejaList.removeAt(index);
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: Color(0xFFED001E),
-                                    size: 20,
-                                  ),
-                                  splashRadius: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                          // QR Code Placeholder
-                          Expanded(
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF9F9F9),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFEEEEEE),
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.qr_code_2_rounded,
-                                  size: 70,
-                                  color: Color(0xFF1C1C1C),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Download Button
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Mengunduh QR Code $namaMeja...',
-                                      style: GoogleFonts.outfit(),
-                                    ),
-                                    behavior: SnackBarBehavior.floating,
-                                    backgroundColor: const Color(0xFF1C1C1C),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.download_rounded, color: Color(0xFFED001E), size: 16),
-                              label: Text(
-                                'Download',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFFED001E),
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFED001E).withValues(alpha: 0.1),
-                                foregroundColor: const Color(0xFFED001E),
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                minimumSize: const Size(double.infinity, 32),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      ),
-                    );
-                  },
+                );
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.75,
                 ),
+                itemCount: tables.length,
+                itemBuilder: (context, index) {
+                  final table = tables[index];
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Header (Nama Meja + Delete Icon)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, right: 4, top: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Meja ${table.nomorMeja}',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => _showDeleteMejaConfirmation(table),
+                                icon: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: Color(0xFFED001E),
+                                  size: 20,
+                                ),
+                                splashRadius: 20,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // QR Code Render
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF9F9F9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFEEEEEE),
+                              ),
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                width: 90,
+                                height: 90,
+                                child: QrImageView(
+                                  data: table.qrData,
+                                  version: QrVersions.auto,
+                                  size: 90.0,
+                                  foregroundColor: const Color(0xFFED001E),
+                                  gapless: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Download/View Button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showQrPreviewDialog(table),
+                            icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFFED001E), size: 16),
+                            label: Text(
+                              'Lihat QR',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFED001E),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFED001E).withValues(alpha: 0.1),
+                              foregroundColor: const Color(0xFFED001E),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              minimumSize: const Size(double.infinity, 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ],
       ),
+    );
+  }
+
+  void _showQrPreviewDialog(TableModel table) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          contentPadding: const EdgeInsets.all(24),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Meja ${table.nomorMeja}',
+                style: GoogleFonts.outfit(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
+                ),
+                child: SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: QrImageView(
+                    data: table.qrData,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                    foregroundColor: const Color(0xFFED001E),
+                    gapless: false,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Pindai QR Code di atas menggunakan aplikasi CariMakan untuk memesan menu langsung dari meja ini.',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFED001E),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  minimumSize: const Size(double.infinity, 44),
+                ),
+                child: Text(
+                  'Tutup',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteMejaConfirmation(TableModel table) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Hapus Meja ${table.nomorMeja}',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus Meja ${table.nomorMeja}?\nQR Code ini tidak akan bisa digunakan lagi.',
+            style: GoogleFonts.outfit(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.outfit(color: Colors.grey[600], fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await TableService.hapusMeja(_restoId!, table.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Meja ${table.nomorMeja} berhasil dihapus!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus meja: $e'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFED001E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Hapus',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
