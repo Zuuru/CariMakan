@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
+import 'chat_page.dart';
 
 class TrackerTakeawayPage extends StatefulWidget {
   const TrackerTakeawayPage({Key? key}) : super(key: key);
@@ -349,18 +350,31 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
           ),
           const SizedBox(width: 12),
           // Chat Button
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFED001E), width: 1.5),
-            ),
-            child: const Icon(
-              Icons.chat_bubble,
-              color: Color(0xFFED001E),
-              size: 20,
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ChatPage(
+                    restoName: 'SOXZY luv cedar',
+                    restoImage: 'assets/images/profile.png',
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFED001E), width: 1.5),
+              ),
+              child: const Icon(
+                Icons.chat_bubble,
+                color: Color(0xFFED001E),
+                size: 20,
+              ),
             ),
           ),
         ],
