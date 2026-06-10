@@ -89,6 +89,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
+      leadingWidth: 72,
       leading: Padding(
         padding: const EdgeInsets.only(left: 16.0),
         child: const Center(child: CustomBackButton()),
