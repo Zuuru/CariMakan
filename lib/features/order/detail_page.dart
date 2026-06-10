@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/features/order/checkout_page.dart';
+import 'package:carimakan/features/order/cart_summary_bar.dart';
 
 class DetailPesananPage extends StatefulWidget {
   final String name;
@@ -19,9 +20,6 @@ class DetailPesananPage extends StatefulWidget {
 }
 
 class _DetailPesananPageState extends State<DetailPesananPage> {
-  // State untuk melacak apakah tombol "Tambah ke Keranjang" sudah diklik
-  bool _isAddedToCart = false;
-
   // State pilihan kustomisasi menu
   String _selectedSugar = 'Normal';
   String _selectedIce = 'Normal';
@@ -42,15 +40,9 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Ideologist Coffee And Social Space',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         centerTitle: true,
       ),
@@ -132,6 +124,9 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                   onTap: () {
                     setState(() {
                       _selectedSugar = option;
+                      if (globalCart != null) {
+                        _updateGlobalCart();
+                      }
                     });
                   },
                   child: Column(
@@ -183,6 +178,9 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                   onTap: () {
                     setState(() {
                       _selectedIce = option;
+                      if (globalCart != null) {
+                        _updateGlobalCart();
+                      }
                     });
                   },
                   child: Column(
@@ -240,6 +238,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                       onTap: () {
                         setState(() {
                           _isBiscoffChecked = !_isBiscoffChecked;
+                          if (globalCart != null) _updateGlobalCart();
                         });
                       },
                       child: Container(
@@ -272,7 +271,10 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                         GestureDetector(
                           onTap: () {
                             if (_espressoShots > 0) {
-                              setState(() => _espressoShots--);
+                              setState(() {
+                                _espressoShots--;
+                                if (globalCart != null) _updateGlobalCart();
+                              });
                             }
                           },
                           child: Text(
@@ -305,7 +307,10 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            setState(() => _espressoShots++);
+                            setState(() {
+                              _espressoShots++;
+                              if (globalCart != null) _updateGlobalCart();
+                            });
                           },
                           child: Text(
                             '＋',
@@ -334,6 +339,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                       onTap: () {
                         setState(() {
                           _isCaramelChecked = !_isCaramelChecked;
+                          if (globalCart != null) _updateGlobalCart();
                         });
                       },
                       child: Container(
@@ -369,11 +375,17 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                     ),
                   ],
                 ),
+                // Cari bagian ElevatedButton.icon di dalam file DetailPesananPage kamu:
                 ElevatedButton.icon(
                   onPressed: () {
-                    // Mengubah state menjadi true agar card di bawah muncul
                     setState(() {
-                      _isAddedToCart = true;
+                      // 1. Set kuantitas menjadi 1 (atau tambah +1) saat tombol ditekan
+                      if (globalCartQuantity.value == 0) {
+                        globalCartQuantity.value = 1;
+                      }
+                      
+                      // 2. Perbarui data di dalam globalCart
+                      _updateGlobalCart();
                     });
                   },
                   style: ElevatedButton.styleFrom(
@@ -394,82 +406,31 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
           ],
         ),
       ),
+      bottomNavigationBar: ValueListenableBuilder<int>(
+        valueListenable: globalCartQuantity,
+        builder: (context, quantity, child) {
+          // Jika kuantitas lebih dari 0 dan globalCart tidak null, tampilkan keranjang.
+          // Jika 0, sembunyikan dengan mengembalikan SizedBox kosong.
+          return (quantity > 0 && globalCart != null)
+              ? globalCart!
+              : const SizedBox.shrink();
+        },
+      ),
+    );
+  }
 
-      // Buka file detail_page.dart kamu, cari bagian bottomNavigationBar, lalu ganti dengan ini:
-      bottomNavigationBar: _isAddedToCart
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: GestureDetector(
-                  onTap: () {
-                    // Menampung semua add-on yang aktif
-                    List<String> selectedAddOns = [];
-                    if (_isBiscoffChecked) selectedAddOns.add('Biskuit Biscoff');
-                    if (_isCaramelChecked) selectedAddOns.add('Caramel');
-                    if (_espressoShots > 0) selectedAddOns.add('$_espressoShots Espresso Shots');
-
-                    // Pindah ke Halaman Pembayaran membawa data inputan
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PembayaranPage(
-                          name: widget.name,
-                          price: widget.price,
-                          imagePath: widget.imagePath,
-                          sugar: _selectedSugar,
-                          ice: _selectedIce,
-                          addOns: selectedAddOns.isEmpty ? ['Tidak ada'] : selectedAddOns,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE30613),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '1 item',
-                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            Text(
-                              widget.name,
-                              style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              widget.price,
-                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.shopping_cart, color: Colors.white, size: 22),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : null, // Jika belum diklik, navbar bawah ini tidak akan memakan space (kosong)
+  void _updateGlobalCart() {
+    globalCart = CartSummaryBar(
+      name: widget.name,
+      price: widget.price,
+      imagePath: widget.imagePath,
+      sugar: _selectedSugar,
+      ice: _selectedIce,
+      addOns: [
+        if (_isBiscoffChecked) 'Biskuit Biscoff',
+        if (_isCaramelChecked) 'Caramel',
+        if (_espressoShots > 0) '$_espressoShots Espresso Shots',
+      ],
     );
   }
 }

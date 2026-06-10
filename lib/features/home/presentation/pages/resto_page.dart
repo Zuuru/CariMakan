@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/features/order/detail_page.dart';
+import 'package:carimakan/features/order/cart_summary_bar.dart';
+
+// Pastikan Widget? globalCart; sudah dideklarasikan secara global 
+// (misalnya di dalam file cart_summary_bar.dart) agar bisa dipakai di semua halaman.
+// Hapus deklarasi variabel global yang panjang-panjang sebelumnya.
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -21,7 +26,7 @@ class RestoPage extends StatefulWidget {
 }
 
 class _RestoPageState extends State<RestoPage> {
-  String _selectedCategory = 'Makanan';
+  String _selectedCategory = 'Makanan'; 
 
   @override
   Widget build(BuildContext context) {
@@ -326,32 +331,42 @@ class _RestoPageState extends State<RestoPage> {
                         'Chicken Cordon Bleu',
                         'Rp 45.000',
                         'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                        isVertical: true,
                       ),
                       _buildMenuCard(
                         'Chicken Cordon Bleu',
                         'Rp 45.000',
                         'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
+                        isVertical: true,
                       ),
                     ] else if (_selectedCategory == 'Minuman') ...[
                       _buildMenuCard(
                         'Butterscotch Sea Salt',
                         'Rp 37.000',
                         'assets/images/menu/minuman/images.jpg',
+                        isVertical: true,
                       ),
                       _buildMenuCard(
                         'Butterscotch Sea Salt',
                         'Rp 37.000',
                         'assets/images/menu/minuman/images.jpg',
+                        isVertical: true,
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              
+              // Memberi ruang di bawah agar tidak tertutup CartSummaryBar
+              // Menggunakan pengecekan apakah globalCart tidak null
+              SizedBox(height: globalCart != null ? 100 : 32),
             ],
           ),
         ),
       ),
+      
+      // SAMA PERSIS SEPERTI DI DETAIL_PAGE.DART
+      bottomNavigationBar: globalCart,
     );
   }
 
@@ -381,6 +396,9 @@ class _RestoPageState extends State<RestoPage> {
     );
   }
 
+  // ==== CONTOH IMPLEMENTASI KLIK MENU ====
+  // Pastikan saat kamu navigasi ke DetailPesananPage, 
+  // kamu me-refresh (setState) ketika pengguna kembali (pop) dari detail page.
   Widget _buildMenuCard(String name, String price, String imagePath, {bool isVertical = false}) {
     return GestureDetector(
       onTap: () {
@@ -393,91 +411,52 @@ class _RestoPageState extends State<RestoPage> {
               imagePath: imagePath,
             ),
           ),
-        );
+        ).then((_) {
+          // INI KUNCI UTAMANYA: 
+          // Setelah kembali dari detail page, build ulang halaman resto
+          // supaya globalCart yang baru saja di-set bisa dirender.
+          setState(() {}); 
+        });
       },
       child: Container(
-        width: isVertical ? double.infinity : 150,
-        margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
-        padding: const EdgeInsets.all(8),
+        width: isVertical ? 150 : 160, // Sesuaikan dengan ukuran UI kamu
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF1F1),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    imagePath,
-                    height: 130,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.favorite_border, size: 16, color: Colors.black54),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE30613),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        bottomRight: Radius.circular(16),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 10),
-                        const SizedBox(width: 2),
-                        Text(
-                          '4.9 (999)',
-                          style: GoogleFonts.poppins(
-                            fontSize: 8,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              name,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.black87,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-                ),
-            const SizedBox(height: 4),
-            Text(
-              price,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Image.asset(
+                imagePath,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => 
+                    Container(height: 120, color: Colors.grey[200], child: const Icon(Icons.image)),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    price,
+                    style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ],
+              ),
+            )
           ],
         ),
       ),

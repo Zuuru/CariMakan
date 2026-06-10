@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'cart_summary_bar.dart'; // File tempat globalCartQuantity & globalSubtotal berada
 
 class PembayaranPage extends StatefulWidget {
   final String name;
@@ -26,7 +27,7 @@ class PembayaranPage extends StatefulWidget {
 class _PembayaranPageState extends State<PembayaranPage> {
   int _itemQuantity = 1;
 
-  // Fungsi pembantu untuk mengubah format rupiah string menjadi integer murni untuk kalkulasi matematika
+  // Fungsi pembantu untuk mengubah format rupiah string menjadi integer murni
   int _parsePrice(String priceString) {
     String cleaned = priceString.replaceAll('.', '').replaceAll('Rp', '').trim();
     return int.tryParse(cleaned) ?? 0;
@@ -48,377 +49,358 @@ class _PembayaranPageState extends State<PembayaranPage> {
     return 'Rp $result';
   }
 
+  // Fungsi untuk kembali dengan membawa data kuantitas terbaru
+  void _kembaliDenganData() {
+    Navigator.pop(context, _itemQuantity);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Perhitungan kalkulasi nota belanja secara dinamis
     int hargaSatuan = _parsePrice(widget.price);
     int totalHargaItem = hargaSatuan * _itemQuantity;
-    int ppn = (totalHargaItem * 0.1).toInt(); // PPN 10%
-    int biayaLainnya = 1000; // Sesuai figma kamu
+    
+    int ppn = _itemQuantity > 0 ? (totalHargaItem * 0.1).toInt() : 0; 
+    int biayaLainnya = _itemQuantity > 0 ? 1000 : 0; 
     int totalSemua = totalHargaItem + ppn + biayaLainnya;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    // Sinkronisasi nilai totalSemua ke globalSubtotal tanpa merusak siklus build Flutter
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      globalSubtotal.value = totalSemua;
+      globalCartQuantity.value = _itemQuantity;
+    });
+
+    // PopScope digunakan agar ketika user menekan tombol back bawaan HP, data kuantitas tetap terkirim balik
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _kembaliDenganData();
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Pembayaran',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+            onPressed: _kembaliDenganData,
           ),
+          title: const Text(
+            'Pembayaran',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Card Opsi Pengiriman (Takeaway)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F1),
-                borderRadius: BorderRadius.circular(15),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Card Opsi Pengiriman (Takeaway)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF1F1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/takeaway_icon.png', 
+                      width: 40,
+                      height: 40,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined, color: Color(0xFFE30613), size: 35),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Takeaway',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+                    ),
+                    const Spacer(),
+                    OutlinedButton(
+                      onPressed: () {},
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFE30613)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      ),
+                      child: Text('Ganti', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
+              const SizedBox(height: 16),
+  
+              // 2. Card Lokasi Resto
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF1F1),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Lokasi Resto',
+                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Jl. Setia Budi No.28, Ngesrep, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50262',
+                      style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE30613),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        ),
+                        icon: const Icon(Icons.navigation, size: 14, color: Colors.white),
+                        label: Text('Rute', style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+  
+              // 3. Logika Kondisional Card Produk
+              if (_itemQuantity > 0) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE30613),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.name,
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('Gula : ${widget.sugar}', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
+                            Text('Es : ${widget.ice}', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
+                            Text('Add On : ${widget.addOns.join(', ')}', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
+                            const SizedBox(height: 12),
+                            Text(
+                              _formatRupiah(totalHargaItem),
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: _kembaliDenganData,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                minimumSize: const Size(60, 25),
+                              ),
+                              child: Text('Edit', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: Image.asset(
+                              widget.imagePath,
+                              width: 85,
+                              height: 85,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(width: 85, height: 85, color: Colors.grey),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    if (_itemQuantity > 0) {
+                                      setState(() => _itemQuantity--);
+                                    }
+                                  },
+                                  child: const Icon(Icons.remove, size: 16, color: Color(0xFFE30613)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text(
+                                    '$_itemQuantity',
+                                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 13),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() => _itemQuantity++);
+                                  },
+                                  child: const Icon(Icons.add, size: 16, color: Color(0xFFE30613)),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+  
+              // 4. Tambah Menu Lain Banner
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset(
-                    'assets/takeaway_icon.png', 
-                    width: 40,
-                    height: 40,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined, color: Color(0xFFE30613), size: 35),
-                  ),
-                  const SizedBox(width: 12),
                   Text(
-                    'Takeaway',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+                    'Mau nambah yang lain?',
+                    style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
                   ),
-                  const Spacer(),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: _kembaliDenganData,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFFE30613)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     ),
-                    child: Text('Ganti', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text('Tambah', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // 2. Card Lokasi Resto
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F1),
-                borderRadius: BorderRadius.circular(15),
+              const SizedBox(height: 24),
+  
+              // 5. Section Detail Nota Pembayaran Ringkasan
+              Text(
+                'Detail pesanan kamu nyakk',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lokasi Resto',
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Jl. Setia Budi No.28, Ngesrep, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50262',
-                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton.icon(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE30613),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      ),
-                      icon: const Icon(Icons.navigation, size: 14, color: Colors.white),
-                      label: Text('Rute', style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE30613),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    _buildNotaRow('Harga', _formatRupiah(totalHargaItem)),
+                    const SizedBox(height: 8),
+                    _buildNotaRow('PPN', _formatRupiah(ppn)),
+                    const SizedBox(height: 8),
+                    _buildNotaRow('Biaya lainnya', _formatRupiah(biayaLainnya)),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12.0),
+                      child: Divider(color: Colors.white, thickness: 1),
                     ),
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // 3. Card Detail Pesanan Merah
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE30613),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Detail Kustomisasi Data Produk
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          widget.name,
-                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 4),
-                        Text('Gula : ${widget.sugar}', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
-                        Text('Es : ${widget.ice}', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
-                        Text('Add On : ${widget.addOns.join(', ')}', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
-                        const SizedBox(height: 12),
-                        Text(
-                          _formatRupiah(totalHargaItem),
-                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 12),
-                        // Tombol Edit
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            minimumSize: const Size(60, 25),
-                          ),
-                          child: Text('Edit', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 11, fontWeight: FontWeight.bold)),
-                        ),
+                        Text('Total', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(_formatRupiah(totalSemua), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                       ],
                     ),
-                  ),
-                  // Gambar & Counter Item
-                  Column(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.asset(
-                          widget.imagePath,
-                          width: 85,
-                          height: 85,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Counter Jumlah Item Kanan Atas
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                if (_itemQuantity > 1) {
-                                  setState(() => _itemQuantity--);
-                                }
-                              },
-                              child: const Icon(Icons.remove, size: 16, color: Color(0xFFE30613)),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                '$_itemQuantity',
-                                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 13),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() => _itemQuantity++);
-                              },
-                              child: const Icon(Icons.add, size: 16, color: Color(0xFFE30613)),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 4. Tambah Menu Lain Banner
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Mau nambah yang lain?',
-                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFE30613)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  ),
-                  child: Text('Tambah', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 12, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // 5. Section Detail Nota Pembayaran Ringkasan
-            Text(
-              'Detail pesanan kamu nyakk',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE30613),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                children: [
-                  _buildNotaRow('Harga', _formatRupiah(totalHargaItem)),
-                  const SizedBox(height: 8),
-                  _buildNotaRow('PPN', _formatRupiah(ppn)),
-                  const SizedBox(height: 8),
-                  _buildNotaRow('Biaya lainnya', _formatRupiah(biayaLainnya)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12.0),
-                    child: Divider(color: Colors.white, thickness: 1),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Total', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(_formatRupiah(totalSemua), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // 6. Tombol Utama Gass Bayarr!!
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // MEMANGGIL FUNGSI DIALOG KONFIRMASI KETIKA DIKLIK
-                  _showKonfirmasiDialog(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE30613),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: Text(
-                  'Gass Bayarr!!',
-                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 32),
+  
+              // 6. Tombol Utama
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _itemQuantity > 0 ? () {
+                    _showKonfirmasiDialog(context, totalSemua);
+                  } : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE30613),
+                    disabledBackgroundColor: Colors.grey[400],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(
+                    'Gass Bayarr!!',
+                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Fungsi untuk menampilkan Custom Dialog Pop-Up Konfirmasi
-  void _showKonfirmasiDialog(BuildContext context) {
+  // Dialog 1: Konfirmasi Pesanan
+  void _showKonfirmasiDialog(BuildContext context, int totalSemua) {
     showDialog(
       context: context,
-      barrierDismissible: false, // User wajib pilih salah satu tombol
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24.0), // Sudut melengkung halus
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
           backgroundColor: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min, // Menyesuaikan tinggi dengan konten
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Kamu udah yakin ama\npesenan kamu?',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
                 const SizedBox(height: 16),
-                
-                // Karakter Ilustrasi (SUDAH DIPERBAIKI MENJADI BoxFit.contain)
                 Image.asset(
                   'assets/images/character_confirm/character_confirm.jpg', 
                   height: 180,
                   fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.check_circle_outline, size: 80, color: Color(0xFFE30613)),
                 ),
                 const SizedBox(height: 24),
-                
-                // Baris Tombol Aksi
                 Row(
                   children: [
-                    // Tombol Ntar
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Menutup dialog dan kembali ke halaman pembayaran
-                        },
+                        onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFFE30613), width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text(
-                          'Ntar',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFFE30613),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text('Ntar', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    
-                    // Tombol Iyaa
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context); // Tutup dialog konfirmasi dulu
-                          
-                          // TODO: Arahkan ke halaman pembayaran sukses / e-wallet milik timmu
+                          Navigator.pop(context); // Tutup Dialog Konfirmasi
+                          _showQrPaymentDialog(context, totalSemua); // Buka Dialog QR Code Bank
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE30613),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           elevation: 0,
                         ),
-                        child: Text(
-                          'Iyaa',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text('Iyaa', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -431,7 +413,89 @@ class _PembayaranPageState extends State<PembayaranPage> {
     );
   }
 
-  // Fungsi pembantu baris list rincian nota
+  // Dialog 2: Tampilan QR Code Pembayaran Bank / QRIS
+  void _showQrPaymentDialog(BuildContext context, int totalAmount) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Scan QRIS / Bank',
+                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _formatRupiah(totalAmount),
+                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFFE30613)),
+                ),
+                const SizedBox(height: 20),
+                
+                // Box Wadah QR Code
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade300, width: 2),
+                  ),
+                  child: Image.asset(
+                    'assets/images/qr_code/qr_code.jpg', // Sesuaikan path gambar QR-mu di sini nanti
+                    height: 180,
+                    width: 180,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Tampilan cadangan jika file gambar belum ada di assets
+                      return const Icon(
+                        Icons.qr_code_2_rounded, 
+                        size: 180, 
+                        color: Colors.black,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Silakan scan QR di atas melalui m-Banking atau E-Wallet pilihanmu.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 24),
+                
+                // Tombol Selesai Pembayaran
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Menutup dialog QR
+                      // Di sini bisa ditambahkan logika transisi ke halaman sukses/nota jika diperlukan
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE30613),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Sudah Bayar',
+                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildNotaRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
