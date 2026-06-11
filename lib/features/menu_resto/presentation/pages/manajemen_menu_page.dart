@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../data/menu_model.dart';
+import '../../data/menu_service.dart';
+import '../../data/table_model.dart';
+import '../../data/table_service.dart';
 import '../widgets/menu_card.dart';
 import 'tambah_menu_page.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import '../../../promo/presentation/pages/manajemen_promo_page.dart';
+import '../../../promo/presentation/pages/tambah_promo_page.dart';
 
 class ManajemenMenuPage extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -12,78 +22,30 @@ class ManajemenMenuPage extends StatefulWidget {
   State<ManajemenMenuPage> createState() => _ManajemenMenuPageState();
 }
 
-class ItemMenu {
-  String id;
-  String title;
-  double price;
-  bool isAvailable;
-  String? imageUrl;
-  String category;
-  String description;
-
-  ItemMenu({
-    required this.id,
-    required this.title,
-    required this.price,
-    required this.isAvailable,
-    this.imageUrl,
-    this.category = 'Makanan',
-    this.description = '',
-  });
-}
-
 class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _mejaController = TextEditingController();
   String _searchQuery = "";
   String _selectedFilter = 'Semua';
-  final List<String> _mejaList = ['Meja 01', 'Meja 02', 'Meja 03'];
+  bool _isGeneratingQR = false;
+  int _currentTab = 0;
 
-  // Mock initial menus based on typical resto items with Unsplash high-fidelity images
-  final List<ItemMenu> _menus = [
-    ItemMenu(
-      id: '1',
-      title: 'Mie Ayam',
-      price: 10000,
-      isAvailable: true,
-      imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500',
-      category: 'Makanan',
-      description: 'Mie dengan potongan ayam gurih dan bumbu khas.',
-    ),
-    ItemMenu(
-      id: '2',
-      title: 'Mie Ayam Pangsit',
-      price: 12000,
-      isAvailable: true,
-      imageUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500',
-      category: 'Makanan',
-      description: 'Mie ayam lezat ditambah dengan pangsit basah yang lembut.',
-    ),
-    ItemMenu(
-      id: '3',
-      title: 'Nasi Goreng Resto',
-      price: 15000,
-      isAvailable: true,
-      imageUrl: 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=500',
-      category: 'Makanan',
-      description: 'Nasi goreng khas restoran dengan bumbu rempah pilihan.',
-    ),
-    ItemMenu(
-      id: '4',
-      title: 'Es Teh Manis',
-      price: 3000,
-      isAvailable: false,
-      imageUrl: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500',
-      category: 'Minuman',
-      description: 'Minuman teh segar manis dengan es batu melimpah.',
-    ),
-  ];
+  // Firestore state
+  String? _restoId;
+  bool _isLoadingRestoId = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      setState(() {
+        _currentTab = _tabController.index;
+      });
+    });
+    _loadRestoId();
   }
 
   @override
@@ -94,21 +56,37 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
     super.dispose();
   }
 
+  /// Cari resto_id milik owner yang sedang login
+  Future<void> _loadRestoId() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty && mounted) {
+        setState(() {
+          _restoId = snapshot.docs.first.id;
+          _isLoadingRestoId = false;
+        });
+      } else {
+        if (mounted) setState(() => _isLoadingRestoId = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingRestoId = false);
+    }
+  }
+
   // Format price helper (e.g. 10000 -> Rp 10.000)
-  String _formatRupiah(double value) {
-    final String valStr = value.toInt().toString();
+  String _formatRupiah(int value) {
+    final String valStr = value.toString();
     final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
     final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
     return 'Rp $formatted';
-  }
-
-  // Filtered menus based on live search input and category filter
-  List<ItemMenu> get _filteredMenus {
-    return _menus.where((menu) {
-      final matchesSearch = menu.title.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory = _selectedFilter == 'Semua' || menu.category == _selectedFilter;
-      return matchesSearch && matchesCategory;
-    }).toList();
   }
 
   @override
@@ -141,8 +119,9 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                   fontWeight: FontWeight.w600,
                 ),
                 tabs: const [
-                  Tab(text: 'Daftar Menu'),
-                  Tab(text: 'Manajemen Meja'),
+                  Tab(text: 'Menu'),
+                  Tab(text: 'Promo'),
+                  Tab(text: 'Meja'),
                 ],
               ),
             ),
@@ -152,10 +131,13 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // Tab 1: Daftar Menu
+                  // Tab 1: Menu
                   _buildDaftarMenuTab(),
 
-                  // Tab 2: Manajemen Meja
+                  // Tab 2: Promo
+                  ManajemenPromoPage(isEmbedded: true),
+
+                  // Tab 3: Meja
                   _buildManajemenMejaTab(),
                 ],
               ),
@@ -164,25 +146,53 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
         ),
       ),
       // Floating Action Button
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90.0), // Elevate above the floating bottom navigation bar
-        child: FloatingActionButton(
-          onPressed: _showAddMenuDialog,
-          backgroundColor: const Color(0xFFED001E),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 28,
-          ),
-        ),
-      ),
+      floatingActionButton: _currentTab == 0
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 90.0), // Elevate above the floating bottom navigation bar
+              child: FloatingActionButton(
+                onPressed: _showAddMenuDialog,
+                backgroundColor: const Color(0xFFED001E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            )
+          : _currentTab == 1
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 90.0),
+                  child: FloatingActionButton.extended(
+                    onPressed: () async {
+                      if (_restoId == null) return;
+                      await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TambahPromoPage(restoId: _restoId!),
+                        ),
+                      );
+                    },
+                    backgroundColor: const Color(0xFFED001E),
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: Text(
+                      'Buat Promo',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              : null,
     );
   }
 
   Widget _buildAppBar() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -213,41 +223,82 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 12),
           // Restaurant Name
-          Text(
-            'Nama Resto',
-            style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          Expanded(
+            child: Center(
+              child: uid == null
+                  ? MarqueeText(
+                      text: 'Nama Resto',
+                      style: GoogleFonts.outfit(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    )
+                  : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('restaurants')
+                          .where('owner_id', isEqualTo: uid)
+                          .limit(1)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        String name = 'Nama Resto';
+                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                          name = snapshot.data!.docs.first.data()['nama'] ?? 'Nama Resto';
+                        }
+                        return MarqueeText(
+                          text: name,
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        );
+                      },
+                    ),
             ),
           ),
-          const Spacer(),
-          // Resto Profile Picture
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9D9D9),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFED001E),
-                width: 1.5,
-              ),
-              image: const DecorationImage(
-                image: NetworkImage('https://i.pravatar.cc/150?img=33'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          const SizedBox(width: 52),
         ],
       ),
     );
   }
 
   Widget _buildDaftarMenuTab() {
-    final menusToDisplay = _filteredMenus;
+    if (_isLoadingRestoId) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+      );
+    }
+
+    if (_restoId == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.store_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Resto tidak ditemukan',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Pastikan akun Anda terdaftar sebagai owner resto',
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       children: [
@@ -260,7 +311,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -319,7 +370,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                     ),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: const Color(0xFFED001E).withOpacity(0.15),
+                        color: const Color(0xFFED001E).withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       )
@@ -340,53 +391,151 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
         ),
         const SizedBox(height: 16),
 
-        // List View of Menu Cards
+        // List View of Menu Cards — StreamBuilder dari Firestore
         Expanded(
-          child: menusToDisplay.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    top: 8,
-                    bottom: 160, // Padding to avoid covering components by bottom navigation
+          child: StreamBuilder<List<MenuModel>>(
+            stream: MenuService.getMenusByResto(_restoId!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Gagal memuat menu',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
-                  itemCount: menusToDisplay.length,
-                  itemBuilder: (context, index) {
-                    final menu = menusToDisplay[index];
-                    return MenuCard(
-                      key: ValueKey(menu.id),
-                      title: menu.title,
-                      price: _formatRupiah(menu.price),
-                      imageUrl: menu.imageUrl,
-                      isAvailable: menu.isAvailable,
-                      onAvailabilityChanged: (val) {
-                        setState(() {
-                          menu.isAvailable = val;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Menu ${menu.title} sekarang ${val ? 'Tersedia' : 'Tidak Tersedia'}',
-                              style: GoogleFonts.outfit(),
-                            ),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: const Color(0xFF1C1C1C),
-                          ),
-                        );
-                      },
-                      onEditPressed: () => _showEditMenuDialog(menu),
-                      onDeletePressed: () => _showDeleteConfirmation(menu),
-                    );
-                  },
+                );
+              }
+
+              final allMenus = snapshot.data ?? [];
+              
+              // Client-side filter
+              final filteredMenus = allMenus.where((menu) {
+                final matchesSearch = menu.nama.toLowerCase().contains(_searchQuery.toLowerCase());
+                final matchesCategory = _selectedFilter == 'Semua' || menu.kategori == _selectedFilter;
+                return matchesSearch && matchesCategory;
+              }).toList();
+
+              if (filteredMenus.isEmpty) {
+                if (allMenus.isEmpty) {
+                  return _buildEmptyStateNoMenu();
+                }
+                return _buildEmptyStateSearch();
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 8,
+                  bottom: 160,
                 ),
+                itemCount: filteredMenus.length,
+                itemBuilder: (context, index) {
+                  final menu = filteredMenus[index];
+                  return MenuCard(
+                    key: ValueKey(menu.id),
+                    title: menu.nama,
+                    price: _formatRupiah(menu.harga),
+                    imageUrl: menu.imageUrl,
+                    isAvailable: menu.isAvailable,
+                    menuId: menu.id,
+                    onAvailabilityChanged: (val) async {
+                      try {
+                        await MenuService.toggleAvailability(menu.id, val);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Menu ${menu.nama} sekarang ${val ? 'Tersedia' : 'Tidak Tersedia'}',
+                                style: GoogleFonts.outfit(),
+                              ),
+                              duration: const Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: const Color(0xFF1C1C1C),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Gagal update ketersediaan: $e', style: GoogleFonts.outfit()),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: const Color(0xFFED001E),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    onEditPressed: () => _showEditMenuDialog(menu),
+                    onDeletePressed: () => _showDeleteConfirmation(menu),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyStateNoMenu() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFBEBEB),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.restaurant_menu_rounded,
+              size: 40,
+              color: Color(0xFFED001E),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Belum ada menu',
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap tombol + untuk menambahkan menu pertama',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyStateSearch() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -419,6 +568,25 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   }
 
   Widget _buildManajemenMejaTab() {
+    if (_isLoadingRestoId) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+      );
+    }
+
+    if (_restoId == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
+            'Gagal memuat data restoran. Pastikan Anda masuk sebagai Owner.',
+            style: GoogleFonts.outfit(color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
         left: 24,
@@ -437,7 +605,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -466,8 +634,10 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                 const SizedBox(height: 8),
                 TextField(
                   controller: _mejaController,
+                  enabled: !_isGeneratingQR,
+                  style: GoogleFonts.outfit(),
                   decoration: InputDecoration(
-                    hintText: 'Contoh: Meja 01',
+                    hintText: 'Contoh: 01, 02A, 12',
                     hintStyle: GoogleFonts.outfit(
                       color: const Color(0xFFADADAD),
                       fontSize: 14,
@@ -491,27 +661,71 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    if (_mejaController.text.trim().isNotEmpty) {
-                      setState(() {
-                        _mejaList.add(_mejaController.text.trim());
-                        _mejaController.clear();
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'QR Code berhasil digenerate',
-                            style: GoogleFonts.outfit(),
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: const Color(0xFF1C1C1C),
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 20),
+                  onPressed: _isGeneratingQR
+                      ? null
+                      : () async {
+                          final nomorMeja = _mejaController.text.trim();
+                          if (nomorMeja.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Nomor meja tidak boleh kosong!',
+                                  style: GoogleFonts.outfit(),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                backgroundColor: const Color(0xFFED001E),
+                              ),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isGeneratingQR = true);
+                          try {
+                            final exists = await TableService.checkTableExists(_restoId!, nomorMeja);
+                            if (exists) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Meja $nomorMeja sudah terdaftar!'),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: const Color(0xFFED001E),
+                                  ),
+                                );
+                              }
+                            } else {
+                              await TableService.tambahMeja(_restoId!, nomorMeja);
+                              _mejaController.clear();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('QR Code Meja $nomorMeja berhasil dibuat! 🎉'),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: const Color(0xFF2E7D32),
+                                  ),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Gagal membuat meja: $e')),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isGeneratingQR = false);
+                            }
+                          }
+                        },
+                  icon: _isGeneratingQR
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 20),
                   label: Text(
-                    'Generate QR',
+                    _isGeneratingQR ? 'Memproses...' : 'Generate QR',
                     style: GoogleFonts.outfit(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -544,8 +758,22 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
           ),
           const SizedBox(height: 16),
           
-          _mejaList.isEmpty
-              ? Center(
+          StreamBuilder<List<TableModel>>(
+            stream: TableService.getTablesStream(_restoId!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                  ),
+                );
+              }
+
+              final tables = snapshot.data ?? [];
+
+              if (tables.isEmpty) {
+                return Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32),
                     child: Text(
@@ -555,212 +783,329 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                       ),
                     ),
                   ),
-                )
-              : GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemCount: _mejaList.length,
-                  itemBuilder: (context, index) {
-                    final namaMeja = _mejaList[index];
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Header (Nama Meja + Delete Icon)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12, right: 4, top: 4),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    namaMeja,
-                                    style: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _mejaList.removeAt(index);
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: Color(0xFFED001E),
-                                    size: 20,
-                                  ),
-                                  splashRadius: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                          // QR Code Placeholder
-                          Expanded(
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF9F9F9),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFEEEEEE),
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.qr_code_2_rounded,
-                                  size: 70,
-                                  color: Color(0xFF1C1C1C),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Download Button
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Mengunduh QR Code $namaMeja...',
-                                      style: GoogleFonts.outfit(),
-                                    ),
-                                    behavior: SnackBarBehavior.floating,
-                                    backgroundColor: const Color(0xFF1C1C1C),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.download_rounded, color: Color(0xFFED001E), size: 16),
-                              label: Text(
-                                'Download',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFFED001E),
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFED001E).withOpacity(0.1),
-                                foregroundColor: const Color(0xFFED001E),
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                minimumSize: const Size(double.infinity, 32),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      ),
-                    );
-                  },
+                );
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.75,
                 ),
+                itemCount: tables.length,
+                itemBuilder: (context, index) {
+                  final table = tables[index];
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Header (Nama Meja + Delete Icon)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, right: 4, top: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Meja ${table.nomorMeja}',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => _showDeleteMejaConfirmation(table),
+                                icon: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: Color(0xFFED001E),
+                                  size: 20,
+                                ),
+                                splashRadius: 20,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // QR Code Render
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF9F9F9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFEEEEEE),
+                              ),
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                width: 90,
+                                height: 90,
+                                child: QrImageView(
+                                  data: table.qrData,
+                                  version: QrVersions.auto,
+                                  size: 90.0,
+                                  foregroundColor: const Color(0xFFED001E),
+                                  gapless: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Download/View Button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showQrPreviewDialog(table),
+                            icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFFED001E), size: 16),
+                            label: Text(
+                              'Lihat QR',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFED001E),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFED001E).withValues(alpha: 0.1),
+                              foregroundColor: const Color(0xFFED001E),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              minimumSize: const Size(double.infinity, 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPresetThumb(String url, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
-          image: DecorationImage(
-            image: NetworkImage(url),
-            fit: BoxFit.cover,
+  void _showQrPreviewDialog(TableModel table) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-        ),
-      ),
+          contentPadding: const EdgeInsets.all(24),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Meja ${table.nomorMeja}',
+                style: GoogleFonts.outfit(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
+                ),
+                child: SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: QrImageView(
+                    data: table.qrData,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                    foregroundColor: const Color(0xFFED001E),
+                    gapless: false,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Pindai QR Code di atas menggunakan aplikasi CariMakan untuk memesan menu langsung dari meja ini.',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFED001E),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  minimumSize: const Size(double.infinity, 44),
+                ),
+                child: Text(
+                  'Tutup',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteMejaConfirmation(TableModel table) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Hapus Meja ${table.nomorMeja}',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus Meja ${table.nomorMeja}?\nQR Code ini tidak akan bisa digunakan lagi.',
+            style: GoogleFonts.outfit(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.outfit(color: Colors.grey[600], fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  await TableService.hapusMeja(_restoId!, table.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Meja ${table.nomorMeja} berhasil dihapus!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus meja: $e'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFED001E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Hapus',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   // Show Add Menu Page
   void _showAddMenuDialog() async {
-    final newMenu = await Navigator.push<ItemMenu>(
+    if (_restoId == null) return;
+
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => const TambahMenuPage(),
+        builder: (context) => TambahMenuPage(restoId: _restoId!),
       ),
     );
 
-    if (newMenu != null) {
-      setState(() {
-        _menus.add(newMenu);
-      });
+    if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Menu ${newMenu.title} berhasil ditambahkan!',
+            'Menu berhasil ditambahkan! 🎉',
             style: GoogleFonts.outfit(),
           ),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFFED001E),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
     }
   }
 
   // Show Edit Menu Page
-  void _showEditMenuDialog(ItemMenu menu) async {
-    final updatedMenu = await Navigator.push<ItemMenu>(
+  void _showEditMenuDialog(MenuModel menu) async {
+    if (_restoId == null) return;
+
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => TambahMenuPage(menu: menu),
+        builder: (context) => TambahMenuPage(
+          restoId: _restoId!,
+          existingMenu: menu,
+        ),
       ),
     );
 
-    if (updatedMenu != null) {
-      setState(() {
-        menu.title = updatedMenu.title;
-        menu.price = updatedMenu.price;
-        menu.imageUrl = updatedMenu.imageUrl;
-        menu.category = updatedMenu.category;
-        menu.description = updatedMenu.description;
-        menu.isAvailable = updatedMenu.isAvailable;
-      });
+    if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Menu ${updatedMenu.title} berhasil diperbarui!',
+            'Menu ${menu.nama} berhasil diperbarui!',
             style: GoogleFonts.outfit(),
           ),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFFED001E),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
     }
   }
 
   // Show Delete Confirmation Modal
-  void _showDeleteConfirmation(ItemMenu menu) {
+  void _showDeleteConfirmation(MenuModel menu) {
     showDialog(
       context: context,
       builder: (context) {
@@ -773,7 +1118,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
             style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'Apakah Anda yakin ingin menghapus menu "${menu.title}"?',
+            'Apakah Anda yakin ingin menghapus menu "${menu.nama}"?\n\nSemua kustomisasi yang terkait juga akan dihapus.',
             style: GoogleFonts.outfit(),
           ),
           actions: [
@@ -785,21 +1130,33 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _menus.removeWhere((item) => item.id == menu.id);
-                });
+              onPressed: () async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Menu "${menu.title}" berhasil dihapus!',
-                      style: GoogleFonts.outfit(),
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: const Color(0xFFED001E),
-                  ),
-                );
+                try {
+                  await MenuService.hapusMenu(menu.id);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Menu "${menu.nama}" berhasil dihapus!',
+                          style: GoogleFonts.outfit(),
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus menu: $e', style: GoogleFonts.outfit()),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: const Color(0xFFED001E),
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFED001E),
@@ -815,6 +1172,73 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
           ],
         );
       },
+    );
+  }
+}
+
+class MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const MarqueeText({Key? key, required this.text, required this.style}) : super(key: key);
+
+  @override
+  State<MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<MarqueeText> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startScrolling());
+  }
+
+  void _startScrolling() async {
+    if (!_scrollController.hasClients) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted || !_scrollController.hasClients) return;
+    
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    if (maxScrollExtent <= 0) return;
+
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted || !_scrollController.hasClients) break;
+      await _scrollController.animateTo(
+        maxScrollExtent,
+        duration: Duration(milliseconds: (maxScrollExtent * 40).toInt()),
+        curve: Curves.linear,
+      );
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted || !_scrollController.hasClients) break;
+      await _scrollController.animateTo(
+        0.0,
+        duration: Duration(milliseconds: (maxScrollExtent * 40).toInt()),
+        curve: Curves.linear,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: Text(
+        widget.text,
+        style: widget.style,
+        maxLines: 1,
+      ),
     );
   }
 }

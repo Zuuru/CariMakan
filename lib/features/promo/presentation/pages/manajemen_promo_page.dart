@@ -8,7 +8,8 @@ import '../../data/promo_service.dart';
 import 'tambah_promo_page.dart';
 
 class ManajemenPromoPage extends StatefulWidget {
-  const ManajemenPromoPage({super.key});
+  final bool isEmbedded;
+  const ManajemenPromoPage({super.key, this.isEmbedded = false});
 
   @override
   State<ManajemenPromoPage> createState() => _ManajemenPromoPageState();
@@ -169,6 +170,20 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isEmbedded) {
+      return _isLoadingRestoId
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFED001E)))
+          : _restoId == null
+              ? _buildNoResto()
+              : Container(
+                  color: const Color(0xFFEFEFEF),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 120), // space for bottom navigation bar
+                    child: _buildPromoList(),
+                  ),
+                );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../widgets/resto_bottom_navbar.dart';
 import '../widgets/rekap_harian_card.dart';
-import '../widgets/pesanan_aktif_card.dart';
+import '../widgets/ulasan_resto_card.dart';
 import '../widgets/menu_terlaris_card.dart';
 import '../../../menu_resto/presentation/pages/manajemen_menu_page.dart';
 import '../../../recap_resto/presentation/pages/recap_page.dart';
@@ -114,7 +116,7 @@ class _HomeRestoPageState extends State<HomeRestoPage> {
         const SizedBox(height: 30),
         const RekapHarianCard(),
         const SizedBox(height: 30),
-        const PesananAktifCard(),
+        const UlasanRestoCard(),
         const SizedBox(height: 30),
         const MenuTerlarisCard(),
       ],
@@ -146,45 +148,96 @@ class _HomeRestoPageState extends State<HomeRestoPage> {
   }
 
   Widget _buildHeader() {
-    return Row(
-      children: [
-        // Profile Picture Placeholder
-        Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
-            color: Color(0xFFD9D9D9),
-            shape: BoxShape.circle,
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: const BoxDecoration(
+              color: Color(0xFFD9D9D9),
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        // Text
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Yo, Jett',
-                style: GoogleFonts.montserrat(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Yo, Resto',
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-              Text(
-                'Jl. Baskoro 38 Tembala...',
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF989898),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      );
+    }
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        String name = 'Resto';
+        String address = 'Lokasi belum diatur';
+
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          final data = snapshot.data!.docs.first.data();
+          name = data['nama'] ?? 'Resto';
+          address = data['lokasi_alamat'] ?? 'Lokasi belum diatur';
+        }
+
+        return Row(
+          children: [
+            // Profile Picture Placeholder
+            Container(
+              width: 50,
+              height: 50,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD9D9D9),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    address,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF989898),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

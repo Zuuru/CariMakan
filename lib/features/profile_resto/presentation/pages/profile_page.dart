@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'edit_profile_page.dart';
 import 'edit_profile_resto_page.dart';
 import 'manajemen_karyawan_page.dart';
-import '../../../promo/presentation/pages/manajemen_promo_page.dart';
 import '../../../splash/pages/splash_screen.dart';
 import '../../../home/presentation/pages/home_page.dart';
 
@@ -19,6 +19,104 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  String? _status;
+  double _rating = 0.0;
+  int _totalReview = 0;
+  String? _userName;
+  String? _userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRestoProfile();
+  }
+
+  Future<void> _loadRestoProfile() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      // Load user profile details
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (userDoc.exists && mounted) {
+        final userData = userDoc.data();
+        setState(() {
+          _userName = userData?['nama'] as String?;
+          _userEmail = userData?['email'] as String?;
+        });
+      }
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty && mounted) {
+        final data = snapshot.docs.first.data();
+        setState(() {
+          _status = data['status'] as String?;
+          _rating = (data['avg_rating'] as num?)?.toDouble() ?? 0.0;
+          _totalReview = (data['total_review'] as num?)?.toInt() ?? 0;
+        });
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  Widget _buildStatusBadge() {
+    final status = _status?.trim().toLowerCase() ?? 'pending';
+    Color badgeColor;
+    Color textColor;
+    IconData icon;
+    String label;
+
+    if (status == 'aktif') {
+      badgeColor = const Color(0xFF10B981);
+      textColor = const Color(0xFF10B981);
+      icon = Icons.check_circle;
+      label = 'Aktif';
+    } else if (status == 'pending') {
+      badgeColor = const Color(0xFFF59E0B);
+      textColor = const Color(0xFFF59E0B);
+      icon = Icons.pending_actions;
+      label = 'Pending';
+    } else {
+      badgeColor = const Color(0xFFEF4444);
+      textColor = const Color(0xFFEF4444);
+      icon = Icons.cancel;
+      label = 'Suspended';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: textColor,
+            size: 14,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Jett Heartcliff',
+          _userName ?? 'Memuat...',
           style: GoogleFonts.outfit(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -141,7 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 4),
         Text(
-          'jett.heartcliff@gourmet.com',
+          _userEmail ?? 'Memuat...',
           style: GoogleFonts.outfit(
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -171,33 +269,28 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildMenuItem(
             icon: Icons.person_outline,
             title: 'Edit Profil',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const EditProfilePage()),
               );
+              if (result == true) {
+                _loadRestoProfile();
+              }
             },
           ),
           const Divider(height: 1, color: Color(0xFFF3F4F6)),
           _buildMenuItem(
             icon: Icons.storefront_outlined,
             title: 'Edit Profil Resto',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const EditProfileRestoPage()),
               );
-            },
-          ),
-          const Divider(height: 1, color: Color(0xFFF3F4F6)),
-          _buildMenuItem(
-            icon: Icons.discount_outlined,
-            title: 'Manajemen Promo',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ManajemenPromoPage()),
-              );
+              if (result == true) {
+                _loadRestoProfile();
+              }
             },
           ),
         ],
@@ -315,32 +408,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: const Color(0xFF6B7280),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Color(0xFF10B981),
-                          size: 14,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Aktif',
-                          style: GoogleFonts.outfit(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF10B981),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildStatusBadge(),
                 ],
               ),
               const Padding(
@@ -366,7 +434,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '4.8/5.0',
+                        '${_rating.toStringAsFixed(1)}/5.0',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -392,7 +460,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   Text(
-                    '1.2k Review',
+                    '$_totalReview Review',
                     style: GoogleFonts.outfit(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

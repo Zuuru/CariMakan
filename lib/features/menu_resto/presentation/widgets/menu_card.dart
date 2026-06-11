@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class MenuCard extends StatelessWidget {
+import '../../data/menu_service.dart';
+import '../../data/option_group_model.dart';
+
+class MenuCard extends StatefulWidget {
+  final String menuId;
   final String title;
   final String price;
   final String? imageUrl;
@@ -12,6 +16,7 @@ class MenuCard extends StatelessWidget {
 
   const MenuCard({
     Key? key,
+    required this.menuId,
     required this.title,
     required this.price,
     this.imageUrl,
@@ -20,6 +25,34 @@ class MenuCard extends StatelessWidget {
     required this.onEditPressed,
     required this.onDeletePressed,
   }) : super(key: key);
+
+  @override
+  State<MenuCard> createState() => _MenuCardState();
+}
+
+class _MenuCardState extends State<MenuCard> {
+  int _variantCount = 0;
+  bool _isLoadingVariantCount = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVariantCount();
+  }
+
+  Future<void> _loadVariantCount() async {
+    try {
+      final groups = await MenuService.loadOptionGroupsWithItems(widget.menuId);
+      if (mounted) {
+        setState(() {
+          _variantCount = groups.length;
+          _isLoadingVariantCount = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingVariantCount = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +64,7 @@ class MenuCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -47,14 +80,14 @@ class MenuCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFEAEAEA),
               borderRadius: BorderRadius.circular(16),
-              image: imageUrl != null
+              image: widget.imageUrl != null
                   ? DecorationImage(
-                      image: NetworkImage(imageUrl!),
+                      image: NetworkImage(widget.imageUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: imageUrl == null
+            child: widget.imageUrl == null
                 ? const Icon(
                     Icons.fastfood_rounded,
                     color: Color(0xFFB0B0B0),
@@ -71,7 +104,7 @@ class MenuCard extends StatelessWidget {
               children: [
                 // Menu Title
                 Text(
-                  title,
+                  widget.title,
                   style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -81,16 +114,45 @@ class MenuCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // Menu Price
-                Text(
-                  price,
-                  style: GoogleFonts.outfit(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFED001E),
-                  ),
+                // Menu Price and Variant Badge
+                Row(
+                  children: [
+                    Text(
+                      widget.price,
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFED001E),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (!_isLoadingVariantCount && _variantCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBEBEB),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFED001E).withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.build_circle_outlined, size: 10, color: Color(0xFFED001E)),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$_variantCount kustom',
+                              style: GoogleFonts.outfit(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFED001E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 // Bottom Controls Row
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -111,8 +173,8 @@ class MenuCard extends StatelessWidget {
                       child: Transform.scale(
                         scale: 0.8,
                         child: Switch(
-                          value: isAvailable,
-                          onChanged: onAvailabilityChanged,
+                          value: widget.isAvailable,
+                          onChanged: widget.onAvailabilityChanged,
                           activeColor: Colors.white,
                           activeTrackColor: const Color(0xFFED001E),
                           inactiveThumbColor: Colors.white,
@@ -126,7 +188,7 @@ class MenuCard extends StatelessWidget {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: onEditPressed,
+                        onTap: widget.onEditPressed,
                         borderRadius: BorderRadius.circular(100),
                         child: Container(
                           width: 32,
@@ -151,7 +213,7 @@ class MenuCard extends StatelessWidget {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: onDeletePressed,
+                        onTap: widget.onDeletePressed,
                         borderRadius: BorderRadius.circular(100),
                         child: Container(
                           width: 32,

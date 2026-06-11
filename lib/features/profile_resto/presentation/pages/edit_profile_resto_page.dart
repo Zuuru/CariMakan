@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EditProfileRestoPage extends StatefulWidget {
   const EditProfileRestoPage({Key? key}) : super(key: key);
@@ -9,47 +11,223 @@ class EditProfileRestoPage extends StatefulWidget {
 }
 
 class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
-  final _namaRestController = TextEditingController(text: 'Gourmet Haven');
-  final _deskripsiController = TextEditingController(text: 'Menyajikan hidangan terbaik dengan cita rasa otentik.');
-  final _waRestController = TextEditingController(text: '081234567890');
+  final _namaRestController = TextEditingController();
+  final _deskripsiController = TextEditingController();
+  final _waRestController = TextEditingController();
   
-  TimeOfDay _jamBuka = const TimeOfDay(hour: 8, minute: 0);
-  TimeOfDay _jamTutup = const TimeOfDay(hour: 22, minute: 0);
+  final List<Map<String, dynamic>> _operasionalDays = [
+    {'day': 'Senin', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+    {'day': 'Selasa', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+    {'day': 'Rabu', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+    {'day': 'Kamis', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+    {'day': 'Jumat', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+    {'day': 'Sabtu', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+    {'day': 'Minggu', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
+  ];
 
   final List<String> _fasilitasTersedia = ['WiFi', 'AC', 'Smoking Area', 'Parkir Luas', 'Mushola', 'Toilet', 'VIP Room'];
-  final List<String> _fasilitasTerpilih = ['WiFi', 'AC', 'Parkir Luas'];
+  final List<String> _fasilitasTerpilih = [];
+
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String? _restoId;
+  double? _latitude;
+  double? _longitude;
 
   @override
-  void dispose() {
-    _namaRestController.dispose();
-    _deskripsiController.dispose();
-    _waRestController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadRestoData();
   }
 
-  Future<void> _selectTime(BuildContext context, bool isBuka) async {
+  Future<void> _loadRestoData() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty && mounted) {
+        final doc = snapshot.docs.first;
+        final data = doc.data();
+        _restoId = doc.id;
+        
+        _namaRestController.text = data['nama'] ?? '';
+        _deskripsiController.text = data['deskripsi'] ?? '';
+        _waRestController.text = data['url_whatsapp'] ?? '';
+        
+        if (data['lokasi'] is GeoPoint) {
+          final geo = data['lokasi'] as GeoPoint;
+          _latitude = geo.latitude;
+          _longitude = geo.longitude;
+        }
+
+        // Badges / Facilities
+        final badges = data['badges'] as List<dynamic>?;
+        if (badges != null) {
+          _fasilitasTerpilih.clear();
+          for (var item in badges) {
+            if (_fasilitasTersedia.contains(item.toString())) {
+              _fasilitasTerpilih.add(item.toString());
+            }
+          }
+        }
+
+        // Load operational hours from subcollection 'operational_hours'
+        final opHoursSnapshot = await doc.reference.collection('operational_hours').get();
+        if (opHoursSnapshot.docs.isNotEmpty) {
+          for (var opDoc in opHoursSnapshot.docs) {
+            final opData = opDoc.data();
+            final dayName = opData['day'] as String?;
+            final isOpen = opData['isOpen'] as bool? ?? false;
+            final openTimeStr = opData['openTime'] as String?;
+            final closeTimeStr = opData['closeTime'] as String?;
+
+            if (dayName != null) {
+              final index = _operasionalDays.indexWhere((element) => element['day'] == dayName);
+              if (index != -1) {
+                _operasionalDays[index]['isOpen'] = isOpen;
+                if (openTimeStr != null && openTimeStr.contains(':')) {
+                  final parts = openTimeStr.split(':');
+                  _operasionalDays[index]['openTime'] = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+                }
+                if (closeTimeStr != null && closeTimeStr.contains(':')) {
+                  final parts = closeTimeStr.split(':');
+                  _operasionalDays[index]['closeTime'] = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+                }
+              }
+            }
+          }
+        }
+
+        setState(() {
+          _isLoading = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat profil resto: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveRestoData() async {
+    if (_restoId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ID restoran tidak ditemukan!')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final docRef = FirebaseFirestore.instance.collection('restaurants').doc(_restoId);
+      
+      // Update restaurant doc
+      await docRef.update({
+        'nama': _namaRestController.text.trim(),
+        'deskripsi': _deskripsiController.text.trim(),
+        'url_whatsapp': _waRestController.text.trim(),
+        'badges': _fasilitasTerpilih,
+      });
+
+      // Update operational hours for all days in the subcollection
+      final batch = FirebaseFirestore.instance.batch();
+      for (var op in _operasionalDays) {
+        final day = op['day'] as String;
+        final isOpen = op['isOpen'] as bool;
+        final openTime = op['openTime'] as TimeOfDay;
+        final closeTime = op['closeTime'] as TimeOfDay;
+
+        final openTimeStr = '${openTime.hour.toString().padLeft(2, '0')}:${openTime.minute.toString().padLeft(2, '0')}';
+        final closeTimeStr = '${closeTime.hour.toString().padLeft(2, '0')}:${closeTime.minute.toString().padLeft(2, '0')}';
+
+        final dayRef = docRef.collection('operational_hours').doc(day);
+        batch.set(dayRef, {
+          'day': day,
+          'isOpen': isOpen,
+          'openTime': openTimeStr,
+          'closeTime': closeTimeStr,
+        }, SetOptions(merge: true));
+      }
+      await batch.commit();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profil restoran berhasil disimpan! 🎉', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFF2E7D32),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menyimpan perubahan: $e')),
+        );
+      }
+    }
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '${hour.toString().padLeft(2, '0')}.$minute $period';
+  }
+
+  Future<void> _selectTime(BuildContext context, int index, bool isOpenTime) async {
+    final Map<String, dynamic> dayData = _operasionalDays[index];
+    if (!dayData['isOpen']) return;
+
+    final TimeOfDay initialTime = isOpenTime ? dayData['openTime'] : dayData['closeTime'];
+    
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: isBuka ? _jamBuka : _jamTutup,
+      initialTime: initialTime,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFED001E), // header background color
-              onPrimary: Colors.white, // header text color
-              onSurface: Colors.black, // body text color
+              primary: Color(0xFFED001E),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
             ),
           ),
           child: child!,
         );
       },
     );
-    if (picked != null) {
+
+    if (picked != null && picked != initialTime) {
       setState(() {
-        if (isBuka) {
-          _jamBuka = picked;
+        if (isOpenTime) {
+          _operasionalDays[index]['openTime'] = picked;
         } else {
-          _jamTutup = picked;
+          _operasionalDays[index]['closeTime'] = picked;
         }
       });
     }
@@ -86,7 +264,11 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFED001E)),
+            )
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,8 +333,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
             ),
             
             const SizedBox(height: 24),
-            
-            // Jam Buka & Tutup
+            // Jam Operasional
             Text(
               'Jam Operasional',
               style: GoogleFonts.outfit(
@@ -162,24 +343,18 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTimePicker(
-                    label: 'Buka',
-                    time: _jamBuka,
-                    onTap: () => _selectTime(context, true),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTimePicker(
-                    label: 'Tutup',
-                    time: _jamTutup,
-                    onTap: () => _selectTime(context, false),
-                  ),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(
+                children: List.generate(_operasionalDays.length, (index) {
+                  return _buildDayRow(index);
+                }),
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -264,7 +439,9 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                           ),
                         ),
                         Text(
-                          '-6.200000, 106.816666',
+                          _latitude != null && _longitude != null
+                              ? '${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}'
+                              : '-6.200000, 106.816666',
                           style: GoogleFonts.outfit(
                             fontSize: 12,
                             color: const Color(0xFF6B7280),
@@ -298,10 +475,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Save logic
-                  Navigator.pop(context);
-                },
+                onPressed: _isSaving ? null : _saveRestoData,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFED001E),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -309,14 +483,20 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
-                  'Simpan Perubahan',
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        'Simpan Perubahan',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -371,46 +551,125 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
     );
   }
 
-  Widget _buildTimePicker({
-    required String label,
-    required TimeOfDay time,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF3F4F6)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    color: const Color(0xFF6B7280),
-                  ),
+  Widget _buildDayRow(int index) {
+    final Map<String, dynamic> dayData = _operasionalDays[index];
+    final bool isOpen = dayData['isOpen'] as bool? ?? false;
+    final String dayName = dayData['day'] as String? ?? '';
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: index == _operasionalDays.length - 1 ? 0 : 16.0),
+      child: Row(
+        children: [
+          // Custom Radio / Toggle
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _operasionalDays[index]['isOpen'] = !isOpen;
+              });
+            },
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isOpen ? Colors.transparent : const Color(0xFFD9D9D9),
+                border: Border.all(
+                  color: isOpen ? const Color(0xFFED001E) : Colors.grey.shade400,
+                  width: 2,
                 ),
-                Text(
-                  time.format(context),
-                  style: GoogleFonts.outfit(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1C1C1C),
-                  ),
-                ),
-              ],
+              ),
+              child: isOpen
+                  ? Center(
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFED001E),
+                        ),
+                      ),
+                    )
+                  : null,
             ),
-            const Icon(Icons.access_time, color: Color(0xFF9CA3AF)),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          
+          // Day Name
+          SizedBox(
+            width: 65,
+            child: Text(
+              dayName,
+              style: GoogleFonts.outfit(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: isOpen ? Colors.black : Colors.grey,
+              ),
+            ),
+          ),
+          
+          const Spacer(),
+          
+          // Open Time
+          GestureDetector(
+            onTap: () => _selectTime(context, index, true),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: isOpen ? Colors.white : const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isOpen ? const Color(0xFFED001E).withValues(alpha: 0.5) : Colors.grey.shade300,
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                _formatTime(dayData['openTime'] as TimeOfDay),
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isOpen ? Colors.black : Colors.grey,
+                ),
+              ),
+            ),
+          ),
+          
+          // Separator
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              '-',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isOpen ? Colors.black : Colors.grey,
+              ),
+            ),
+          ),
+          
+          // Close Time
+          GestureDetector(
+            onTap: () => _selectTime(context, index, false),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: isOpen ? Colors.white : const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isOpen ? const Color(0xFFED001E).withValues(alpha: 0.5) : Colors.grey.shade300,
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                _formatTime(dayData['closeTime'] as TimeOfDay),
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isOpen ? Colors.black : Colors.grey,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
