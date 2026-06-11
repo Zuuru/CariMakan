@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
+import '../../data/cart_service.dart';
 import 'payment_method_page.dart';
+import '../../../promo/data/promo_model.dart';
+import '../../../promo/data/promo_service.dart';
 
-class PembayaranPage extends StatelessWidget {
-  final String menuName;
-  final String menuImage;
-  final double menuPrice;
-  final double totalPrice; // Menu price + Add ons
-  final Map<String, List<Map<String, dynamic>>> selectedVariants;
+class PembayaranPage extends StatefulWidget {
+  final List<CartItemModel> cartItems;
+  final String restoId;
 
   const PembayaranPage({
     Key? key,
-    required this.menuName,
-    required this.menuImage,
-    required this.menuPrice,
-    required this.totalPrice,
-    required this.selectedVariants,
+    required this.cartItems,
+    required this.restoId,
   }) : super(key: key);
+
+  @override
+  State<PembayaranPage> createState() => _PembayaranPageState();
+}
+
+class _PembayaranPageState extends State<PembayaranPage> {
+  PromoModel? _selectedPromo;
 
   String _formatRupiah(double value) {
     final String valStr = value.toInt().toString();
@@ -26,21 +30,223 @@ class PembayaranPage extends StatelessWidget {
     return 'Rp $formatted';
   }
 
+  double _calculateDiscount(double totalPrice, PromoModel promo) {
+    if (promo.isPercent) {
+      double calculated = totalPrice * (promo.nilaiDiskon / 100.0);
+      if (promo.maksDiskon != null) {
+        if (calculated > promo.maksDiskon!) {
+          return promo.maksDiskon!.toDouble();
+        }
+      }
+      return calculated;
+    } else {
+      if (promo.nilaiDiskon > totalPrice) {
+        return totalPrice;
+      }
+      return promo.nilaiDiskon.toDouble();
+    }
+  }
+
+  void _showPromoBottomSheet(BuildContext context, double subtotal, int totalItems) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.6,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pilih Promo Resto',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.black),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: StreamBuilder<List<PromoModel>>(
+                  stream: PromoService.getPromosByResto(widget.restoId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator(color: Color(0xFFE30613)));
+                    }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Tidak ada promo tersedia saat ini',
+                          style: GoogleFonts.poppins(color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    // Filter only active and current promos
+                    final activePromos = snapshot.data!.where((promo) {
+                      return promo.isActive && 
+                             !promo.isExpired && 
+                             !promo.isUpcoming;
+                    }).toList();
+
+                    if (activePromos.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Tidak ada promo aktif',
+                          style: GoogleFonts.poppins(color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: activePromos.length,
+                      itemBuilder: (context, index) {
+                        final promo = activePromos[index];
+                        final bool meetsMinBelanja = subtotal >= promo.minBelanja;
+                        final bool meetsMinItem = totalItems >= promo.minItem;
+                        final bool isEligible = meetsMinBelanja && meetsMinItem;
+
+                        String ineligibilityReason = '';
+                        if (!meetsMinBelanja && !meetsMinItem) {
+                          ineligibilityReason = 'Belum memenuhi min. belanja ${widget.cartItems.isNotEmpty ? _formatRupiah(promo.minBelanja.toDouble()) : ''} & min. ${promo.minItem} item';
+                        } else if (!meetsMinBelanja) {
+                          ineligibilityReason = 'Belum memenuhi min. belanja ${_formatRupiah(promo.minBelanja.toDouble())}';
+                        } else if (!meetsMinItem) {
+                          ineligibilityReason = 'Belum memenuhi min. ${promo.minItem} item';
+                        }
+
+                        return Opacity(
+                          opacity: isEligible ? 1.0 : 0.6,
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isEligible ? const Color(0xFFFFF1F1) : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: _selectedPromo?.id == promo.id
+                                    ? const Color(0xFFE30613)
+                                    : (isEligible ? const Color(0xFFFFCDCD) : Colors.grey.shade300),
+                                width: _selectedPromo?.id == promo.id ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        promo.nama,
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: isEligible ? Colors.black : Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      promo.diskonLabel,
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: const Color(0xFFE30613),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  promo.deskripsi,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        isEligible ? 'Kode: ${promo.kode ?? "-"}' : ineligibilityReason,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 10,
+                                          color: isEligible ? Colors.black54 : Colors.red,
+                                          fontWeight: isEligible ? FontWeight.normal : FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isEligible)
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedPromo = promo;
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFE30613),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          _selectedPromo?.id == promo.id ? 'Terpasang' : 'Gunakan',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final double ppn = totalPrice * 0.10;
+    final double totalPrice = widget.cartItems.fold(0.0, (sum, item) => sum + (item.totalPrice * item.quantity));
+    final int totalItemsCount = widget.cartItems.fold(0, (sum, item) => sum + item.quantity);
+    final double discount = _selectedPromo != null ? _calculateDiscount(totalPrice, _selectedPromo!) : 0.0;
+    
+    // Tax calculated after discount
+    final double ppn = (totalPrice - discount) * 0.10;
     final double biayaLain = 1000.0;
-    final double finalTotal = totalPrice + ppn + biayaLain;
-
-    // Compile variant text
-    List<String> variantTexts = [];
-    selectedVariants.forEach((groupName, items) {
-      if (items.isNotEmpty) {
-        final itemNames = items.map((e) => e['nama']).join(', ');
-        variantTexts.add('$groupName: $itemNames');
-      }
-    });
-    String variantText = variantTexts.isEmpty ? 'Tidak ada kustomisasi' : variantTexts.join('\n');
+    final double finalTotal = (totalPrice - discount) + ppn + biayaLain;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -172,164 +378,157 @@ class PembayaranPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Order Item Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE30613),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          menuName,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          variantText,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _formatRupiah(totalPrice),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Edit',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFFE30613),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+            // Items List
+            Column(
+              children: widget.cartItems.map((item) {
+                // Compile variant text
+                List<String> variantTexts = [];
+                item.selectedVariants.forEach((groupName, opts) {
+                  if (opts.isNotEmpty) {
+                    final itemNames = opts.map((e) => e['nama']).join(', ');
+                    variantTexts.add('$groupName: $itemNames');
+                  }
+                });
+                String variantText = variantTexts.isEmpty ? 'Tidak ada kustomisasi' : variantTexts.join('\n');
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE30613),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: menuImage.startsWith('http')
-                              ? Image.network(
-                                  menuImage,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.asset(
-                                  menuImage,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.remove, color: Colors.white, size: 16),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '1',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: Colors.black,
-                                ),
-                              ),
+                            Text(
+                              item.menuName,
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.add, color: Colors.white, size: 16),
+                            const SizedBox(height: 4),
+                            Text(
+                              variantText,
+                              style: GoogleFonts.poppins(color: Colors.white, fontSize: 10),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _formatRupiah(item.totalPrice * item.quantity),
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Tambah Lainnya
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Mau nambah yang lain?',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
                       ),
-                      Text(
-                        'Tambah aja apa yang kamu suka nyak',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: Colors.black54,
+                      Expanded(
+                        flex: 4,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: item.menuImage.startsWith('http')
+                                  ? Image.network(item.menuImage, width: 80, height: 80, fit: BoxFit.cover)
+                                  : Image.asset(item.menuImage, width: 80, height: 80, fit: BoxFit.cover, errorBuilder: (ctx, err, trace) => Container(width: 80, height: 80, color: Colors.white24, child: const Icon(Icons.fastfood, color: Colors.white))),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                              child: Text('${item.quantity}x', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontWeight: FontWeight.bold, fontSize: 12)),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFE30613)),
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.white,
-                    ),
-                    child: Text(
-                      'Tambah',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFFE30613),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+
+            // Promo Resto Selector Widget
+            GestureDetector(
+              onTap: () => _showPromoBottomSheet(context, totalPrice, totalItemsCount),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF1F1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFCDCD)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.confirmation_number_outlined, color: Color(0xFFE30613), size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedPromo != null ? _selectedPromo!.nama : 'Pakai Promo Resto',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  _selectedPromo != null 
+                                      ? _selectedPromo!.deskripsi 
+                                      : 'Makin hemat pakai promo dari resto ini',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    color: Colors.black54,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                    _selectedPromo != null
+                        ? GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedPromo = null;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE30613),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, color: Colors.white, size: 14),
+                            ),
+                          )
+                        : Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE30613),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'Pilih',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -352,6 +551,10 @@ class PembayaranPage extends StatelessWidget {
               child: Column(
                 children: [
                   _buildPriceRow('Harga', _formatRupiah(totalPrice)),
+                  if (discount > 0) ...[
+                    const SizedBox(height: 8),
+                    _buildPriceRow('Potongan Promo', '- ${_formatRupiah(discount)}'),
+                  ],
                   const SizedBox(height: 8),
                   _buildPriceRow('PPN', _formatRupiah(ppn)),
                   const SizedBox(height: 8),
@@ -416,23 +619,23 @@ class PembayaranPage extends StatelessWidget {
                             const SizedBox(height: 24),
                             Row(
                               children: [
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(color: Color(0xFFE30613)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                    ),
-                                    child: Text(
-                                      'Ntar',
-                                      style: GoogleFonts.poppins(
-                                        color: const Color(0xFFE30613),
-                                        fontWeight: FontWeight.w600,
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(color: Color(0xFFE30613)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                      child: Text(
+                                        'Ntar',
+                                        style: GoogleFonts.poppins(
+                                          color: const Color(0xFFE30613),
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: ElevatedButton(
@@ -442,9 +645,12 @@ class PembayaranPage extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => PaymentMethodPage(
-                                            menuName: menuName,
+                                            cartItems: widget.cartItems,
                                             totalPrice: finalTotal,
-                                            selectedVariants: selectedVariants,
+                                            restoId: widget.restoId,
+                                            appliedPromo: _selectedPromo,
+                                            discount: discount,
+                                            subtotal: totalPrice,
                                           ),
                                         ),
                                       );

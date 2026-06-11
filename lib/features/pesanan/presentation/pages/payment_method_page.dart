@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
+import '../../data/cart_service.dart';
+import '../../../promo/data/promo_model.dart';
 import 'qris_scan_page.dart';
 
+
 class PaymentMethodPage extends StatelessWidget {
-  final String menuName;
+  final List<CartItemModel> cartItems;
   final double totalPrice;
-  final Map<String, List<Map<String, dynamic>>> selectedVariants;
+  final String restoId;
+  final PromoModel? appliedPromo;
+  final double discount;
+  final double subtotal;
 
   const PaymentMethodPage({
     Key? key,
-    required this.menuName,
+    required this.cartItems,
     required this.totalPrice,
-    required this.selectedVariants,
+    required this.restoId,
+    this.appliedPromo,
+    this.discount = 0.0,
+    required this.subtotal,
   }) : super(key: key);
 
   @override
@@ -157,9 +166,12 @@ class PaymentMethodPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => QrisScanPage(
-                      menuName: menuName,
+                      cartItems: cartItems,
                       totalPrice: totalPrice,
-                      selectedVariants: selectedVariants,
+                      restoId: restoId,
+                      appliedPromo: appliedPromo,
+                      discount: discount,
+                      subtotal: subtotal,
                     ),
                   ),
                 );

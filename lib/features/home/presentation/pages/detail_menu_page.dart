@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import '../../../pesanan/presentation/pages/pembayaran_page.dart';
+import '../../../pesanan/data/cart_service.dart';
 import '../../../menu_resto/data/menu_service.dart';
 import '../../../menu_resto/data/option_group_model.dart';
 import '../../../menu_resto/data/option_item_model.dart';
@@ -34,7 +35,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
   bool _isLoading = true;
   List<OptionGroupModel> _optionGroups = [];
   Map<String, Set<OptionItemModel>> _selectedOptions = {};
-  bool _isAddedToCart = false;
+  int _quantity = 1;
 
   @override
   void initState() {
@@ -98,9 +99,30 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
         return;
       }
     }
-    setState(() {
-      _isAddedToCart = true;
+    
+    // Format selected variants
+    Map<String, List<Map<String, dynamic>>> finalVariants = {};
+    _selectedOptions.forEach((groupId, items) {
+      final group = _optionGroups.firstWhere((g) => g.id == groupId);
+      finalVariants[group.nama] = items.map<Map<String, dynamic>>((item) => {
+        'nama': item.nama,
+        'hargaTambah': item.hargaTambah,
+      }).toList();
     });
+
+    final cartItem = CartItemModel(
+      menuId: widget.menuId,
+      menuName: widget.menuName,
+      menuImage: widget.menuImage,
+      basePrice: widget.menuPrice,
+      totalPrice: _totalPrice,
+      quantity: _quantity,
+      selectedVariants: finalVariants,
+    );
+
+    CartService.instance.addItem(widget.restoId, cartItem);
+    
+    Navigator.pop(context); // Go back to Resto Page
   }
 
   @override
@@ -269,7 +291,68 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                   else
                     ..._optionGroups.map((group) => _buildOptionGroup(group)).toList(),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 16),
+                  
+                  // Quantity Selector
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Jumlah',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              if (_quantity > 1) {
+                                setState(() {
+                                  _quantity--;
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: const Icon(Icons.remove, size: 16, color: Colors.black54),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            '$_quantity',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _quantity++;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFFE30613),
+                              ),
+                              child: const Icon(Icons.add, size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
 
                   // Footer Total & Add to Cart
                   Row(
@@ -287,7 +370,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                             ),
                           ),
                           Text(
-                            _formatRupiah(_totalPrice),
+                            _formatRupiah(_totalPrice * _quantity),
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
@@ -317,98 +400,11 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 80), // give space for floating cart
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-          
-          // Floating Cart Bar (Bottom)
-          if (_isAddedToCart)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: GestureDetector(
-                onTap: () {
-                  // Format selected variants for the next page
-                  Map<String, List<Map<String, dynamic>>> finalVariants = {};
-                  _selectedOptions.forEach((groupId, items) {
-                    final group = _optionGroups.firstWhere((g) => g.id == groupId);
-                    finalVariants[group.nama] = items.map<Map<String, dynamic>>((item) => {
-                      'nama': item.nama,
-                      'hargaTambah': item.hargaTambah,
-                    }).toList();
-                  });
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PembayaranPage(
-                        menuName: widget.menuName,
-                        menuImage: widget.menuImage,
-                        menuPrice: widget.menuPrice,
-                        totalPrice: _totalPrice,
-                        selectedVariants: finalVariants,
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(20),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE30613),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '1 item',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            widget.menuName,
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            _formatRupiah(_totalPrice),
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Icon(Icons.shopping_cart, color: Colors.white),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

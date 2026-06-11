@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import '../../data/pesanan_service.dart';
+import '../../data/cart_service.dart';
+import '../../../promo/data/promo_model.dart';
 import 'order_receipt_page.dart';
 
 class QrisScanPage extends StatefulWidget {
-  final String menuName;
+  final List<CartItemModel> cartItems;
   final double totalPrice;
-  final Map<String, List<Map<String, dynamic>>> selectedVariants;
+  final String restoId;
+  final PromoModel? appliedPromo;
+  final double discount;
+  final double subtotal;
 
   const QrisScanPage({
     Key? key,
-    required this.menuName,
+    required this.cartItems,
     required this.totalPrice,
-    required this.selectedVariants,
+    required this.restoId,
+    this.appliedPromo,
+    this.discount = 0.0,
+    required this.subtotal,
   }) : super(key: key);
 
   @override
@@ -95,10 +103,13 @@ class _QrisScanPageState extends State<QrisScanPage> {
                 });
                 
                 final orderId = await PesananService.createOrder(
-                  menuName: widget.menuName,
+                  cartItems: widget.cartItems,
                   totalPrice: widget.totalPrice,
                   paymentMethod: 'QRIS',
-                  customization: widget.selectedVariants,
+                  restoId: widget.restoId,
+                  appliedPromo: widget.appliedPromo,
+                  discount: widget.discount,
+                  subtotal: widget.subtotal,
                 );
 
                 if (mounted) {
@@ -107,12 +118,16 @@ class _QrisScanPageState extends State<QrisScanPage> {
                   });
 
                   if (orderId != 'error_creating_order') {
+                    CartService.instance.clearCart(widget.restoId);
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => OrderReceiptPage(
                           orderId: orderId,
-                          menuName: widget.menuName,
+                          menuName: widget.cartItems.length == 1 
+                              ? widget.cartItems.first.menuName 
+                              : '${widget.cartItems.length} items',
                           totalPrice: widget.totalPrice,
                         ),
                       ),
