@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:carimakan/core/services/midtrans_service.dart';
+import 'package:carimakan/features/order/midtrans_payment_page.dart';
 import 'cart_summary_bar.dart'; // File tempat globalCartQuantity & globalSubtotal berada
 
 class PembayaranPage extends StatefulWidget {
@@ -26,6 +29,7 @@ class PembayaranPage extends StatefulWidget {
 
 class _PembayaranPageState extends State<PembayaranPage> {
   int _itemQuantity = 1;
+  bool _isProcessingPayment = false;
 
   // Fungsi pembantu untuk mengubah format rupiah string menjadi integer murni
   int _parsePrice(String priceString) {
@@ -324,19 +328,32 @@ class _PembayaranPageState extends State<PembayaranPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _itemQuantity > 0 ? () {
-                    _showKonfirmasiDialog(context, totalSemua);
-                  } : null,
+                  onPressed: _itemQuantity > 0 && !_isProcessingPayment
+                      ? () => _showKonfirmasiDialog(context, totalSemua, totalHargaItem, ppn, biayaLainnya)
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE30613),
                     disabledBackgroundColor: Colors.grey[400],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text(
-                    'Gass Bayarr!!',
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  child: _isProcessingPayment
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          'Gass Bayarr!!',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -348,7 +365,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
   }
 
   // Dialog 1: Konfirmasi Pesanan
-  void _showKonfirmasiDialog(BuildContext context, int totalSemua) {
+  void _showKonfirmasiDialog(
+    BuildContext context,
+    int totalSemua,
+    int totalHargaItem,
+    int ppn,
+    int biayaLainnya,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -391,8 +414,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context); // Tutup Dialog Konfirmasi
-                          _showQrPaymentDialog(context, totalSemua); // Buka Dialog QR Code Bank
+                          Navigator.pop(context);
+                          _startMidtransPayment(
+                            totalSemua: totalSemua,
+                            totalHargaItem: totalHargaItem,
+                            ppn: ppn,
+                            biayaLainnya: biayaLainnya,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE30613),
@@ -413,78 +441,130 @@ class _PembayaranPageState extends State<PembayaranPage> {
     );
   }
 
-  // Dialog 2: Tampilan QR Code Pembayaran Bank / QRIS
-  void _showQrPaymentDialog(BuildContext context, int totalAmount) {
+  Future<void> _startMidtransPayment({
+    required int totalSemua,
+    required int totalHargaItem,
+    required int ppn,
+    required int biayaLainnya,
+  }) async {
+    setState(() => _isProcessingPayment = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final qrisResult = await MidtransService.createQrisCharge(
+        grossAmount: totalSemua,
+        itemName: widget.name,
+        itemPrice: totalHargaItem ~/ _itemQuantity,
+        itemQuantity: _itemQuantity,
+        ppn: ppn,
+        otherFee: biayaLainnya,
+        customerName: user?.displayName ?? 'Pelanggan CariMakan',
+        customerEmail: user?.email ?? 'customer@carimakan.app',
+      );
+
+      if (!mounted) return;
+
+      final paymentResult = await Navigator.push<MidtransPaymentResult>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MidtransQrisPage(qrisResult: qrisResult),
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (paymentResult != null) {
+        _showPaymentResultDialog(paymentResult, totalSemua);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorDialog('Gagal memulai pembayaran: $e');
+    } finally {
+      if (mounted) setState(() => _isProcessingPayment = false);
+    }
+  }
+
+  void _showPaymentResultDialog(MidtransPaymentResult result, int totalAmount) {
+    final isSuccess = result.status == MidtransPaymentStatus.success;
+    final isPending = result.status == MidtransPaymentStatus.pending;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
-          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Scan QRIS / Bank',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _formatRupiah(totalAmount),
-                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFFE30613)),
-                ),
-                const SizedBox(height: 20),
-                
-                // Box Wadah QR Code
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade300, width: 2),
-                  ),
-                  child: Image.asset(
-                    'assets/images/qr_code/qr_code.jpg', // Sesuaikan path gambar QR-mu di sini nanti
-                    height: 180,
-                    width: 180,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Tampilan cadangan jika file gambar belum ada di assets
-                      return const Icon(
-                        Icons.qr_code_2_rounded, 
-                        size: 180, 
-                        color: Colors.black,
-                      );
-                    },
-                  ),
+                Icon(
+                  isSuccess
+                      ? Icons.check_circle
+                      : isPending
+                          ? Icons.schedule
+                          : Icons.error_outline,
+                  size: 64,
+                  color: isSuccess
+                      ? Colors.green
+                      : isPending
+                          ? Colors.orange
+                          : const Color(0xFFE30613),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Silakan scan QR di atas melalui m-Banking atau E-Wallet pilihanmu.',
+                  isSuccess
+                      ? 'Pembayaran Berhasil!'
+                      : isPending
+                          ? 'Menunggu Pembayaran'
+                          : 'Pembayaran Gagal',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[600]),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  result.message ?? '',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600]),
+                ),
+                if (result.orderId != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Order ID: ${result.orderId}',
+                    style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[500]),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Text(
+                  _formatRupiah(totalAmount),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFE30613),
+                  ),
                 ),
                 const SizedBox(height: 24),
-                
-                // Tombol Selesai Pembayaran
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Menutup dialog QR
-                      // Di sini bisa ditambahkan logika transisi ke halaman sukses/nota jika diperlukan
-                    },
+                    onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE30613),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      'Sudah Bayar',
-                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                      'OK',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -493,6 +573,32 @@ class _PembayaranPageState extends State<PembayaranPage> {
           ),
         );
       },
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Oops!',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Tutup',
+              style: GoogleFonts.poppins(color: const Color(0xFFE30613)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
