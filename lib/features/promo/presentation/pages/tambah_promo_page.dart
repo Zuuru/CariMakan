@@ -87,7 +87,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.light(
-            primary: Color(0xFFB72B31),
+            primary: Color(0xFFD33400),
             onPrimary: Colors.white,
             onSurface: Colors.black,
           ),
@@ -229,13 +229,13 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                    color: const Color(0xFFD33400).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     _isEditMode ? Icons.edit_outlined : Icons.discount_outlined,
                     size: 64,
-                    color: const Color(0xFFB72B31),
+                    color: const Color(0xFFD33400),
                   ),
                 ),
               ),
@@ -383,8 +383,8 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB72B31),
-                    disabledBackgroundColor: const Color(0xFFB72B31).withValues(alpha: 0.5),
+                    backgroundColor: const Color(0xFFD33400),
+                    disabledBackgroundColor: const Color(0xFFD33400).withValues(alpha: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
@@ -504,7 +504,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFB72B31) : Colors.transparent,
+            color: isSelected ? const Color(0xFFD33400) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           alignment: Alignment.center,
@@ -614,7 +614,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFB72B31)),
+              borderSide: const BorderSide(color: Color(0xFFD33400)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

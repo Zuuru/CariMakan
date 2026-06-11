@@ -204,7 +204,7 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
         ),
       ),
       body: _isLoadingRestoId
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFB72B31)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)))
           : _restoId == null
               ? _buildNoResto()
               : _buildPromoList(),
@@ -218,7 +218,7 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
                   ),
                 );
               },
-              backgroundColor: const Color(0xFFB72B31),
+              backgroundColor: const Color(0xFFD33400),
               icon: const Icon(Icons.add, color: Colors.white),
               label: Text(
                 'Buat Promo',
@@ -267,7 +267,7 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFFB72B31)),
+            child: CircularProgressIndicator(color: Color(0xFFD33400)),
           );
         }
 
@@ -283,13 +283,13 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                      color: const Color(0xFFD33400).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.discount_outlined,
                       size: 64,
-                      color: Color(0xFFB72B31),
+                      color: Color(0xFFD33400),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -377,12 +377,12 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                  color: const Color(0xFFD33400).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.discount_outlined,
-                  color: Color(0xFFB72B31),
+                  color: Color(0xFFD33400),
                   size: 24,
                 ),
               ),

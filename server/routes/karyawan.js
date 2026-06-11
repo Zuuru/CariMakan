@@ -193,4 +193,56 @@ router.delete('/:uid', verifyOwner, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────
+// PATCH /karyawan/change-password/:uid
+// Body: { password }
+// → Ubah password Firebase Auth milik karyawan
+// ─────────────────────────────────────────────
+router.patch('/change-password/:uid', verifyOwner, async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { password } = req.body;
+    const { restoId } = req.owner;
+
+    // 1. Validasi input
+    if (!password) {
+      return res.status(400).json({ error: 'Password baru wajib diisi.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password minimal 6 karakter.' });
+    }
+
+    // 2. Ambil dokumen karyawan — pastikan milik resto owner ini
+    const karyawanDoc = await db.collection('users').doc(uid).get();
+
+    if (!karyawanDoc.exists) {
+      return res.status(404).json({ error: 'Karyawan tidak ditemukan.' });
+    }
+
+    const karyawanData = karyawanDoc.data();
+
+    if (karyawanData.role !== 'karyawan') {
+      return res.status(400).json({ error: 'User ini bukan karyawan.' });
+    }
+
+    if (karyawanData.resto_id !== restoId) {
+      return res.status(403).json({ error: 'Karyawan ini bukan milik resto Anda.' });
+    }
+
+    // 3. Update password di Firebase Auth via Admin SDK
+    await admin.auth().updateUser(uid, {
+      password: password,
+    });
+
+    return res.status(200).json({
+      message: 'Password karyawan berhasil diperbarui.',
+      data: { uid: uid },
+    });
+  } catch (error) {
+    console.error('Error ubah password karyawan:', error.message);
+    return res.status(500).json({ error: 'Gagal mengubah password karyawan: ' + error.message });
+  }
+});
+
 module.exports = router;

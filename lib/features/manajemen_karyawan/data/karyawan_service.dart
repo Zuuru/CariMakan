@@ -110,4 +110,29 @@ class KaryawanService {
       throw Exception(body['error'] ?? 'Gagal menghapus karyawan.');
     }
   }
+
+  /// **PATCH /karyawan/change-password/:uid**
+  ///
+  /// Mengubah password karyawan via backend Node.js.
+  static Future<void> ubahPasswordKaryawan({
+    required String uid,
+    required String newPassword,
+  }) async {
+    final headers = await _getHeaders();
+    final url = Uri.parse('${ApiConfig.baseUrl}/karyawan/change-password/$uid');
+
+    final response = await http.patch(
+      url,
+      headers: headers,
+      body: jsonEncode({
+        'password': newPassword,
+      }),
+    );
+
+    final body = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw Exception(body['error'] ?? 'Gagal mengubah password karyawan.');
+    }
+  }
 }

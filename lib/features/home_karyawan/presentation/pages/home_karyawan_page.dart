@@ -304,7 +304,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                     style: GoogleFonts.outfit(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFB72B31),
+                      color: const Color(0xFFD33400),
                     ),
                   ),
                 ),

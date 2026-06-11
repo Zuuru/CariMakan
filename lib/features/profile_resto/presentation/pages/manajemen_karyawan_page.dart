@@ -164,12 +164,115 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
     }
   }
 
+  /// Dialog ubah password karyawan
+  Future<void> _showUbahPasswordDialog(String uid, String nama) async {
+    final TextEditingController passwordController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    bool isPasswordObscured = true;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (builderContext, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                'Ubah Password Karyawan',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              ),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Masukkan password baru untuk $nama:',
+                      style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFF6B7280)),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: isPasswordObscured,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password baru wajib diisi.';
+                        }
+                        if (value.length < 6) {
+                          return 'Password minimal 6 karakter.';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Password Baru',
+                        labelStyle: GoogleFonts.outfit(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFD33400)),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isPasswordObscured ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setDialogState(() {
+                              isPasswordObscured = !isPasswordObscured;
+                            });
+                          },
+                        ),
+                      ),
+                      style: GoogleFonts.outfit(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text('Batal', style: GoogleFonts.outfit(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (formKey.currentState?.validate() != true) return;
+                    final newPassword = passwordController.text.trim();
+                    Navigator.pop(dialogContext); // close dialog
+
+                    try {
+                      _showLoadingDialog();
+                      await KaryawanService.ubahPasswordKaryawan(
+                        uid: uid,
+                        newPassword: newPassword,
+                      );
+                      if (mounted) Navigator.pop(context); // dismiss loading
+                      _showSnackBar('Password $nama berhasil diubah.', const Color(0xFF10B981));
+                    } catch (e) {
+                      if (mounted) Navigator.pop(context); // dismiss loading
+                      _showSnackBar('Gagal mengubah password: ${_cleanErrorMessage(e)}', const Color(0xFFE53935));
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD33400),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text('Simpan', style: GoogleFonts.outfit(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showLoadingDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFB72B31)),
+      builder: (dialogContext) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFD33400)),
       ),
     );
   }
@@ -217,7 +320,7 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
         ),
       ),
       body: _isLoadingRestoId
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFB72B31)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)))
           : _restoId == null
               ? Center(
                   child: Padding(
@@ -247,7 +350,7 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
                   ),
                 );
               },
-              backgroundColor: const Color(0xFFB72B31),
+              backgroundColor: const Color(0xFFD33400),
               icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
               label: Text(
                 'Tambah',
@@ -280,7 +383,7 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFFB72B31)),
+            child: CircularProgressIndicator(color: Color(0xFFD33400)),
           );
         }
 
@@ -296,13 +399,13 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB72B31).withValues(alpha: 0.1),
+                      color: const Color(0xFFD33400).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.people_outline,
                       size: 64,
-                      color: Color(0xFFB72B31),
+                      color: Color(0xFFD33400),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -387,7 +490,7 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
                       style: GoogleFonts.outfit(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFFB72B31),
+                        color: const Color(0xFFD33400),
                       ),
                     ),
                   )
@@ -444,6 +547,8 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
             onSelected: (value) {
               if (value == 'suspend') {
                 _toggleStatus(uid, nama, isAktif);
+              } else if (value == 'password') {
+                _showUbahPasswordDialog(uid, nama);
               } else if (value == 'hapus') {
                 _hapusKaryawan(uid, nama);
               }
@@ -460,6 +565,16 @@ class _ManajemenKaryawanPageState extends State<ManajemenKaryawanPage> {
                     ),
                     const SizedBox(width: 8),
                     Text(isAktif ? 'Suspend' : 'Aktifkan', style: GoogleFonts.outfit()),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'password',
+                child: Row(
+                  children: [
+                    const Icon(Icons.lock_outline, color: Color(0xFF1C1C1C), size: 20),
+                    const SizedBox(width: 8),
+                    Text('Ubah Password', style: GoogleFonts.outfit()),
                   ],
                 ),
               ),

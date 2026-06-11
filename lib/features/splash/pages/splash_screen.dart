@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/presentation/pages/home_page.dart';
+import '../../home_karyawan/presentation/pages/home_karyawan_page.dart';
 import 'forgot_password_page.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,12 +27,94 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     _currentPage = widget.showLoginImmediately ? 2 : 0;
     _pageController = PageController(initialPage: _currentPage);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkExistingSession();
+    });
+  }
+
+  Future<void> _checkExistingSession() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists && mounted) {
+          final userData = userDoc.data();
+          final role = userData?['role'] as String?;
+          final status = userData?['status'] as String?;
+
+          if (role == 'karyawan') {
+            if (status == 'suspend') {
+              await FirebaseAuth.instance.signOut();
+              
+              // Find owner phone number
+              String? ownerPhone;
+              final restoId = userData?['resto_id'] as String?;
+              if (restoId != null && restoId.isNotEmpty) {
+                final restoDoc = await FirebaseFirestore.instance.collection('restaurants').doc(restoId).get();
+                if (restoDoc.exists) {
+                  final ownerId = restoDoc.data()?['owner_id'] as String?;
+                  if (ownerId != null) {
+                    final ownerDoc = await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
+                    if (ownerDoc.exists) {
+                      ownerPhone = ownerDoc.data()?['url_whatsapp'] as String?;
+                    }
+                  }
+                  if (ownerPhone == null || ownerPhone.isEmpty) {
+                    ownerPhone = restoDoc.data()?['url_whatsapp'] as String?;
+                  }
+                }
+              }
+
+              if (mounted) {
+                _showSuspendedDialog(context, ownerPhone);
+                
+                // Proceed with splash flow
+                if (widget.showLoginImmediately) {
+                  _showLoginSheet();
+                } else {
+                  _playTeaserAnimation();
+                }
+              }
+              return;
+            } else {
+              // Active employee, redirect to employee home screen
+              if (mounted) {
+                final restoId = userData?['resto_id'] as String? ?? '';
+                final namaKaryawan = userData?['nama'] as String? ?? 'Karyawan';
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => KaryawanHomePage(
+                      restoId: restoId,
+                      namaKaryawan: namaKaryawan,
+                    ),
+                  ),
+                );
+              }
+              return;
+            }
+          } else {
+            // Normal user/owner
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const HomePage()),
+              );
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        // Fallback to normal flow if firestore check fails
+      }
+    }
+
+    if (mounted) {
       if (widget.showLoginImmediately) {
         _showLoginSheet();
       } else {
         _playTeaserAnimation();
       }
-    });
+    }
   }
 
   void _playTeaserAnimation() async {
@@ -322,11 +405,70 @@ class _LoginFormState extends State<_LoginForm> {
 
     setState(() => _isLoading = true);
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: _passwordController.text,
       );
 
+      final user = credential.user;
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          final role = userData?['role'] as String?;
+          final status = userData?['status'] as String?;
+
+          if (role == 'karyawan') {
+            if (status == 'suspend') {
+              await FirebaseAuth.instance.signOut();
+              
+              // Find owner phone number
+              String? ownerPhone;
+              final restoId = userData?['resto_id'] as String?;
+              if (restoId != null && restoId.isNotEmpty) {
+                final restoDoc = await FirebaseFirestore.instance.collection('restaurants').doc(restoId).get();
+                if (restoDoc.exists) {
+                  final ownerId = restoDoc.data()?['owner_id'] as String?;
+                  if (ownerId != null) {
+                    final ownerDoc = await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
+                    if (ownerDoc.exists) {
+                      ownerPhone = ownerDoc.data()?['url_whatsapp'] as String?;
+                    }
+                  }
+                  if (ownerPhone == null || ownerPhone.isEmpty) {
+                    ownerPhone = restoDoc.data()?['url_whatsapp'] as String?;
+                  }
+                }
+              }
+
+              if (mounted) {
+                setState(() => _isLoading = false);
+                _showSuspendedDialog(context, ownerPhone);
+              }
+              return;
+            } else {
+              // Active employee, redirect to employee home screen
+              if (mounted) {
+                final restoId = userData?['resto_id'] as String? ?? '';
+                final namaKaryawan = userData?['nama'] as String? ?? 'Karyawan';
+                Navigator.of(context).pop(); // Close bottom sheet
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => KaryawanHomePage(
+                      restoId: restoId,
+                      namaKaryawan: namaKaryawan,
+                    ),
+                  ),
+                );
+              }
+              return;
+            }
+          }
+        }
+      }
+
+      // Default redirect for customers/owners
       if (mounted) {
         Navigator.of(context).pop(); // Close bottom sheet
         Navigator.pushReplacement(
@@ -1249,4 +1391,87 @@ class _SplashPage3State extends State<SplashPage3>
       ],
     );
   }
+}
+
+void _showSuspendedDialog(BuildContext context, String? ownerPhone) {
+  showDialog(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: Colors.white,
+      title: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Color(0xFFD33400), size: 28),
+          const SizedBox(width: 12),
+          Text(
+            'Akun Ditangguhkan',
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1C1C1C),
+              fontSize: 20,
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Akun karyawan Anda telah ditangguhkan (suspended) oleh pemilik restoran.',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF4B5563),
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Silakan hubungi pemilik restoran Anda untuk mengaktifkan kembali akun.',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF4B5563),
+              fontSize: 15,
+            ),
+          ),
+          if (ownerPhone != null && ownerPhone.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD33400).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.phone, color: Color(0xFFD33400), size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: SelectableText(
+                      ownerPhone,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFD33400),
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF6B7280),
+          ),
+          child: Text(
+            'Tutup',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
 }
