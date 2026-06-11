@@ -802,6 +802,8 @@ class _RestoPageState extends State<RestoPage> {
                           builder: (context) => PembayaranPage(
                             cartItems: items,
                             restoId: widget.restoId,
+                            tableId: widget.tableId,
+                            nomorMeja: widget.nomorMeja,
                           ),
                         ),
                       );

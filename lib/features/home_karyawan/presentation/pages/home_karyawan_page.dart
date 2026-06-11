@@ -28,62 +28,6 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
   // Nama resto dari Firestore
   String _namaResto = 'Resto';
 
-  // Mock Data for Orders (nanti bisa diganti Firestore stream)
-  final List<Map<String, dynamic>> _orders = [
-    {
-      'id': '1',
-      'queueNumber': '#10',
-      'type': 'Dine In',
-      'tableOrPickupInfo': 'Meja 01',
-      'time': '10:30',
-      'status': 'Menunggu',
-      'notes': 'Tolong es teh nya jangan terlalu manis.',
-      'items': [
-        {'name': 'Mie Ayam', 'qty': 2, 'note': ''},
-        {'name': 'Es Teh', 'qty': 2, 'note': 'Sedikit gula'},
-        {'name': 'Pangsit Goreng', 'qty': 1, 'note': ''},
-      ]
-    },
-    {
-      'id': '2',
-      'queueNumber': '#11',
-      'type': 'Take Away',
-      'tableOrPickupInfo': '11:00',
-      'time': '10:35',
-      'status': 'Diproses',
-      'notes': '',
-      'items': [
-        {'name': 'Nasi Goreng Spesial', 'qty': 1, 'note': 'Pedas level 3'},
-        {'name': 'Es Jeruk', 'qty': 1, 'note': ''},
-      ]
-    },
-    {
-      'id': '3',
-      'queueNumber': '#12',
-      'type': 'Dine In',
-      'tableOrPickupInfo': 'Meja 04',
-      'time': '10:40',
-      'status': 'Siap',
-      'notes': '',
-      'items': [
-        {'name': 'Ayam Bakar Madu', 'qty': 3, 'note': ''},
-        {'name': 'Nasi Putih', 'qty': 3, 'note': ''},
-      ]
-    },
-    {
-      'id': '4',
-      'queueNumber': '#14',
-      'type': 'Take Away',
-      'tableOrPickupInfo': '12:15',
-      'time': '10:50',
-      'status': 'Menunggu',
-      'notes': 'Minta tambahan sambal yang banyak.',
-      'items': [
-        {'name': 'Sate Ayam', 'qty': 2, 'note': 'Bumbu kacang pisah'},
-      ]
-    }
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -137,17 +81,18 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
   }
 
   void _updateOrderStatus(String id, String newStatus) {
-    setState(() {
-      final index = _orders.indexWhere((o) => o['id'] == id);
-      if (index != -1) {
-        _orders[index]['status'] = newStatus;
-      }
+    FirebaseFirestore.instance.collection('orders').doc(id).update({
+      'status': newStatus,
+    }).catchError((e) {
+      _showSnackBar('Gagal memperbarui status: $e');
     });
   }
 
   void _removeOrder(String id) {
-    setState(() {
-      _orders.removeWhere((o) => o['id'] == id);
+    FirebaseFirestore.instance.collection('orders').doc(id).update({
+      'status': 'Selesai',
+    }).catchError((e) {
+      _showSnackBar('Gagal menyelesaikan pesanan: $e');
     });
   }
 
@@ -192,15 +137,15 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Logout', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text('Logout', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         content: Text(
           'Apakah Anda yakin ingin keluar?',
-          style: GoogleFonts.outfit(),
+          style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Batal', style: GoogleFonts.outfit(color: Colors.grey)),
+            child: Text('Batal', style: GoogleFonts.poppins(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -208,7 +153,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
               backgroundColor: const Color(0xFFE53935),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text('Logout', style: GoogleFonts.outfit(color: Colors.white)),
+            child: Text('Logout', style: GoogleFonts.poppins(color: Colors.white)),
           ),
         ],
       ),
@@ -229,9 +174,6 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter orders based on selected tab
-    final filteredOrders = _orders.where((o) => o['type'] == _selectedTab).toList();
-
     return Scaffold(
       backgroundColor: const Color(0xFFEFEFEF),
       body: SafeArea(
@@ -240,8 +182,19 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
             _buildHeader(),
             _buildTabs(),
             Expanded(
-              child: filteredOrders.isEmpty
-                  ? Center(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('orders')
+                    .where('resto_id', isEqualTo: widget.restoId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFD33400)),
+                    );
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(
                       child: Text(
                         'Tidak ada order $_selectedTab aktif',
                         style: GoogleFonts.outfit(
@@ -249,23 +202,122 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                           color: const Color(0xFF9CA3AF),
                         ),
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      itemCount: filteredOrders.length,
-                      itemBuilder: (context, index) {
-                        final order = filteredOrders[index];
-                        return OrderKaryawanCard(
-                          queueNumber: order['queueNumber'],
-                          type: order['type'],
-                          tableOrPickupInfo: order['tableOrPickupInfo'],
-                          items: order['items'],
-                          orderTime: order['time'],
-                          status: order['status'],
-                          onTap: () => _showOrderDetail(context, order),
-                        );
-                      },
-                    ),
+                    );
+                  }
+
+                  final List<Map<String, dynamic>> ordersList = [];
+                  for (final doc in snapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final statusRaw = data['status'] ?? 'paid';
+
+                    if (statusRaw == 'Selesai') continue;
+
+                    String uiStatus = 'Menunggu';
+                    if (statusRaw == 'Diproses') {
+                      uiStatus = 'Diproses';
+                    } else if (statusRaw == 'Siap') {
+                      uiStatus = 'Siap';
+                    }
+
+                    final orderType = data['type'] ?? 'Dine In';
+                    if (orderType != _selectedTab) continue;
+
+                    final rawItems = data['items'] as List<dynamic>? ?? [];
+                    final List<Map<String, dynamic>> itemsList = [];
+                    for (final item in rawItems) {
+                      if (item is Map) {
+                        final customization = item['customization'] as Map<dynamic, dynamic>?;
+                        final List<String> variantTexts = [];
+                        if (customization != null) {
+                          customization.forEach((groupName, opts) {
+                            if (opts is List && opts.isNotEmpty) {
+                              final itemNames = opts.map((e) {
+                                if (e is Map) {
+                                  return e['nama'] ?? '';
+                                }
+                                return '';
+                              }).where((name) => name.isNotEmpty).join(', ');
+                              if (itemNames.isNotEmpty) {
+                                variantTexts.add('$groupName: $itemNames');
+                              }
+                            }
+                          });
+                        }
+                        final String itemNote = variantTexts.join(', ');
+
+                        itemsList.add({
+                          'name': item['menuName'] ?? '',
+                          'qty': item['quantity'] ?? 1,
+                          'note': itemNote,
+                        });
+                      }
+                    }
+
+                    String timeDisplay = '';
+                    final timestamp = data['orderDate'] as Timestamp?;
+                    if (timestamp != null) {
+                      final dt = timestamp.toDate().toLocal();
+                      final hour = dt.hour.toString().padLeft(2, '0');
+                      final minute = dt.minute.toString().padLeft(2, '0');
+                      timeDisplay = '$hour:$minute';
+                    } else {
+                      final dt = DateTime.now();
+                      final hour = dt.hour.toString().padLeft(2, '0');
+                      final minute = dt.minute.toString().padLeft(2, '0');
+                      timeDisplay = '$hour:$minute';
+                    }
+
+                    ordersList.add({
+                      'id': doc.id,
+                      'queueNumber': data['queueNumber'] ?? ('#' + doc.id.substring(doc.id.length - 2).toUpperCase()),
+                      'type': orderType,
+                      'tableOrPickupInfo': data['tableOrPickupInfo'] ?? '',
+                      'time': timeDisplay,
+                      'status': uiStatus,
+                      'notes': '',
+                      'items': itemsList,
+                      'orderDate': timestamp,
+                    });
+                  }
+
+                  ordersList.sort((a, b) {
+                    final tA = a['orderDate'] as Timestamp?;
+                    final tB = b['orderDate'] as Timestamp?;
+                    if (tA == null) return 1;
+                    if (tB == null) return -1;
+                    return tA.compareTo(tB);
+                  });
+
+                  if (ordersList.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Tidak ada order $_selectedTab aktif',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    itemCount: ordersList.length,
+                    itemBuilder: (context, index) {
+                      final order = ordersList[index];
+                      return OrderKaryawanCard(
+                        queueNumber: order['queueNumber'],
+                        type: order['type'],
+                        tableOrPickupInfo: order['tableOrPickupInfo'],
+                        items: order['items'],
+                        orderTime: order['time'],
+                        status: order['status'],
+                        onTap: () => _showOrderDetail(context, order),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

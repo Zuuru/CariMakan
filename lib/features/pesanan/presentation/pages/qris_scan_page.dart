@@ -13,6 +13,8 @@ class QrisScanPage extends StatefulWidget {
   final PromoModel? appliedPromo;
   final double discount;
   final double subtotal;
+  final String type;
+  final String tableOrPickupInfo;
 
   const QrisScanPage({
     Key? key,
@@ -22,6 +24,8 @@ class QrisScanPage extends StatefulWidget {
     this.appliedPromo,
     this.discount = 0.0,
     required this.subtotal,
+    required this.type,
+    required this.tableOrPickupInfo,
   }) : super(key: key);
 
   @override
@@ -110,6 +114,8 @@ class _QrisScanPageState extends State<QrisScanPage> {
                   appliedPromo: widget.appliedPromo,
                   discount: widget.discount,
                   subtotal: widget.subtotal,
+                  type: widget.type,
+                  tableOrPickupInfo: widget.tableOrPickupInfo,
                 );
 
                 if (mounted) {

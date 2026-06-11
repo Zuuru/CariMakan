@@ -9,11 +9,15 @@ import '../../../promo/data/promo_service.dart';
 class PembayaranPage extends StatefulWidget {
   final List<CartItemModel> cartItems;
   final String restoId;
+  final String? tableId;
+  final String? nomorMeja;
 
   const PembayaranPage({
     Key? key,
     required this.cartItems,
     required this.restoId,
+    this.tableId,
+    this.nomorMeja,
   }) : super(key: key);
 
   @override
@@ -22,6 +26,145 @@ class PembayaranPage extends StatefulWidget {
 
 class _PembayaranPageState extends State<PembayaranPage> {
   PromoModel? _selectedPromo;
+  String _deliveryType = 'Take Away';
+  String? _nomorMeja;
+
+  @override
+  void initState() {
+    super.initState();
+    _nomorMeja = widget.nomorMeja;
+    if (_nomorMeja != null && _nomorMeja!.isNotEmpty) {
+      _deliveryType = 'Dine In';
+    }
+  }
+
+  void _showDeliveryTypeBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        String? localNomorMeja = _nomorMeja;
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pilih Opsi Pengiriman',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ListTile(
+                    leading: const Icon(Icons.restaurant, color: Color(0xFFD33400)),
+                    title: Text(
+                      localNomorMeja != null && localNomorMeja!.isNotEmpty
+                          ? 'Dine In (Meja $localNomorMeja)'
+                          : 'Dine In',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: localNomorMeja == null || localNomorMeja!.isEmpty
+                        ? Text('Masukkan nomor meja Anda', style: GoogleFonts.poppins(fontSize: 12))
+                        : null,
+                    trailing: _deliveryType == 'Dine In' && localNomorMeja != null && localNomorMeja!.isNotEmpty
+                        ? const Icon(Icons.check_circle, color: Color(0xFFD33400))
+                        : null,
+                    onTap: () async {
+                      final nomor = await _showTableNumberDialog(localNomorMeja);
+                      if (nomor != null && nomor.isNotEmpty) {
+                        setModalState(() {
+                          localNomorMeja = nomor;
+                        });
+                        setState(() {
+                          _deliveryType = 'Dine In';
+                          _nomorMeja = nomor;
+                        });
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.shopping_bag_outlined, color: Color(0xFFD33400)),
+                    title: Text(
+                      'Takeaway',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: _deliveryType == 'Take Away'
+                        ? const Icon(Icons.check_circle, color: Color(0xFFD33400))
+                        : null,
+                    onTap: () {
+                      setState(() {
+                        _deliveryType = 'Take Away';
+                        _nomorMeja = null;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<String?> _showTableNumberDialog(String? currentNumber) async {
+    final controller = TextEditingController(text: currentNumber);
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Nomor Meja',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              hintText: 'Masukkan nomor meja (misal: 03)',
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFFD33400)),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.poppins(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, controller.text.trim());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD33400),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                'Simpan',
+                style: GoogleFonts.poppins(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   String _formatRupiah(double value) {
     final String valStr = value.toInt().toString();
@@ -274,51 +417,64 @@ class _PembayaranPageState extends State<PembayaranPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Delivery Type
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
+            GestureDetector(
+              onTap: _showDeliveryTypeBottomSheet,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF1F1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _deliveryType == 'Dine In'
+                                ? Icons.restaurant
+                                : Icons.shopping_bag_outlined,
+                            color: const Color(0xFFD33400),
+                            size: 20,
+                          ),
                         ),
-                        child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFFD33400), size: 20),
+                        const SizedBox(width: 12),
+                        Text(
+                          _deliveryType == 'Dine In'
+                              ? (_nomorMeja != null && _nomorMeja!.isNotEmpty
+                                  ? 'Dine In (Meja $_nomorMeja)'
+                                  : 'Dine In')
+                              : 'Takeaway',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFD33400)),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Takeaway',
+                      child: Text(
+                        'Ganti',
                         style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          color: const Color(0xFFD33400),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFD33400)),
-                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(
-                      'Ganti',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFFD33400),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -651,6 +807,10 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                             appliedPromo: _selectedPromo,
                                             discount: discount,
                                             subtotal: totalPrice,
+                                            type: _deliveryType,
+                                            tableOrPickupInfo: _deliveryType == 'Dine In'
+                                                ? 'Meja ${_nomorMeja ?? "-"}'
+                                                : 'Take Away',
                                           ),
                                         ),
                                       );

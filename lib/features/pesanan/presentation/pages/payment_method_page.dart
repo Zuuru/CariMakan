@@ -5,6 +5,7 @@ import 'package:carimakan/core/services/midtrans_service.dart';
 import 'package:carimakan/features/order/midtrans_payment_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/cart_service.dart';
+import '../../data/pesanan_service.dart';
 import '../../../promo/data/promo_model.dart';
 import 'order_receipt_page.dart';
 
@@ -15,6 +16,8 @@ class PaymentMethodPage extends StatefulWidget {
   final PromoModel? appliedPromo;
   final double discount;
   final double subtotal;
+  final String type;
+  final String tableOrPickupInfo;
 
   const PaymentMethodPage({
     Key? key,
@@ -24,6 +27,8 @@ class PaymentMethodPage extends StatefulWidget {
     this.appliedPromo,
     this.discount = 0.0,
     required this.subtotal,
+    required this.type,
+    required this.tableOrPickupInfo,
   }) : super(key: key);
 
   @override
@@ -79,12 +84,27 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       if (!mounted) return;
 
       if (paymentResult != null && paymentResult.status == MidtransPaymentStatus.success) {
-        // Clear global cart after successful payment if necessary, or just navigate to OrderReceiptPage
+        // Clear global cart after successful payment
+        CartService.instance.clearCart(widget.restoId);
+
+        // Write order to Firestore
+        final orderId = await PesananService.createOrder(
+          cartItems: widget.cartItems,
+          totalPrice: widget.totalPrice,
+          paymentMethod: 'QRIS',
+          restoId: widget.restoId,
+          appliedPromo: widget.appliedPromo,
+          discount: widget.discount,
+          subtotal: widget.subtotal,
+          type: widget.type,
+          tableOrPickupInfo: widget.tableOrPickupInfo,
+        );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => OrderReceiptPage(
-              orderId: paymentResult.orderId ?? 'CM-${DateTime.now().millisecondsSinceEpoch}',
+              orderId: orderId,
               menuName: itemName,
               totalPrice: widget.totalPrice,
             ),
