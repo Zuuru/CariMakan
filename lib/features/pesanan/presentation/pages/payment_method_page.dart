@@ -117,7 +117,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Tutup',
-              style: GoogleFonts.poppins(color: const Color(0xFFE30613)),
+              style: GoogleFonts.poppins(color: const Color(0xFFD33400)),
             ),
           ),
         ],
@@ -219,7 +219,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFE30613),
+                          color: const Color(0xFFD33400),
                         ),
                       ),
                     ],
@@ -234,7 +234,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               color: Colors.black.withOpacity(0.3),
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFFE30613),
+                  color: Color(0xFFD33400),
                 ),
               ),
             ),
@@ -255,11 +255,11 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: const Color(0xFFE30613), width: 1.5),
+          border: Border.all(color: const Color(0xFFD33400), width: 1.5),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFE30613).withOpacity(0.05),
+              color: const Color(0xFFD33400).withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -267,7 +267,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         ),
         child: Row(
           children: [
-            Image.asset(imagePath, height: 28, errorBuilder: (context, error, stackTrace) => const Icon(Icons.qr_code, color: Color(0xFFE30613))),
+            Image.asset(imagePath, height: 28, errorBuilder: (context, error, stackTrace) => const Icon(Icons.qr_code, color: Color(0xFFD33400))),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -292,7 +292,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFFE30613)),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFFD33400)),
           ],
         ),
       ),

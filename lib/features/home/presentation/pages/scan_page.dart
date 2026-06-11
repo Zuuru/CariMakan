@@ -72,7 +72,7 @@ class _ScanPageState extends State<ScanPage> {
                       barrierDismissible: false,
                       builder: (context) => const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFFED001E),
+                          color: Color(0xFFD33400),
                         ),
                       ),
                     );

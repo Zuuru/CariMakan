@@ -86,7 +86,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   stream: PromoService.getPromosByResto(widget.restoId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator(color: Color(0xFFE30613)));
+                      return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Center(
@@ -140,7 +140,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: _selectedPromo?.id == promo.id
-                                    ? const Color(0xFFE30613)
+                                    ? const Color(0xFFD33400)
                                     : (isEligible ? const Color(0xFFFFCDCD) : Colors.grey.shade300),
                                 width: _selectedPromo?.id == promo.id ? 2 : 1,
                               ),
@@ -166,7 +166,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                       style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
-                                        color: const Color(0xFFE30613),
+                                        color: const Color(0xFFD33400),
                                       ),
                                     ),
                                   ],
@@ -202,7 +202,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                           Navigator.pop(context);
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFE30613),
+                                          backgroundColor: const Color(0xFFD33400),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(12),
                                           ),
@@ -291,7 +291,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFFE30613), size: 20),
+                        child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFFD33400), size: 20),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -306,13 +306,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFE30613)),
+                      border: Border.all(color: const Color(0xFFD33400)),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       'Ganti',
                       style: GoogleFonts.poppins(
-                        color: const Color(0xFFE30613),
+                        color: const Color(0xFFD33400),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -353,18 +353,18 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFE30613)),
+                        border: Border.all(color: const Color(0xFFD33400)),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.directions, color: Color(0xFFE30613), size: 16),
+                          const Icon(Icons.directions, color: Color(0xFFD33400), size: 16),
                           const SizedBox(width: 4),
                           Text(
                             'Rute',
                             style: GoogleFonts.poppins(
-                              color: const Color(0xFFE30613),
+                              color: const Color(0xFFD33400),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -395,7 +395,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE30613),
+                    color: const Color(0xFFD33400),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -437,7 +437,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                              child: Text('${item.quantity}x', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontWeight: FontWeight.bold, fontSize: 12)),
+                              child: Text('${item.quantity}x', style: GoogleFonts.poppins(color: const Color(0xFFD33400), fontWeight: FontWeight.bold, fontSize: 12)),
                             ),
                           ],
                         ),
@@ -465,7 +465,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(Icons.confirmation_number_outlined, color: Color(0xFFE30613), size: 24),
+                          const Icon(Icons.confirmation_number_outlined, color: Color(0xFFD33400), size: 24),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -506,7 +506,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: const BoxDecoration(
-                                color: Color(0xFFE30613),
+                                color: Color(0xFFD33400),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.close, color: Colors.white, size: 14),
@@ -515,7 +515,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                         : Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE30613),
+                              color: const Color(0xFFD33400),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -545,7 +545,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE30613),
+                color: const Color(0xFFD33400),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -623,14 +623,14 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                     child: OutlinedButton(
                                       onPressed: () => Navigator.pop(context),
                                       style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(color: Color(0xFFE30613)),
+                                        side: const BorderSide(color: Color(0xFFD33400)),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                         padding: const EdgeInsets.symmetric(vertical: 12),
                                       ),
                                       child: Text(
                                         'Ntar',
                                         style: GoogleFonts.poppins(
-                                          color: const Color(0xFFE30613),
+                                          color: const Color(0xFFD33400),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -656,7 +656,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFE30613),
+                                      backgroundColor: const Color(0xFFD33400),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                       padding: const EdgeInsets.symmetric(vertical: 12),
                                       elevation: 0,
@@ -680,7 +680,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE30613),
+                backgroundColor: const Color(0xFFD33400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),

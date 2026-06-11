@@ -195,7 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
               style: GoogleFonts.outfit(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFFED001E),
+                color: const Color(0xFFD33400),
               ),
             ),
           ),
@@ -217,7 +217,7 @@ class _ProfilePageState extends State<ProfilePage> {
             border: Border.all(color: Colors.white, width: 4),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFED001E).withValues(alpha: 0.1),
+                color: const Color(0xFFD33400).withValues(alpha: 0.1),
                 blurRadius: 20,
                 spreadRadius: 5,
               )
@@ -340,12 +340,12 @@ class _ProfilePageState extends State<ProfilePage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFED001E).withValues(alpha: 0.1),
+                color: const Color(0xFFD33400).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFFED001E),
+                color: const Color(0xFFD33400),
                 size: 24,
               ),
             ),
@@ -492,12 +492,12 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         },
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFED001E), width: 2),
+          side: const BorderSide(color: Color(0xFFD33400), width: 2),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          foregroundColor: const Color(0xFFED001E),
+          foregroundColor: const Color(0xFFD33400),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

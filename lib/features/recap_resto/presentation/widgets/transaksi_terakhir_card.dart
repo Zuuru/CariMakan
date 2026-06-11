@@ -90,7 +90,7 @@ class TransaksiTerakhirCard extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFFED001E),
+                    color: const Color(0xFFD33400),
                   ),
                 ),
               ),

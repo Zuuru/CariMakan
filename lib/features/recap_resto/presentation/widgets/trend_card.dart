@@ -65,7 +65,7 @@ class TrendCard extends StatelessWidget {
                     const Icon(
                       Icons.calendar_today_rounded,
                       size: 13,
-                      color: Color(0xFFED001E),
+                      color: Color(0xFFD33400),
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -73,7 +73,7 @@ class TrendCard extends StatelessWidget {
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFFED001E),
+                        color: const Color(0xFFD33400),
                       ),
                     ),
                   ],
@@ -106,7 +106,7 @@ class TrendCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFED001E),
+                            color: const Color(0xFFD33400),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -130,7 +130,7 @@ class TrendCard extends StatelessWidget {
                           height: barHeightRatio * 80,
                           decoration: BoxDecoration(
                             color: isPeak
-                                ? const Color(0xFFED001E)
+                                ? const Color(0xFFD33400)
                                 : const Color(0xFFEEEEEE),
                             borderRadius: BorderRadius.circular(6),
                           ),

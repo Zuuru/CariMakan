@@ -428,7 +428,7 @@ class _HomeContentState extends State<HomeContent> {
             stream: FirebaseFirestore.instance.collection('restaurants').snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Color(0xFFE30613)));
+                return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
               }
 
               if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {

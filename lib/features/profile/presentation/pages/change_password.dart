@@ -192,7 +192,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     
     // Colors from design.yaml
     final Color backgroundColor = isFocused ? const Color(0xFFE7F0FA) : const Color(0xFFF1F1F1);
-    final Color iconColor = isFocused ? const Color(0xFF1269CC) : const Color(0xFFED001E);
+    final Color iconColor = isFocused ? const Color(0xFF1269CC) : const Color(0xFFD33400);
     final Color hintColor = isFocused ? const Color(0xFF1269CC).withOpacity(0.7) : Colors.black54;
     final Color textColor = isFocused ? const Color(0xFF1269CC) : Colors.black;
 
@@ -248,11 +248,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFED001E),
+          color: const Color(0xFFD33400),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFED001E).withOpacity(0.3),
+              color: const Color(0xFFD33400).withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

@@ -155,7 +155,7 @@ class _MidtransQrisPageState extends State<MidtransQrisPage> {
               style: GoogleFonts.poppins(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFFE30613),
+                color: const Color(0xFFD33400),
               ),
             ),
             const SizedBox(height: 8),
@@ -196,7 +196,7 @@ class _MidtransQrisPageState extends State<MidtransQrisPage> {
               child: ElevatedButton(
                 onPressed: _isChecking ? null : () => _checkPaymentStatus(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE30613),
+                  backgroundColor: const Color(0xFFD33400),
                   disabledBackgroundColor: Colors.grey[400],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

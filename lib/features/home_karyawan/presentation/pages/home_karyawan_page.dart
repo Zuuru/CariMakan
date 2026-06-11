@@ -179,7 +179,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
               _removeOrder(id);
               _showSnackBar('QR Valid! Pesanan selesai dan diserahkan.');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFED001E)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD33400)),
             child: Text('Simulasi Berhasil', style: GoogleFonts.outfit(color: Colors.white)),
           ),
         ],
@@ -348,7 +348,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
           ),
           IconButton(
             onPressed: _handleLogout,
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFFED001E)),
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFD33400)),
             tooltip: 'Logout',
           ),
         ],
@@ -380,7 +380,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 'Dine In' ? const Color(0xFFED001E) : Colors.transparent,
+                    color: _selectedTab == 'Dine In' ? const Color(0xFFD33400) : Colors.transparent,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   alignment: Alignment.center,
@@ -401,7 +401,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 'Take Away' ? const Color(0xFFED001E) : Colors.transparent,
+                    color: _selectedTab == 'Take Away' ? const Color(0xFFD33400) : Colors.transparent,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   alignment: Alignment.center,

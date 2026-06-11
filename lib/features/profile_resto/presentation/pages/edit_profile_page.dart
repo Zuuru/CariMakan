@@ -130,7 +130,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFED001E)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)))
           : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -158,7 +158,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFED001E),
+                        color: Color(0xFFD33400),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -210,7 +210,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveUserData,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFED001E),
+                  backgroundColor: const Color(0xFFD33400),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -292,7 +292,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFED001E)),
+              borderSide: const BorderSide(color: Color(0xFFD33400)),
             ),
           ),
         ),

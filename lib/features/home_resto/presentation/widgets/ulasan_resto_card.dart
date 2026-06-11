@@ -92,7 +92,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
   // Get color for avatar based on name initials
   Color _getAvatarColor(String name) {
     final colors = [
-      const Color(0xFFED001E), // Red
+      const Color(0xFFD33400), // Red
       const Color(0xFF007AFF), // Blue
       const Color(0xFF34C759), // Green
       const Color(0xFFFF9500), // Orange
@@ -145,7 +145,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFED001E)),
+                    borderSide: const BorderSide(color: Color(0xFFD33400)),
                   ),
                 ),
                 style: GoogleFonts.outfit(),
@@ -179,7 +179,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFED001E),
+                backgroundColor: const Color(0xFFD33400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -232,14 +232,14 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.analytics_outlined, size: 14, color: Color(0xFFED001E)),
+                  const Icon(Icons.analytics_outlined, size: 14, color: Color(0xFFD33400)),
                   const SizedBox(width: 4),
                   Text(
                     'Analisis Aktif',
                     style: GoogleFonts.outfit(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFED001E),
+                      color: const Color(0xFFD33400),
                     ),
                   ),
                 ],
@@ -444,10 +444,10 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFED001E) : Colors.transparent,
+          color: isSelected ? const Color(0xFFD33400) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFFED001E) : const Color(0xFFDDDDDD),
+            color: isSelected ? const Color(0xFFD33400) : const Color(0xFFDDDDDD),
           ),
         ),
         child: Row(
@@ -581,7 +581,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
               const Icon(
                 Icons.local_pizza_outlined,
                 size: 14,
-                color: Color(0xFFED001E),
+                color: Color(0xFFD33400),
               ),
               const SizedBox(width: 6),
               Flexible(
@@ -648,13 +648,13 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   onPressed: () => _showReplyDialog(review),
-                  icon: const Icon(Icons.reply, size: 14, color: Color(0xFFED001E)),
+                  icon: const Icon(Icons.reply, size: 14, color: Color(0xFFD33400)),
                   label: Text(
                     'Balas Ulasan',
                     style: GoogleFonts.outfit(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFED001E),
+                      color: const Color(0xFFD33400),
                     ),
                   ),
                   style: TextButton.styleFrom(

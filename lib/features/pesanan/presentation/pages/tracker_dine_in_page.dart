@@ -30,7 +30,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
                   const Icon(
                     Icons.room_service,
                     size: 200,
-                    color: Color(0xFFED001E),
+                    color: Color(0xFFD33400),
                   ),
                   Positioned(
                     top: 40,
@@ -39,11 +39,11 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFED001E), width: 2),
+                        border: Border.all(color: const Color(0xFFD33400), width: 2),
                       ),
                       child: const Icon(
                         Icons.access_time,
-                        color: Color(0xFFED001E),
+                        color: Color(0xFFD33400),
                         size: 24,
                       ),
                     ),
@@ -230,7 +230,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
               Container(
                 width: 2,
                 height: 25,
-                color: isActive ? const Color(0xFFED001E) : Colors.grey[400],
+                color: isActive ? const Color(0xFFD33400) : Colors.grey[400],
               ),
             if (isFirst) const SizedBox(height: 25), // Padding for alignment
             
@@ -241,10 +241,10 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isCompleted 
-                    ? const Color(0xFFED001E)
+                    ? const Color(0xFFD33400)
                     : (isActive ? Colors.white : Colors.grey[400]),
                 border: isActive && !isCompleted 
-                    ? Border.all(color: const Color(0xFFED001E), width: 4)
+                    ? Border.all(color: const Color(0xFFD33400), width: 4)
                     : null,
               ),
               child: isCompleted
@@ -255,7 +255,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFED001E),
+                              color: Color(0xFFD33400),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -268,7 +268,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
               Container(
                 width: 2,
                 height: 25,
-                color: isCompleted ? const Color(0xFFED001E) : Colors.grey[400],
+                color: isCompleted ? const Color(0xFFD33400) : Colors.grey[400],
               ),
           ],
         ),
@@ -321,7 +321,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
           Text(
             '67',
             style: GoogleFonts.poppins(
-              color: const Color(0xFFED001E),
+              color: const Color(0xFFD33400),
               fontSize: 48,
               fontWeight: FontWeight.bold,
               height: 1, // Minimize line height padding

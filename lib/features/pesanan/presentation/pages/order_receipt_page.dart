@@ -212,7 +212,7 @@ class OrderReceiptPage extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE30613),
+                            backgroundColor: const Color(0xFFD33400),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),

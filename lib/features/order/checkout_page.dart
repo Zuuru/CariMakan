@@ -113,7 +113,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       'assets/takeaway_icon.png', 
                       width: 40,
                       height: 40,
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined, color: Color(0xFFE30613), size: 35),
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined, color: Color(0xFFD33400), size: 35),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -124,11 +124,11 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     OutlinedButton(
                       onPressed: () {},
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE30613)),
+                        side: const BorderSide(color: Color(0xFFD33400)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       ),
-                      child: Text('Ganti', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: Text('Ganti', style: GoogleFonts.poppins(color: const Color(0xFFD33400), fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -160,7 +160,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       child: ElevatedButton.icon(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE30613),
+                          backgroundColor: const Color(0xFFD33400),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                         ),
@@ -178,7 +178,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE30613),
+                    color: const Color(0xFFD33400),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -210,7 +210,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                                 minimumSize: const Size(60, 25),
                               ),
-                              child: Text('Edit', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: Text('Edit', style: GoogleFonts.poppins(color: const Color(0xFFD33400), fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -242,7 +242,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                       setState(() => _itemQuantity--);
                                     }
                                   },
-                                  child: const Icon(Icons.remove, size: 16, color: Color(0xFFE30613)),
+                                  child: const Icon(Icons.remove, size: 16, color: Color(0xFFD33400)),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -255,7 +255,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                   onTap: () {
                                     setState(() => _itemQuantity++);
                                   },
-                                  child: const Icon(Icons.add, size: 16, color: Color(0xFFE30613)),
+                                  child: const Icon(Icons.add, size: 16, color: Color(0xFFD33400)),
                                 ),
                               ],
                             ),
@@ -279,11 +279,11 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   OutlinedButton(
                     onPressed: _kembaliDenganData,
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFE30613)),
+                      side: const BorderSide(color: Color(0xFFD33400)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     ),
-                    child: Text('Tambah', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: Text('Tambah', style: GoogleFonts.poppins(color: const Color(0xFFD33400), fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -298,7 +298,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE30613),
+                  color: const Color(0xFFD33400),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -332,7 +332,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ? () => _showKonfirmasiDialog(context, totalSemua, totalHargaItem, ppn, biayaLainnya)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE30613),
+                    backgroundColor: const Color(0xFFD33400),
                     disabledBackgroundColor: Colors.grey[400],
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -394,7 +394,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   'assets/images/character_confirm/character_confirm.jpg', 
                   height: 180,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.check_circle_outline, size: 80, color: Color(0xFFE30613)),
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.check_circle_outline, size: 80, color: Color(0xFFD33400)),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -403,11 +403,11 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFE30613), width: 1.5),
+                          side: const BorderSide(color: Color(0xFFD33400), width: 1.5),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text('Ntar', style: GoogleFonts.poppins(color: const Color(0xFFE30613), fontWeight: FontWeight.bold)),
+                        child: Text('Ntar', style: GoogleFonts.poppins(color: const Color(0xFFD33400), fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -423,7 +423,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE30613),
+                          backgroundColor: const Color(0xFFD33400),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           elevation: 0,
@@ -510,7 +510,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ? Colors.green
                       : isPending
                           ? Colors.orange
-                          : const Color(0xFFE30613),
+                          : const Color(0xFFD33400),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -544,7 +544,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFE30613),
+                    color: const Color(0xFFD33400),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -553,7 +553,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE30613),
+                      backgroundColor: const Color(0xFFD33400),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -594,7 +594,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Tutup',
-              style: GoogleFonts.poppins(color: const Color(0xFFE30613)),
+              style: GoogleFonts.poppins(color: const Color(0xFFD33400)),
             ),
           ),
         ],

@@ -122,7 +122,7 @@ class _MenuCardState extends State<MenuCard> {
                       style: GoogleFonts.outfit(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFFED001E),
+                        color: const Color(0xFFD33400),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -132,19 +132,19 @@ class _MenuCardState extends State<MenuCard> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFFBEBEB),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFED001E).withValues(alpha: 0.3)),
+                          border: Border.all(color: const Color(0xFFD33400).withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.build_circle_outlined, size: 10, color: Color(0xFFED001E)),
+                            const Icon(Icons.build_circle_outlined, size: 10, color: Color(0xFFD33400)),
                             const SizedBox(width: 4),
                             Text(
                               '$_variantCount kustom',
                               style: GoogleFonts.outfit(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFFED001E),
+                                color: const Color(0xFFD33400),
                               ),
                             ),
                           ],
@@ -176,7 +176,7 @@ class _MenuCardState extends State<MenuCard> {
                           value: widget.isAvailable,
                           onChanged: widget.onAvailabilityChanged,
                           activeColor: Colors.white,
-                          activeTrackColor: const Color(0xFFED001E),
+                          activeTrackColor: const Color(0xFFD33400),
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: const Color(0xFFD9D9D9),
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -225,7 +225,7 @@ class _MenuCardState extends State<MenuCard> {
                           child: const Icon(
                             Icons.delete_outline_rounded,
                             size: 16,
-                            color: Color(0xFFED001E),
+                            color: Color(0xFFD33400),
                           ),
                         ),
                       ),

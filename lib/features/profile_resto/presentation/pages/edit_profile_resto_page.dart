@@ -212,7 +212,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFED001E),
+              primary: Color(0xFFD33400),
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -266,7 +266,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFED001E)),
+              child: CircularProgressIndicator(color: Color(0xFFD33400)),
             )
           : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -296,7 +296,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFED001E),
+                        color: Color(0xFFD33400),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -384,13 +384,13 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                   ),
                   selected: isSelected,
                   onSelected: (_) => _toggleFasilitas(fasilitas),
-                  selectedColor: const Color(0xFFED001E),
+                  selectedColor: const Color(0xFFD33400),
                   backgroundColor: Colors.white,
                   checkmarkColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFFED001E) : const Color(0xFFE5E7EB),
+                      color: isSelected ? const Color(0xFFD33400) : const Color(0xFFE5E7EB),
                     ),
                   ),
                 );
@@ -421,10 +421,10 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFED001E).withValues(alpha: 0.1),
+                      color: const Color(0xFFD33400).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.location_on, color: Color(0xFFED001E)),
+                    child: const Icon(Icons.location_on, color: Color(0xFFD33400)),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -461,7 +461,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                       'Update',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFFED001E),
+                        color: const Color(0xFFD33400),
                       ),
                     ),
                   ),
@@ -477,7 +477,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveRestoData,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFED001E),
+                  backgroundColor: const Color(0xFFD33400),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -543,7 +543,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFED001E)),
+              borderSide: const BorderSide(color: Color(0xFFD33400)),
             ),
           ),
         ),
@@ -574,7 +574,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                 shape: BoxShape.circle,
                 color: isOpen ? Colors.transparent : const Color(0xFFD9D9D9),
                 border: Border.all(
-                  color: isOpen ? const Color(0xFFED001E) : Colors.grey.shade400,
+                  color: isOpen ? const Color(0xFFD33400) : Colors.grey.shade400,
                   width: 2,
                 ),
               ),
@@ -585,7 +585,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                         height: 10,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(0xFFED001E),
+                          color: Color(0xFFD33400),
                         ),
                       ),
                     )
@@ -618,7 +618,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                 color: isOpen ? Colors.white : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: isOpen ? const Color(0xFFED001E).withValues(alpha: 0.5) : Colors.grey.shade300,
+                  color: isOpen ? const Color(0xFFD33400).withValues(alpha: 0.5) : Colors.grey.shade300,
                   width: 1,
                 ),
               ),
@@ -655,7 +655,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                 color: isOpen ? Colors.white : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: isOpen ? const Color(0xFFED001E).withValues(alpha: 0.5) : Colors.grey.shade300,
+                  color: isOpen ? const Color(0xFFD33400).withValues(alpha: 0.5) : Colors.grey.shade300,
                   width: 1,
                 ),
               ),

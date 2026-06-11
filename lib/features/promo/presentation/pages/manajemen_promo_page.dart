@@ -172,7 +172,7 @@ class _ManajemenPromoPageState extends State<ManajemenPromoPage> {
   Widget build(BuildContext context) {
     if (widget.isEmbedded) {
       return _isLoadingRestoId
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFED001E)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)))
           : _restoId == null
               ? _buildNoResto()
               : Container(

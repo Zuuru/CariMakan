@@ -33,7 +33,7 @@ class CardPesanan extends StatelessWidget {
         : 'assets/images/icon_pesanan/complete.png';
 
     final isDineIn = orderType == OrderType.dineIn;
-    final badgeColor = isDineIn ? const Color(0xFFED001E) : const Color(0xFFFF8800);
+    final badgeColor = isDineIn ? const Color(0xFFD33400) : const Color(0xFFFF8800);
     final badgeText = isDineIn ? 'Dine In' : 'Take Away';
 
     return Container(

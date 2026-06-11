@@ -167,13 +167,13 @@ class _PromoBannerState extends State<PromoBanner> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               gradient: const LinearGradient(
-                colors: [Color(0xFFED001E), Color(0xFFFF4E50)],
+                colors: [Color(0xFFD33400), Color(0xFFFF6333)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFED001E).withValues(alpha: 0.2),
+                  color: const Color(0xFFD33400).withValues(alpha: 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -279,7 +279,7 @@ class _PromoBannerState extends State<PromoBanner> {
                               : Container(
                                   decoration: const BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [Color(0xFFED001E), Color(0xFFFF4E50)],
+                                      colors: [Color(0xFFD33400), Color(0xFFFF6333)],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),

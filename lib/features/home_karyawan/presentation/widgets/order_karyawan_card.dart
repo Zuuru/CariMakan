@@ -36,7 +36,7 @@ class OrderKaryawanCard extends StatelessWidget {
 
   Color _getTypeColor(String type) {
     return type.toLowerCase() == 'dine in'
-        ? const Color(0xFFED001E)
+        ? const Color(0xFFD33400)
         : const Color(0xFFE3861B);
   }
 

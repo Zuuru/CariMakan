@@ -102,7 +102,7 @@ class ChatPage extends StatelessWidget {
                   child: Text(
                     'Makan gua udah mateng belom?',
                     style: GoogleFonts.poppins(
-                      color: const Color(0xFFED001E), // Red color as in the design
+                      color: const Color(0xFFD33400), // Red color as in the design
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
                     ),

@@ -171,7 +171,7 @@ class _RestoPageState extends State<RestoPage> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              color: const Color(0xFFED001E),
+              color: const Color(0xFFD33400),
               child: Row(
                 children: [
                   const Icon(Icons.table_restaurant_rounded, color: Colors.white, size: 18),
@@ -255,7 +255,7 @@ class _RestoPageState extends State<RestoPage> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFE30613), // Red
+                        color: Color(0xFFD33400), // Red
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(15),
                           bottomRight: Radius.circular(20),
@@ -418,7 +418,7 @@ class _RestoPageState extends State<RestoPage> {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
-                        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                        child: CircularProgressIndicator(color: Color(0xFFD33400)),
                       );
                     }
                     if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
@@ -475,9 +475,9 @@ class _RestoPageState extends State<RestoPage> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFE30613) : Colors.transparent,
+                            color: isSelected ? const Color(0xFFD33400) : Colors.transparent,
                             border: Border.all(
-                                color: isSelected ? const Color(0xFFE30613) : Colors.grey.shade300),
+                                color: isSelected ? const Color(0xFFD33400) : Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -507,7 +507,7 @@ class _RestoPageState extends State<RestoPage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Padding(
                         padding: EdgeInsets.all(32.0),
-                        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                        child: CircularProgressIndicator(color: Color(0xFFD33400)),
                       );
                     }
                     if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
@@ -594,7 +594,7 @@ class _RestoPageState extends State<RestoPage> {
                     margin: const EdgeInsets.all(20),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE30613),
+                      color: const Color(0xFFD33400),
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
@@ -781,7 +781,7 @@ class _RestoPageState extends State<RestoPage> {
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE30613)),
+                                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFD33400)),
                                     child: const Icon(Icons.add, size: 16, color: Colors.white),
                                   ),
                                 ),
@@ -807,7 +807,7 @@ class _RestoPageState extends State<RestoPage> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE30613),
+                      backgroundColor: const Color(0xFFD33400),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       minimumSize: const Size(double.infinity, 54),
                     ),
@@ -939,7 +939,7 @@ class _RestoPageState extends State<RestoPage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFE30613), // Red
+                    color: Color(0xFFD33400), // Red
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(12),
                       bottomRight: Radius.circular(16),

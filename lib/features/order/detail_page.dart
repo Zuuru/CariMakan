@@ -73,7 +73,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                       height: 120,
                       padding: const EdgeInsets.all(12),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFE30613),
+                        color: Color(0xFFD33400),
                         borderRadius: BorderRadius.only(
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20),
@@ -137,10 +137,10 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFFE30613),
+                            color: const Color(0xFFD33400),
                             width: 2,
                           ),
-                          color: isSelected ? const Color(0xFFE30613) : Colors.transparent,
+                          color: isSelected ? const Color(0xFFD33400) : Colors.transparent,
                         ),
                         child: isSelected
                             ? const Center(
@@ -191,10 +191,10 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFFE30613),
+                            color: const Color(0xFFD33400),
                             width: 2,
                           ),
-                          color: isSelected ? const Color(0xFFE30613) : Colors.transparent,
+                          color: isSelected ? const Color(0xFFD33400) : Colors.transparent,
                         ),
                         child: isSelected
                             ? const Center(
@@ -246,8 +246,8 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                         height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE30613), width: 2),
-                          color: _isBiscoffChecked ? const Color(0xFFE30613) : Colors.transparent,
+                          border: Border.all(color: const Color(0xFFD33400), width: 2),
+                          color: _isBiscoffChecked ? const Color(0xFFD33400) : Colors.transparent,
                         ),
                         child: _isBiscoffChecked
                             ? const Icon(Icons.check, size: 12, color: Colors.white)
@@ -282,7 +282,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFE30613),
+                              color: const Color(0xFFD33400),
                             ),
                           ),
                         ),
@@ -317,7 +317,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFFE30613),
+                              color: const Color(0xFFD33400),
                             ),
                           ),
                         ),
@@ -347,8 +347,8 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                         height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE30613), width: 2),
-                          color: _isCaramelChecked ? const Color(0xFFE30613) : Colors.transparent,
+                          border: Border.all(color: const Color(0xFFD33400), width: 2),
+                          color: _isCaramelChecked ? const Color(0xFFD33400) : Colors.transparent,
                         ),
                         child: _isCaramelChecked
                             ? const Icon(Icons.check, size: 12, color: Colors.white)
@@ -389,7 +389,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE30613),
+                    backgroundColor: const Color(0xFFD33400),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

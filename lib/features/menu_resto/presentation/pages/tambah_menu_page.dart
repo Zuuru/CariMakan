@@ -179,7 +179,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _selectedImageUrl == item['url']
-                                ? const Color(0xFFED001E)
+                                ? const Color(0xFFD33400)
                                 : Colors.grey[200]!,
                             width: _selectedImageUrl == item['url'] ? 2.5 : 1.5,
                           ),
@@ -265,7 +265,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFED001E),
+                  backgroundColor: const Color(0xFFD33400),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -280,18 +280,18 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                   Navigator.pop(context);
                   _showCustomVariantForm();
                 },
-                icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFFED001E)),
+                icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFFD33400)),
                 label: Text(
                   'Buat Sendiri',
                   style: GoogleFonts.outfit(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFED001E),
+                    color: const Color(0xFFD33400),
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(color: Color(0xFFED001E), width: 1.5),
+                  side: const BorderSide(color: Color(0xFFD33400), width: 1.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -310,7 +310,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+        child: CircularProgressIndicator(color: Color(0xFFD33400)),
       ),
     );
 
@@ -454,7 +454,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gagal menyimpan menu: $e'),
-            backgroundColor: const Color(0xFFED001E),
+            backgroundColor: const Color(0xFFD33400),
           ),
         );
       }
@@ -500,7 +500,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
           style: GoogleFonts.outfit(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFFED001E),
+            color: const Color(0xFFD33400),
           ),
         ),
         centerTitle: false,
@@ -559,8 +559,8 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                         ),
                       ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFED001E),
-                  disabledBackgroundColor: const Color(0xFFED001E).withValues(alpha: 0.5),
+                  backgroundColor: const Color(0xFFD33400),
+                  disabledBackgroundColor: const Color(0xFFD33400).withValues(alpha: 0.5),
                   minimumSize: const Size(double.infinity, 54),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -646,7 +646,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                             ),
                             child: const Icon(
                               Icons.add_a_photo_outlined,
-                              color: Color(0xFFED001E),
+                              color: Color(0xFFD33400),
                               size: 26,
                             ),
                           ),
@@ -803,14 +803,14 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                   color: isSelected ? const Color(0xFFFBEBEB) : const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFFED001E) : Colors.transparent,
+                    color: isSelected ? const Color(0xFFD33400) : Colors.transparent,
                     width: 1.5,
                   ),
                 ),
                 child: Text(
                   category,
                   style: GoogleFonts.outfit(
-                    color: isSelected ? const Color(0xFFED001E) : const Color(0xFF555555),
+                    color: isSelected ? const Color(0xFFD33400) : const Color(0xFF555555),
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                     fontSize: 14,
                   ),
@@ -899,7 +899,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                 _isAvailable = value;
               });
             },
-            activeColor: const Color(0xFFED001E),
+            activeColor: const Color(0xFFD33400),
             activeTrackColor: const Color(0xFFFBEBEB),
           ),
         ],
@@ -925,7 +925,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
             if (_isLoadingVariants)
               const SizedBox(
                 width: 20, height: 20,
-                child: CircularProgressIndicator(color: Color(0xFFED001E), strokeWidth: 2),
+                child: CircularProgressIndicator(color: Color(0xFFD33400), strokeWidth: 2),
               ),
           ],
         ),
@@ -988,7 +988,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    _buildBadge(group.wajibLabel, group.wajib ? const Color(0xFFED001E) : Colors.grey),
+                                    _buildBadge(group.wajibLabel, group.wajib ? const Color(0xFFD33400) : Colors.grey),
                                     const SizedBox(width: 8),
                                     _buildBadge(group.tipeLabel, Colors.blueGrey),
                                   ],
@@ -1004,7 +1004,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                             padding: const EdgeInsets.all(8),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Color(0xFFED001E), size: 20),
+                            icon: const Icon(Icons.delete_outline, color: Color(0xFFD33400), size: 20),
                             onPressed: () => _removeVariantGroup(index),
                             splashRadius: 20,
                             constraints: const BoxConstraints(),
@@ -1057,19 +1057,19 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: _showAddVariantBottomSheet,
-            icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFFED001E)),
+            icon: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFFD33400)),
             label: Text(
               'Tambah Pilihan',
               style: GoogleFonts.outfit(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFFED001E),
+                color: const Color(0xFFD33400),
               ),
             ),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: const Color(0xFFFBEBEB),
-              side: const BorderSide(color: Color(0xFFED001E), width: 1.5),
+              side: const BorderSide(color: Color(0xFFD33400), width: 1.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -1140,7 +1140,7 @@ class _TemplateSelectionDialogState extends State<_TemplateSelectionDialog> {
                 style: GoogleFonts.outfit(fontSize: 12),
               ),
               value: isSelected,
-              activeColor: const Color(0xFFED001E),
+              activeColor: const Color(0xFFD33400),
               onChanged: (val) {
                 setState(() {
                   if (val == true) {
@@ -1170,7 +1170,7 @@ class _TemplateSelectionDialogState extends State<_TemplateSelectionDialog> {
                   Navigator.pop(context);
                 },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFED001E),
+            backgroundColor: const Color(0xFFD33400),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           child: Text('Gunakan', style: GoogleFonts.outfit(color: Colors.white)),
@@ -1270,7 +1270,7 @@ class _VariantGroupFormDialogState extends State<_VariantGroupFormDialog> {
                             title: Text('Pilih 1', style: GoogleFonts.outfit(fontSize: 14)),
                             value: 'single',
                             groupValue: _tipe,
-                            activeColor: const Color(0xFFED001E),
+                            activeColor: const Color(0xFFD33400),
                             contentPadding: EdgeInsets.zero,
                             onChanged: (v) => setState(() => _tipe = v!),
                           ),
@@ -1280,7 +1280,7 @@ class _VariantGroupFormDialogState extends State<_VariantGroupFormDialog> {
                             title: Text('Pilih Banyak', style: GoogleFonts.outfit(fontSize: 14)),
                             value: 'multiple',
                             groupValue: _tipe,
-                            activeColor: const Color(0xFFED001E),
+                            activeColor: const Color(0xFFD33400),
                             contentPadding: EdgeInsets.zero,
                             onChanged: (v) => setState(() => _tipe = v!),
                           ),
@@ -1293,7 +1293,7 @@ class _VariantGroupFormDialogState extends State<_VariantGroupFormDialog> {
                       title: Text('Wajib Dipilih', style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                       subtitle: Text('Pelanggan harus memilih sebelum order', style: GoogleFonts.outfit(fontSize: 12)),
                       value: _wajib,
-                      activeColor: const Color(0xFFED001E),
+                      activeColor: const Color(0xFFD33400),
                       contentPadding: EdgeInsets.zero,
                       onChanged: (v) => setState(() => _wajib = v),
                     ),
@@ -1356,7 +1356,7 @@ class _VariantGroupFormDialogState extends State<_VariantGroupFormDialog> {
                       onPressed: _addItem,
                       icon: const Icon(Icons.add, size: 18),
                       label: Text('Tambah Pilihan', style: GoogleFonts.outfit()),
-                      style: TextButton.styleFrom(foregroundColor: const Color(0xFFED001E)),
+                      style: TextButton.styleFrom(foregroundColor: const Color(0xFFD33400)),
                     ),
                   ],
                 ),
@@ -1386,7 +1386,7 @@ class _VariantGroupFormDialogState extends State<_VariantGroupFormDialog> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFED001E),
+                      backgroundColor: const Color(0xFFD33400),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     child: Text('Simpan', style: GoogleFonts.outfit(color: Colors.white)),

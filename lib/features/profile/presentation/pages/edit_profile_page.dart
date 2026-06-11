@@ -199,7 +199,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             return Theme(
                               data: Theme.of(context).copyWith(
                                 colorScheme: const ColorScheme.light(
-                                  primary: Color(0xFFED001E),
+                                  primary: Color(0xFFD33400),
                                 ),
                               ),
                               child: child!,
@@ -275,7 +275,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFED001E), width: 2),
+              border: Border.all(color: const Color(0xFFD33400), width: 2),
               image: DecorationImage(
                 image: _imageFile != null 
                     ? FileImage(_imageFile!) as ImageProvider
@@ -296,7 +296,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFED001E),
+                  color: const Color(0xFFD33400),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                 ),
@@ -353,7 +353,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFED001E), width: 1.0),
+              borderSide: const BorderSide(color: Color(0xFFD33400), width: 1.0),
             ),
             filled: true,
             fillColor: const Color(0xFFF1F1F1),
@@ -370,11 +370,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: _isLoading ? Colors.grey : const Color(0xFFED001E),
+          color: _isLoading ? Colors.grey : const Color(0xFFD33400),
           borderRadius: BorderRadius.circular(40),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFED001E).withOpacity(0.3),
+              color: const Color(0xFFD33400).withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

@@ -93,7 +93,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${group.nama} wajib dipilih!', style: GoogleFonts.poppins(color: Colors.white)),
-            backgroundColor: const Color(0xFFE30613),
+            backgroundColor: const Color(0xFFD33400),
           ),
         );
         return;
@@ -216,7 +216,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                           height: 140,
                           padding: const EdgeInsets.all(12),
                           decoration: const BoxDecoration(
-                            color: Color(0xFFE30613),
+                            color: Color(0xFFD33400),
                             borderRadius: BorderRadius.only(
                               topRight: Radius.circular(16),
                               bottomRight: Radius.circular(16),
@@ -275,7 +275,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(32.0),
-                        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                        child: CircularProgressIndicator(color: Color(0xFFD33400)),
                       ),
                     )
                   else if (_optionGroups.isEmpty)
@@ -342,7 +342,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                               padding: const EdgeInsets.all(4),
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Color(0xFFE30613),
+                                color: Color(0xFFD33400),
                               ),
                               child: const Icon(Icons.add, size: 16, color: Colors.white),
                             ),
@@ -390,7 +390,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE30613),
+                          backgroundColor: const Color(0xFFD33400),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -431,13 +431,13 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE30613).withOpacity(0.1),
+                  color: const Color(0xFFD33400).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   'Wajib',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFFE30613),
+                    color: const Color(0xFFD33400),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -517,10 +517,10 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                   height: 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: isSelected ? const Color(0xFFE30613) : Colors.grey),
+                    border: Border.all(color: isSelected ? const Color(0xFFD33400) : Colors.grey),
                   ),
                   child: isSelected
-                      ? const Center(child: CircleAvatar(radius: 6, backgroundColor: Color(0xFFE30613)))
+                      ? const Center(child: CircleAvatar(radius: 6, backgroundColor: Color(0xFFD33400)))
                       : null,
                 ),
               ),
@@ -542,7 +542,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? const Color(0xFFE30613) : Colors.red.shade200,
+                color: isSelected ? const Color(0xFFD33400) : Colors.red.shade200,
                 width: 1.5,
               ),
             ),
@@ -550,7 +550,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                 ? const Center(
                     child: CircleAvatar(
                       radius: 8,
-                      backgroundColor: Color(0xFFE30613),
+                      backgroundColor: Color(0xFFD33400),
                     ),
                   )
                 : null,

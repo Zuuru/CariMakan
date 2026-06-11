@@ -106,9 +106,9 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               width: double.infinity,
               child: TabBar(
                 controller: _tabController,
-                indicatorColor: const Color(0xFFED001E),
+                indicatorColor: const Color(0xFFD33400),
                 indicatorWeight: 3,
-                labelColor: const Color(0xFFED001E),
+                labelColor: const Color(0xFFD33400),
                 unselectedLabelColor: const Color(0xFF8E8E93),
                 labelStyle: GoogleFonts.outfit(
                   fontSize: 16,
@@ -151,7 +151,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               padding: const EdgeInsets.only(bottom: 90.0), // Elevate above the floating bottom navigation bar
               child: FloatingActionButton(
                 onPressed: _showAddMenuDialog,
-                backgroundColor: const Color(0xFFED001E),
+                backgroundColor: const Color(0xFFD33400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -175,7 +175,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                         ),
                       );
                     },
-                    backgroundColor: const Color(0xFFED001E),
+                    backgroundColor: const Color(0xFFD33400),
                     icon: const Icon(Icons.add, color: Colors.white),
                     label: Text(
                       'Buat Promo',
@@ -268,7 +268,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   Widget _buildDaftarMenuTab() {
     if (_isLoadingRestoId) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+        child: CircularProgressIndicator(color: Color(0xFFD33400)),
       );
     }
 
@@ -362,15 +362,15 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFED001E) : Colors.white,
+                    color: isSelected ? const Color(0xFFD33400) : Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFFED001E) : const Color(0xFFE5E5E5),
+                      color: isSelected ? const Color(0xFFD33400) : const Color(0xFFE5E5E5),
                       width: 1.2,
                     ),
                     boxShadow: isSelected ? [
                       BoxShadow(
-                        color: const Color(0xFFED001E).withValues(alpha: 0.15),
+                        color: const Color(0xFFD33400).withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       )
@@ -398,7 +398,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                  child: CircularProgressIndicator(color: Color(0xFFD33400)),
                 );
               }
 
@@ -477,7 +477,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                             SnackBar(
                               content: Text('Gagal update ketersediaan: $e', style: GoogleFonts.outfit()),
                               behavior: SnackBarBehavior.floating,
-                              backgroundColor: const Color(0xFFED001E),
+                              backgroundColor: const Color(0xFFD33400),
                             ),
                           );
                         }
@@ -510,7 +510,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
             child: const Icon(
               Icons.restaurant_menu_rounded,
               size: 40,
-              color: Color(0xFFED001E),
+              color: Color(0xFFD33400),
             ),
           ),
           const SizedBox(height: 20),
@@ -570,7 +570,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
   Widget _buildManajemenMejaTab() {
     if (_isLoadingRestoId) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFED001E)),
+        child: CircularProgressIndicator(color: Color(0xFFD33400)),
       );
     }
 
@@ -654,7 +654,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFED001E), width: 1.5),
+                      borderSide: const BorderSide(color: Color(0xFFD33400), width: 1.5),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
@@ -673,7 +673,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                                   style: GoogleFonts.outfit(),
                                 ),
                                 behavior: SnackBarBehavior.floating,
-                                backgroundColor: const Color(0xFFED001E),
+                                backgroundColor: const Color(0xFFD33400),
                               ),
                             );
                             return;
@@ -688,7 +688,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                                   SnackBar(
                                     content: Text('Meja $nomorMeja sudah terdaftar!'),
                                     behavior: SnackBarBehavior.floating,
-                                    backgroundColor: const Color(0xFFED001E),
+                                    backgroundColor: const Color(0xFFD33400),
                                   ),
                                 );
                               }
@@ -733,7 +733,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFED001E),
+                    backgroundColor: const Color(0xFFD33400),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
@@ -765,7 +765,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 32),
-                    child: CircularProgressIndicator(color: Color(0xFFED001E)),
+                    child: CircularProgressIndicator(color: Color(0xFFD33400)),
                   ),
                 );
               }
@@ -833,7 +833,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                                 onPressed: () => _showDeleteMejaConfirmation(table),
                                 icon: const Icon(
                                   Icons.delete_outline_rounded,
-                                  color: Color(0xFFED001E),
+                                  color: Color(0xFFD33400),
                                   size: 20,
                                 ),
                                 splashRadius: 20,
@@ -861,7 +861,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                                   data: table.qrData,
                                   version: QrVersions.auto,
                                   size: 90.0,
-                                  foregroundColor: const Color(0xFFED001E),
+                                  foregroundColor: const Color(0xFFD33400),
                                   gapless: false,
                                 ),
                               ),
@@ -874,18 +874,18 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: ElevatedButton.icon(
                             onPressed: () => _showQrPreviewDialog(table),
-                            icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFFED001E), size: 16),
+                            icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFFD33400), size: 16),
                             label: Text(
                               'Lihat QR',
                               style: GoogleFonts.outfit(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFFED001E),
+                                color: const Color(0xFFD33400),
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFED001E).withValues(alpha: 0.1),
-                              foregroundColor: const Color(0xFFED001E),
+                              backgroundColor: const Color(0xFFD33400).withValues(alpha: 0.1),
+                              foregroundColor: const Color(0xFFD33400),
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               minimumSize: const Size(double.infinity, 32),
                               shape: RoundedRectangleBorder(
@@ -944,7 +944,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                     data: table.qrData,
                     version: QrVersions.auto,
                     size: 200.0,
-                    foregroundColor: const Color(0xFFED001E),
+                    foregroundColor: const Color(0xFFD33400),
                     gapless: false,
                   ),
                 ),
@@ -963,7 +963,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFED001E),
+                  backgroundColor: const Color(0xFFD33400),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1018,7 +1018,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                       SnackBar(
                         content: Text('Meja ${table.nomorMeja} berhasil dihapus!'),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: const Color(0xFFED001E),
+                        backgroundColor: const Color(0xFFD33400),
                       ),
                     );
                   }
@@ -1028,14 +1028,14 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                       SnackBar(
                         content: Text('Gagal menghapus meja: $e'),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: const Color(0xFFED001E),
+                        backgroundColor: const Color(0xFFD33400),
                       ),
                     );
                   }
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFED001E),
+                backgroundColor: const Color(0xFFD33400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -1142,7 +1142,7 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                           style: GoogleFonts.outfit(),
                         ),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: const Color(0xFFED001E),
+                        backgroundColor: const Color(0xFFD33400),
                       ),
                     );
                   }
@@ -1152,14 +1152,14 @@ class _ManajemenMenuPageState extends State<ManajemenMenuPage> with SingleTicker
                       SnackBar(
                         content: Text('Gagal menghapus menu: $e', style: GoogleFonts.outfit()),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: const Color(0xFFED001E),
+                        backgroundColor: const Color(0xFFD33400),
                       ),
                     );
                   }
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFED001E),
+                backgroundColor: const Color(0xFFD33400),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

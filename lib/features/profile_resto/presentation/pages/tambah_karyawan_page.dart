@@ -305,7 +305,7 @@ class _TambahKaryawanPageState extends State<TambahKaryawanPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFED001E)),
+              borderSide: const BorderSide(color: Color(0xFFD33400)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
