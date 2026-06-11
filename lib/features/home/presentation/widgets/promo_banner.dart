@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
 import 'package:carimakan/features/promo/data/promo_model.dart';
 import 'package:carimakan/features/promo/data/promo_service.dart';
+import 'package:carimakan/features/home/presentation/pages/resto_page.dart';
+import 'package:carimakan/features/home/presentation/pages/search_page.dart';
+import 'package:carimakan/features/map/models/restaurant.dart';
 
 class PromoBanner extends StatefulWidget {
   const PromoBanner({super.key});
@@ -40,6 +44,78 @@ class _PromoBannerState extends State<PromoBanner> {
         );
       }
     });
+  }
+
+  void _handlePromoTap(BuildContext context, PromoModel promo) async {
+    if (promo.restoId == null || promo.restoId!.isEmpty) {
+      // Navigate to SearchPage for global promos
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SearchPage(),
+        ),
+      );
+    } else {
+      // Show loading overlay while fetching restaurant details
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+
+      try {
+        final restoDoc = await FirebaseFirestore.instance
+            .collection('restaurants')
+            .doc(promo.restoId)
+            .get();
+
+        // Close loading dialog
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+
+        if (restoDoc.exists && context.mounted) {
+          final data = restoDoc.data()!;
+          final restaurant = Restaurant.fromFirestore(restoDoc.id, data);
+          
+          // Custom distance mapping to match mock data or set dynamically
+          final distanceStr = restaurant.id == 'mock_1'
+              ? '2,14 km'
+              : restaurant.id == 'mock_2'
+                  ? '0,95 km'
+                  : '1,20 km';
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RestoPage(
+                name: restaurant.name,
+                imageUrl: restaurant.imageUrl,
+                distance: distanceStr,
+                queueCount: restaurant.queueCount,
+                restoId: restaurant.id,
+              ),
+            ),
+          );
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Restoran tidak ditemukan')),
+            );
+          }
+        }
+      } catch (e) {
+        // Close loading dialog if error
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat restoran: $e')),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -158,125 +234,128 @@ class _PromoBannerState extends State<PromoBanner> {
             itemCount: _activePromos.length,
             itemBuilder: (context, index) {
               final promo = _activePromos[index];
-              return Container(
-                margin: const EdgeInsets.only(right: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Stack(
-                    children: [
-                      // Background Image or default Gradient
-                      Positioned.fill(
-                        child: (promo.imageUrl != null && promo.imageUrl!.isNotEmpty)
-                            ? (promo.imageUrl!.startsWith('http')
-                                ? Image.network(
-                                    promo.imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      color: AppColors.cardBackground,
-                                      child: const Center(
-                                        child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 40),
+              return GestureDetector(
+                onTap: () => _handlePromoTap(context, promo),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Stack(
+                      children: [
+                        // Background Image or default Gradient
+                        Positioned.fill(
+                          child: (promo.imageUrl != null && promo.imageUrl!.isNotEmpty)
+                              ? (promo.imageUrl!.startsWith('http')
+                                  ? Image.network(
+                                      promo.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: AppColors.cardBackground,
+                                        child: const Center(
+                                          child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 40),
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                : Image.asset(
-                                    promo.imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      color: AppColors.cardBackground,
-                                      child: const Center(
-                                        child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 40),
+                                    )
+                                  : Image.asset(
+                                      promo.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: AppColors.cardBackground,
+                                        child: const Center(
+                                          child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 40),
+                                        ),
                                       ),
+                                    ))
+                              : Container(
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Color(0xFFED001E), Color(0xFFFF4E50)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                     ),
-                                  ))
-                            : Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xFFED001E), Color(0xFFFF4E50)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
                                   ),
                                 ),
+                        ),
+  
+                        // Dark overlay for text clarity
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.85),
+                                  Colors.black.withValues(alpha: 0.3),
+                                  Colors.transparent,
+                                ],
+                                begin: Alignment.bottomLeft,
+                                end: Alignment.topRight,
                               ),
-                      ),
-
-                      // Dark overlay for text clarity
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withValues(alpha: 0.85),
-                                Colors.black.withValues(alpha: 0.3),
-                                Colors.transparent,
-                              ],
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight,
                             ),
                           ),
                         ),
-                      ),
-
-                      // Promo details text overlay
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(8),
+  
+                        // Promo details text overlay
+                        Positioned.fill(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    promo.isPercent
+                                        ? 'DISKON ${promo.nilaiDiskon}%'
+                                        : 'POTONGAN Rp ${PromoModel.formatNumber(promo.nilaiDiskon)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  promo.isPercent
-                                      ? 'DISKON ${promo.nilaiDiskon}%'
-                                      : 'POTONGAN Rp ${PromoModel.formatNumber(promo.nilaiDiskon)}',
+                                const SizedBox(height: 8),
+                                Text(
+                                  promo.nama,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 10,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                promo.nama,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                const SizedBox(height: 2),
+                                Text(
+                                  promo.deskripsi,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                promo.deskripsi,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

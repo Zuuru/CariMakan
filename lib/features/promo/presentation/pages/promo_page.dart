@@ -1,16 +1,92 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
 import 'package:carimakan/features/promo/data/promo_model.dart';
 import 'package:carimakan/features/promo/data/promo_service.dart';
+import 'package:carimakan/features/home/presentation/pages/resto_page.dart';
+import 'package:carimakan/features/home/presentation/pages/search_page.dart';
+import 'package:carimakan/features/map/models/restaurant.dart';
 import '../widgets/card_promo.dart';
 
 class PromoPage extends StatelessWidget {
   final VoidCallback? onBack;
   
   const PromoPage({super.key, this.onBack});
+
+  void _handlePromoTap(BuildContext context, PromoModel promo) async {
+    if (promo.restoId == null || promo.restoId!.isEmpty) {
+      // Navigate to SearchPage for global promos
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SearchPage(),
+        ),
+      );
+    } else {
+      // Show loading overlay while fetching restaurant details
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+
+      try {
+        final restoDoc = await FirebaseFirestore.instance
+            .collection('restaurants')
+            .doc(promo.restoId)
+            .get();
+
+        // Close loading dialog
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+
+        if (restoDoc.exists && context.mounted) {
+          final data = restoDoc.data()!;
+          final restaurant = Restaurant.fromFirestore(restoDoc.id, data);
+          
+          // Custom distance mapping to match mock data or set dynamically
+          final distanceStr = restaurant.id == 'mock_1'
+              ? '2,14 km'
+              : restaurant.id == 'mock_2'
+                  ? '0,95 km'
+                  : '1,20 km';
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RestoPage(
+                name: restaurant.name,
+                imageUrl: restaurant.imageUrl,
+                distance: distanceStr,
+                queueCount: restaurant.queueCount,
+                restoId: restaurant.id,
+              ),
+            ),
+          );
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Restoran tidak ditemukan')),
+            );
+          }
+        }
+      } catch (e) {
+        // Close loading dialog if error
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat restoran: $e')),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +172,10 @@ class PromoPage extends StatelessWidget {
                   ),
                   itemCount: promos.length,
                   itemBuilder: (context, index) {
+                    final promo = promos[index];
                     return CardPromo(
-                      promo: promos[index],
-                      onTap: () {
-                        // Aksi saat card promo ditekan (opsional)
-                      },
+                      promo: promo,
+                      onTap: () => _handlePromoTap(context, promo),
                     );
                   },
                 );

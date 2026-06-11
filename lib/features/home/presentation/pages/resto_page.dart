@@ -67,9 +67,9 @@ class _RestoPageState extends State<RestoPage> {
         .listen((doc) {
       if (doc.exists) {
         final data = doc.data()!;
-        final bool isActive = data['is_active'] ?? false;
-        final String openTime = data['open_time'] ?? '00:00';
-        final String closeTime = data['close_time'] ?? '23:59';
+        final bool isActive = data['isOpen'] ?? data['is_active'] ?? false;
+        final String openTime = data['openTime'] ?? data['open_time'] ?? '00:00';
+        final String closeTime = data['closeTime'] ?? data['close_time'] ?? '23:59';
 
         bool currentlyOpen = false;
         if (isActive) {

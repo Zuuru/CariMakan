@@ -38,7 +38,7 @@ class CardPromo extends StatelessWidget {
     }
 
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('restos').doc(restoId).get(),
+      future: FirebaseFirestore.instance.collection('restaurants').doc(restoId).get(),
       builder: (context, snapshot) {
         String restoName = 'Memuat...';
         if (snapshot.connectionState == ConnectionState.done) {
