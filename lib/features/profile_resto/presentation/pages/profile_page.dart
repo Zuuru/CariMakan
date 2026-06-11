@@ -230,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         const SizedBox(height: 16),
         Text(
-          _userName ?? 'Memuat...',
+          (_userName ?? 'Memuat...').toUpperCase(),
           style: GoogleFonts.outfit(
             fontSize: 24,
             fontWeight: FontWeight.bold,
