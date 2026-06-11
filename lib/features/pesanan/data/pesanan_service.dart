@@ -8,11 +8,7 @@ class PesananService {
     required String menuName,
     required double totalPrice,
     required String paymentMethod,
-    required String gula,
-    required String es,
-    required bool addBiscoff,
-    required bool addCaramel,
-    required int espressoShots,
+    required Map<String, dynamic> customization,
   }) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -30,13 +26,7 @@ class PesananService {
         'paymentMethod': paymentMethod,
         'status': 'paid',
         'orderDate': FieldValue.serverTimestamp(),
-        'customization': {
-          'gula': gula,
-          'es': es,
-          'addBiscoff': addBiscoff,
-          'addCaramel': addCaramel,
-          'espressoShots': espressoShots,
-        },
+        'customization': customization,
       };
 
       await docRef.set(orderData);

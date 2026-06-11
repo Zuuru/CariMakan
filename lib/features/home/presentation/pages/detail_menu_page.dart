@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import '../../../pesanan/presentation/pages/pembayaran_page.dart';
+import '../../../menu_resto/data/menu_service.dart';
+import '../../../menu_resto/data/option_group_model.dart';
+import '../../../menu_resto/data/option_item_model.dart';
 
 class DetailMenuPage extends StatefulWidget {
+  final String restoId;
+  final String menuId;
   final String restoName;
   final String menuName;
   final String menuImage;
@@ -12,6 +17,8 @@ class DetailMenuPage extends StatefulWidget {
 
   const DetailMenuPage({
     Key? key,
+    required this.restoId,
+    required this.menuId,
     required this.restoName,
     required this.menuName,
     required this.menuImage,
@@ -24,20 +31,50 @@ class DetailMenuPage extends StatefulWidget {
 }
 
 class _DetailMenuPageState extends State<DetailMenuPage> {
-  String _selectedGula = 'Normal';
-  String _selectedEs = 'Normal';
-  
-  bool _addBiscoff = false;
-  int _espressoShots = 0;
-  bool _addCaramel = false;
-
+  bool _isLoading = true;
+  List<OptionGroupModel> _optionGroups = [];
+  Map<String, Set<OptionItemModel>> _selectedOptions = {};
   bool _isAddedToCart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVariants();
+  }
+
+  Future<void> _fetchVariants() async {
+    try {
+      final groups = await MenuService.loadOptionGroupsWithItems(widget.menuId);
+      if (mounted) {
+        setState(() {
+          _optionGroups = groups;
+          // Initialize default selections
+          for (var group in groups) {
+            _selectedOptions[group.id] = {};
+            if (group.wajib && group.tipe == 'single' && group.items.isNotEmpty) {
+              _selectedOptions[group.id]!.add(group.items.first);
+            }
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat detail menu: $e')),
+        );
+      }
+    }
+  }
 
   double get _totalPrice {
     double total = widget.menuPrice;
-    if (_addBiscoff) total += 5000;
-    if (_addCaramel) total += 4000;
-    total += (_espressoShots * 6000);
+    for (var items in _selectedOptions.values) {
+      for (var item in items) {
+        total += item.hargaTambah;
+      }
+    }
     return total;
   }
 
@@ -46,6 +83,24 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
     final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
     final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
     return 'Rp $formatted';
+  }
+
+  void _onAddToCart() {
+    // Validasi opsi wajib
+    for (var group in _optionGroups) {
+      if (group.wajib && (_selectedOptions[group.id] == null || _selectedOptions[group.id]!.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${group.nama} wajib dipilih!', style: GoogleFonts.poppins(color: Colors.white)),
+            backgroundColor: const Color(0xFFE30613),
+          ),
+        );
+        return;
+      }
+    }
+    setState(() {
+      _isAddedToCart = true;
+    });
   }
 
   @override
@@ -96,19 +151,26 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              child: widget.menuImage.startsWith('http')
-                                  ? Image.network(
-                                      widget.menuImage,
+                              child: widget.menuImage.isEmpty
+                                  ? Container(
                                       width: double.infinity,
                                       height: 140,
-                                      fit: BoxFit.cover,
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(Icons.fastfood, size: 40, color: Colors.grey),
                                     )
-                                  : Image.asset(
-                                      widget.menuImage,
-                                      width: double.infinity,
-                                      height: 140,
-                                      fit: BoxFit.cover,
-                                    ),
+                                  : widget.menuImage.startsWith('http')
+                                      ? Image.network(
+                                          widget.menuImage,
+                                          width: double.infinity,
+                                          height: 140,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.asset(
+                                          widget.menuImage,
+                                          width: double.infinity,
+                                          height: 140,
+                                          fit: BoxFit.cover,
+                                        ),
                             ),
                             Positioned(
                               top: 8,
@@ -125,9 +187,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 0),
-                      // Detail Container (Overlap slightly or just side by side, side-by-side with padding)
-                      // According to the image, the red container is on the right, it has no left border radius
+                      // Detail Container
                       Expanded(
                         flex: 5,
                         child: Container(
@@ -138,7 +198,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                             borderRadius: BorderRadius.only(
                               topRight: Radius.circular(16),
                               bottomRight: Radius.circular(16),
-                              topLeft: Radius.circular(16), // Adjusting based on standard appearance
+                              topLeft: Radius.circular(16),
                               bottomLeft: Radius.circular(16),
                             ),
                           ),
@@ -189,141 +249,26 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Gula Options
-                  Text(
-                    'Mau gula seberapa beb?',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildOptionCircle('Gapake', _selectedGula == 'Gapake', () => setState(() => _selectedGula = 'Gapake')),
-                      _buildOptionCircle('Dikit aja', _selectedGula == 'Dikit aja', () => setState(() => _selectedGula = 'Dikit aja')),
-                      _buildOptionCircle('Normal', _selectedGula == 'Normal', () => setState(() => _selectedGula = 'Normal')),
-                      _buildOptionCircle('Manis', _selectedGula == 'Manis', () => setState(() => _selectedGula = 'Manis')),
-                      _buildOptionCircle('Diabetes', _selectedGula == 'Diabetes', () => setState(() => _selectedGula = 'Diabetes')),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Es Options
-                  Text(
-                    'kalau esnya seberapa beb?',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildOptionCircle('Anget', _selectedEs == 'Anget', () => setState(() => _selectedEs = 'Anget')),
-                      _buildOptionCircle('Dikit aja', _selectedEs == 'Dikit aja', () => setState(() => _selectedEs = 'Dikit aja')),
-                      _buildOptionCircle('Normal', _selectedEs == 'Normal', () => setState(() => _selectedEs = 'Normal')),
-                      _buildOptionCircle('Banyak', _selectedEs == 'Banyak', () => setState(() => _selectedEs = 'Banyak')),
-                      const SizedBox(width: 40), // Spacer for alignment
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Add On Options
-                  Text(
-                    'Add On - Mau nambah apa?',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Biskuit Biscoff
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Biskuit Biscoff', style: GoogleFonts.poppins(fontSize: 12)),
-                      GestureDetector(
-                        onTap: () => setState(() => _addBiscoff = !_addBiscoff),
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: _addBiscoff ? const Color(0xFFE30613) : Colors.grey),
-                          ),
-                          child: _addBiscoff
-                              ? const Center(child: CircleAvatar(radius: 6, backgroundColor: Color(0xFFE30613)))
-                              : null,
+                  if (_isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                      ),
+                    )
+                  else if (_optionGroups.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Text(
+                          'Tidak ada kustomisasi untuk menu ini.',
+                          style: GoogleFonts.poppins(color: Colors.grey.shade600, fontSize: 12),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Espresso Shots
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Espresso shots', style: GoogleFonts.poppins(fontSize: 12)),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              if (_espressoShots > 0) setState(() => _espressoShots--);
-                            },
-                            child: const Icon(Icons.remove, color: Color(0xFFE30613), size: 20),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '$_espressoShots',
-                              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () => setState(() => _espressoShots++),
-                            child: const Icon(Icons.add, color: Color(0xFFE30613), size: 20),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                    )
+                  else
+                    ..._optionGroups.map((group) => _buildOptionGroup(group)).toList(),
 
-                  // Caramel
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Caramel', style: GoogleFonts.poppins(fontSize: 12)),
-                      GestureDetector(
-                        onTap: () => setState(() => _addCaramel = !_addCaramel),
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: _addCaramel ? const Color(0xFFE30613) : Colors.grey),
-                          ),
-                          child: _addCaramel
-                              ? const Center(child: CircleAvatar(radius: 6, backgroundColor: Color(0xFFE30613)))
-                              : null,
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 40),
 
                   // Footer Total & Add to Cart
@@ -351,11 +296,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                         ],
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _isAddedToCart = true;
-                          });
-                        },
+                        onPressed: _onAddToCart,
                         icon: const Icon(Icons.add, color: Colors.white, size: 16),
                         label: Text(
                           'Tambah ke Keranjang',
@@ -376,6 +317,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 80), // give space for floating cart
                 ],
               ),
             ),
@@ -387,7 +329,16 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
               alignment: Alignment.bottomCenter,
               child: GestureDetector(
                 onTap: () {
-                  // Pass order details to PembayaranPage
+                  // Format selected variants for the next page
+                  Map<String, List<Map<String, dynamic>>> finalVariants = {};
+                  _selectedOptions.forEach((groupId, items) {
+                    final group = _optionGroups.firstWhere((g) => g.id == groupId);
+                    finalVariants[group.nama] = items.map<Map<String, dynamic>>((item) => {
+                      'nama': item.nama,
+                      'hargaTambah': item.hargaTambah,
+                    }).toList();
+                  });
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -396,11 +347,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                         menuImage: widget.menuImage,
                         menuPrice: widget.menuPrice,
                         totalPrice: _totalPrice,
-                        gula: _selectedGula,
-                        es: _selectedEs,
-                        addBiscoff: _addBiscoff,
-                        addCaramel: _addCaramel,
-                        espressoShots: _espressoShots,
+                        selectedVariants: finalVariants,
                       ),
                     ),
                   );
@@ -464,6 +411,127 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOptionGroup(OptionGroupModel group) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                group.nama,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            if (group.wajib)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE30613).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Wajib',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFFE30613),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (group.tipe == 'single')
+          _buildSingleChoiceRow(group)
+        else
+          _buildMultipleChoiceList(group),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildSingleChoiceRow(OptionGroupModel group) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: group.items.map((item) {
+          final isSelected = _selectedOptions[group.id]?.contains(item) ?? false;
+          return Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: _buildOptionCircle(
+              item.nama,
+              isSelected,
+              () {
+                setState(() {
+                  _selectedOptions[group.id]!.clear();
+                  _selectedOptions[group.id]!.add(item);
+                });
+              },
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildMultipleChoiceList(OptionGroupModel group) {
+    return Column(
+      children: group.items.map((item) {
+        final isSelected = _selectedOptions[group.id]?.contains(item) ?? false;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.nama, style: GoogleFonts.poppins(fontSize: 12)),
+                    if (item.hargaTambah > 0)
+                      Text(
+                        '+ ${_formatRupiah(item.hargaTambah.toDouble())}',
+                        style: GoogleFonts.poppins(fontSize: 10, color: Colors.grey.shade600),
+                      ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isSelected) {
+                      _selectedOptions[group.id]!.remove(item);
+                    } else {
+                      _selectedOptions[group.id]!.add(item);
+                    }
+                  });
+                },
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: isSelected ? const Color(0xFFE30613) : Colors.grey),
+                  ),
+                  child: isSelected
+                      ? const Center(child: CircleAvatar(radius: 6, backgroundColor: Color(0xFFE30613)))
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 

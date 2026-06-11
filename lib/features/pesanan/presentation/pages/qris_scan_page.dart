@@ -7,21 +7,13 @@ import 'order_receipt_page.dart';
 class QrisScanPage extends StatefulWidget {
   final String menuName;
   final double totalPrice;
-  final String gula;
-  final String es;
-  final bool addBiscoff;
-  final bool addCaramel;
-  final int espressoShots;
+  final Map<String, List<Map<String, dynamic>>> selectedVariants;
 
   const QrisScanPage({
     Key? key,
     required this.menuName,
     required this.totalPrice,
-    required this.gula,
-    required this.es,
-    required this.addBiscoff,
-    required this.addCaramel,
-    required this.espressoShots,
+    required this.selectedVariants,
   }) : super(key: key);
 
   @override
@@ -106,11 +98,7 @@ class _QrisScanPageState extends State<QrisScanPage> {
                   menuName: widget.menuName,
                   totalPrice: widget.totalPrice,
                   paymentMethod: 'QRIS',
-                  gula: widget.gula,
-                  es: widget.es,
-                  addBiscoff: widget.addBiscoff,
-                  addCaramel: widget.addCaramel,
-                  espressoShots: widget.espressoShots,
+                  customization: widget.selectedVariants,
                 );
 
                 if (mounted) {

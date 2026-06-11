@@ -126,6 +126,7 @@ class _ScanPageState extends State<ScanPage> {
                                 queueCount: data['queueCount'] ?? 0,
                                 tableId: tableId,
                                 nomorMeja: nomorMeja,
+                                restoId: restoId,
                               ),
                             ),
                           );

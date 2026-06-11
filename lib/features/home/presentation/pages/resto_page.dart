@@ -11,6 +11,7 @@ class RestoPage extends StatefulWidget {
   final int queueCount;
   final String? tableId;
   final String? nomorMeja;
+  final String restoId;
 
   const RestoPage({
     super.key,
@@ -20,6 +21,7 @@ class RestoPage extends StatefulWidget {
     required this.queueCount,
     this.tableId,
     this.nomorMeja,
+    required this.restoId,
   });
 
   @override
@@ -28,6 +30,97 @@ class RestoPage extends StatefulWidget {
 
 class _RestoPageState extends State<RestoPage> {
   String _selectedCategory = 'Makanan';
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  // State for operational hours and queue
+  bool _isOpen = true;
+  String _operationalHoursDisplay = 'Loading...';
+  int _activeQueueCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeQueueCount = widget.queueCount;
+    _listenOperationalHours();
+    _listenActiveOrders();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _listenOperationalHours() {
+    final days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    final todayStr = days[DateTime.now().weekday - 1];
+
+    FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(widget.restoId)
+        .collection('operational_hours')
+        .doc(todayStr)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        final data = doc.data()!;
+        final bool isActive = data['is_active'] ?? false;
+        final String openTime = data['open_time'] ?? '00:00';
+        final String closeTime = data['close_time'] ?? '23:59';
+
+        bool currentlyOpen = false;
+        if (isActive) {
+          final now = TimeOfDay.now();
+          final openTimeParts = openTime.split(':');
+          final closeTimeParts = closeTime.split(':');
+          if (openTimeParts.length == 2 && closeTimeParts.length == 2) {
+            final oTime = TimeOfDay(hour: int.tryParse(openTimeParts[0]) ?? 0, minute: int.tryParse(openTimeParts[1]) ?? 0);
+            final cTime = TimeOfDay(hour: int.tryParse(closeTimeParts[0]) ?? 0, minute: int.tryParse(closeTimeParts[1]) ?? 0);
+
+            final nowDouble = now.hour + now.minute / 60.0;
+            final openDouble = oTime.hour + oTime.minute / 60.0;
+            final closeDouble = cTime.hour + cTime.minute / 60.0;
+
+            if (closeDouble < openDouble) {
+              currentlyOpen = nowDouble >= openDouble || nowDouble <= closeDouble;
+            } else {
+              currentlyOpen = nowDouble >= openDouble && nowDouble <= closeDouble;
+            }
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _isOpen = currentlyOpen;
+            _operationalHoursDisplay = isActive ? '$openTime-$closeTime' : 'Libur';
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isOpen = false;
+            _operationalHoursDisplay = 'Libur';
+          });
+        }
+      }
+    });
+  }
+
+  void _listenActiveOrders() {
+    FirebaseFirestore.instance
+        .collection('orders')
+        .where('resto_id', isEqualTo: widget.restoId)
+        .where('status', whereIn: ['paid', 'processing'])
+        .snapshots()
+        .listen((snapshot) {
+      if (mounted) {
+        setState(() {
+          _activeQueueCount = snapshot.docs.length;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,19 +212,38 @@ class _RestoPageState extends State<RestoPage> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: widget.imageUrl.startsWith('http')
-                        ? Image.network(
-                            widget.imageUrl,
+                    child: widget.imageUrl.isEmpty
+                        ? Container(
                             width: double.infinity,
                             height: 180,
-                            fit: BoxFit.cover,
+                            color: Colors.grey.shade200,
+                            child: const Icon(Icons.restaurant, size: 50, color: Colors.grey),
                           )
-                        : Image.asset(
-                            widget.imageUrl,
-                            width: double.infinity,
-                            height: 180,
-                            fit: BoxFit.cover,
-                          ),
+                        : widget.imageUrl.startsWith('http')
+                            ? Image.network(
+                                widget.imageUrl,
+                                width: double.infinity,
+                                height: 180,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: double.infinity,
+                                  height: 180,
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.restaurant, size: 50, color: Colors.grey),
+                                ),
+                              )
+                            : Image.asset(
+                                widget.imageUrl,
+                                width: double.infinity,
+                                height: 180,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: double.infinity,
+                                  height: 180,
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.restaurant, size: 50, color: Colors.grey),
+                                ),
+                              ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -183,15 +295,15 @@ class _RestoPageState extends State<RestoPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Open',
+                        _isOpen ? 'Buka' : 'Tutup',
                         style: GoogleFonts.poppins(
-                          color: const Color(0xFF2E8104), // Green
+                          color: _isOpen ? const Color(0xFF2E8104) : Colors.red,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        '12.00-23.00',
+                        _operationalHoursDisplay,
                         style: GoogleFonts.poppins(
                           color: Colors.black87,
                           fontSize: 12,
@@ -208,7 +320,7 @@ class _RestoPageState extends State<RestoPage> {
                     child: Row(
                       children: [
                         Text(
-                          '${widget.queueCount}',
+                          '$_activeQueueCount',
                           style: GoogleFonts.poppins(
                             color: Colors.black,
                             fontSize: 28,
@@ -255,11 +367,28 @@ class _RestoPageState extends State<RestoPage> {
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Cari makanan/minuman Kamu nyakk',
                     hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
                     prefixIcon: const Icon(Icons.search, color: Colors.black87),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18, color: Colors.black87),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
                   ),
                 ),
               ),
@@ -276,80 +405,90 @@ class _RestoPageState extends State<RestoPage> {
               const SizedBox(height: 16),
               SizedBox(
                 height: 230,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildMenuCard(
-                      'Butterscotch Sea Salt',
-                      'Rp 37.000',
-                      'assets/images/menu/minuman/images.jpg',
-                      rawPrice: 37000.0,
-                    ),
-                    const SizedBox(width: 16),
-                    _buildMenuCard(
-                      'Chicken Cordon Bleu',
-                      'Rp 45.000',
-                      'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
-                      rawPrice: 45000.0,
-                    ),
-                  ],
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('menus')
+                      .where('resto_id', isEqualTo: widget.restoId)
+                      .limit(5)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                      );
+                    }
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      return ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: snapshot.data!.docs.length,
+                        separatorBuilder: (context, index) => const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          final doc = snapshot.data!.docs[index];
+                          final data = doc.data() as Map<String, dynamic>;
+                          final rawPrice = (data['harga'] ?? 0).toDouble();
+                          
+                          // format price
+                          final String valStr = rawPrice.toInt().toString();
+                          final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+                          final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
+                          final priceStr = 'Rp $formatted';
+
+                          return _buildMenuCard(
+                            doc.id,
+                            data['nama'] ?? 'Unknown',
+                            priceStr,
+                            data['image_url'] ?? 'assets/images/placeholder.jpg',
+                            rawPrice: rawPrice,
+                          );
+                        },
+                      );
+                    }
+                    return Center(
+                      child: Text(
+                        'Belum ada menu',
+                        style: GoogleFonts.poppins(color: Colors.grey.shade600),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 24),
 
               // Filter Tags
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = 'Makanan';
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: _selectedCategory == 'Makanan' ? const Color(0xFFE30613) : Colors.transparent,
-                        border: Border.all(
-                            color: _selectedCategory == 'Makanan' ? const Color(0xFFE30613) : Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Makanan',
-                        style: GoogleFonts.poppins(
-                          color: _selectedCategory == 'Makanan' ? Colors.white : Colors.grey.shade600,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: ['Makanan', 'Minuman', 'Snack', 'Paket'].map((category) {
+                    final isSelected = _selectedCategory == category;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFFE30613) : Colors.transparent,
+                            border: Border.all(
+                                color: isSelected ? const Color(0xFFE30613) : Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            category,
+                            style: GoogleFonts.poppins(
+                              color: isSelected ? Colors.white : Colors.grey.shade600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = 'Minuman';
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: _selectedCategory == 'Minuman' ? const Color(0xFFE30613) : Colors.transparent,
-                        border: Border.all(
-                            color: _selectedCategory == 'Minuman' ? const Color(0xFFE30613) : Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Minuman',
-                        style: GoogleFonts.poppins(
-                          color: _selectedCategory == 'Minuman' ? Colors.white : Colors.grey.shade600,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                    );
+                  }).toList(),
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -358,8 +497,7 @@ class _RestoPageState extends State<RestoPage> {
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('menus')
-                      .where('restaurantName', isEqualTo: widget.name)
-                      .where('category', isEqualTo: _selectedCategory)
+                      .where('resto_id', isEqualTo: widget.restoId)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -369,63 +507,57 @@ class _RestoPageState extends State<RestoPage> {
                       );
                     }
                     if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                      return Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        alignment: WrapAlignment.center,
-                        children: snapshot.data!.docs.map((doc) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          final rawPrice = (data['price'] ?? 0).toDouble();
-                          
-                          // format price
-                          final String valStr = rawPrice.toInt().toString();
-                          final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-                          final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
-                          final priceStr = 'Rp $formatted';
+                      final allDocs = snapshot.data!.docs;
+                      final filteredDocs = allDocs.where((doc) {
+                        final menu = doc.data() as Map<String, dynamic>;
+                        final cat = menu['kategori'] as String? ?? 'Makanan';
+                        final name = (menu['nama'] as String? ?? '').toLowerCase();
+                        if (cat != _selectedCategory) return false;
+                        if (_searchQuery.isNotEmpty && !name.contains(_searchQuery.toLowerCase())) return false;
+                        return true;
+                      }).toList();
 
-                          return _buildMenuCard(
-                            data['name'] ?? 'Unknown',
-                            priceStr,
-                            data['imagePath'] ?? 'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
-                            rawPrice: rawPrice,
-                          );
-                        }).toList(),
-                      );
+                      if (filteredDocs.isNotEmpty) {
+                        return Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          alignment: WrapAlignment.center,
+                          children: filteredDocs.map((doc) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            final rawPrice = (data['harga'] ?? 0).toDouble();
+                            
+                            // format price
+                            final String valStr = rawPrice.toInt().toString();
+                            final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+                            final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
+                            final priceStr = 'Rp $formatted';
+
+                            return _buildMenuCard(
+                              doc.id,
+                              data['nama'] ?? 'Unknown',
+                              priceStr,
+                              data['image_url'] ?? 'assets/images/placeholder.jpg',
+                              rawPrice: rawPrice,
+                            );
+                          }).toList(),
+                        );
+                      } else {
+                        return Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Text(
+                            'Menu tidak ditemukan',
+                            style: GoogleFonts.poppins(color: Colors.grey.shade600),
+                          ),
+                        );
+                      }
                     }
-                    // Fallback to dummy data if empty or error
-                    return Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        if (_selectedCategory == 'Makanan') ...[
-                          _buildMenuCard(
-                            'Chicken Cordon Bleu',
-                            'Rp 45.000',
-                            'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
-                            rawPrice: 45000.0,
-                          ),
-                          _buildMenuCard(
-                            'Chicken Cordon Bleu',
-                            'Rp 45.000',
-                            'assets/images/menu/makanan/Chicken Cordon Bleu.jpg',
-                            rawPrice: 45000.0,
-                          ),
-                        ] else if (_selectedCategory == 'Minuman') ...[
-                          _buildMenuCard(
-                            'Butterscotch Sea Salt',
-                            'Rp 37.000',
-                            'assets/images/menu/minuman/images.jpg',
-                            rawPrice: 37000.0,
-                          ),
-                          _buildMenuCard(
-                            'Butterscotch Sea Salt',
-                            'Rp 37.000',
-                            'assets/images/menu/minuman/images.jpg',
-                            rawPrice: 37000.0,
-                          ),
-                        ],
-                      ],
+                    
+                    return Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Text(
+                        'Belum ada menu',
+                        style: GoogleFonts.poppins(color: Colors.grey.shade600),
+                      ),
                     );
                   },
                 ),
@@ -468,13 +600,15 @@ class _RestoPageState extends State<RestoPage> {
     );
   }
 
-  Widget _buildMenuCard(String name, String price, String imagePath, {bool isVertical = false, double rawPrice = 0.0}) {
+  Widget _buildMenuCard(String menuId, String name, String price, String imagePath, {bool isVertical = false, double rawPrice = 0.0}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => DetailMenuPage(
+              restoId: widget.restoId,
+              menuId: menuId,
               restoName: widget.name,
               menuName: name,
               menuImage: imagePath,
@@ -499,12 +633,38 @@ class _RestoPageState extends State<RestoPage> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  imagePath,
-                  height: 130,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
+                child: imagePath.isEmpty
+                    ? Container(
+                        height: 130,
+                        width: double.infinity,
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.fastfood_rounded, size: 40, color: Colors.grey),
+                      )
+                    : imagePath.startsWith('http')
+                        ? Image.network(
+                            imagePath,
+                            height: 130,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              height: 130,
+                              width: double.infinity,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.fastfood_rounded, size: 40, color: Colors.grey),
+                            ),
+                          )
+                        : Image.asset(
+                            imagePath,
+                            height: 130,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              height: 130,
+                              width: double.infinity,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.fastfood_rounded, size: 40, color: Colors.grey),
+                            ),
+                          ),
               ),
               Positioned(
                 top: 8,

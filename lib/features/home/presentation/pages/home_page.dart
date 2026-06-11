@@ -450,6 +450,7 @@ class _HomeContentState extends State<HomeContent> {
                               imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
                               distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
                               queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                              restoId: doc.id,
                             ),
                           ),
                         );

@@ -297,6 +297,7 @@ class _MapScreenState extends State<MapScreen> {
                               imageUrl: restaurant.imageUrl,
                               distance: '${distance.toStringAsFixed(2)} km',
                               queueCount: restaurant.queueCount,
+                              restoId: restaurant.id,
                             ),
                           ),
                         );

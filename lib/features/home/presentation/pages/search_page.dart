@@ -517,6 +517,7 @@ class _SearchPageState extends State<SearchPage> {
               imageUrl: resto.imageUrl,
               distance: distanceStr,
               queueCount: resto.queueCount,
+              restoId: resto.id,
             ),
           ),
         );
@@ -662,6 +663,7 @@ class _SearchPageState extends State<SearchPage> {
               imageUrl: item.restaurant.imageUrl,
               distance: distanceStr,
               queueCount: item.restaurant.queueCount,
+              restoId: item.restaurant.id,
             ),
           ),
         );

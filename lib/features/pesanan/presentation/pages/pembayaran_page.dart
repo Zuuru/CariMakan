@@ -8,11 +8,7 @@ class PembayaranPage extends StatelessWidget {
   final String menuImage;
   final double menuPrice;
   final double totalPrice; // Menu price + Add ons
-  final String gula;
-  final String es;
-  final bool addBiscoff;
-  final bool addCaramel;
-  final int espressoShots;
+  final Map<String, List<Map<String, dynamic>>> selectedVariants;
 
   const PembayaranPage({
     Key? key,
@@ -20,11 +16,7 @@ class PembayaranPage extends StatelessWidget {
     required this.menuImage,
     required this.menuPrice,
     required this.totalPrice,
-    required this.gula,
-    required this.es,
-    required this.addBiscoff,
-    required this.addCaramel,
-    required this.espressoShots,
+    required this.selectedVariants,
   }) : super(key: key);
 
   String _formatRupiah(double value) {
@@ -40,12 +32,15 @@ class PembayaranPage extends StatelessWidget {
     final double biayaLain = 1000.0;
     final double finalTotal = totalPrice + ppn + biayaLain;
 
-    // Compile add ons text
-    List<String> addOns = [];
-    if (addBiscoff) addOns.add('Biskuit Biscoff');
-    if (addCaramel) addOns.add('Caramel');
-    if (espressoShots > 0) addOns.add('$espressoShots Espresso Shot(s)');
-    String addOnText = addOns.isEmpty ? 'Tidak ada' : addOns.join(', ');
+    // Compile variant text
+    List<String> variantTexts = [];
+    selectedVariants.forEach((groupName, items) {
+      if (items.isNotEmpty) {
+        final itemNames = items.map((e) => e['nama']).join(', ');
+        variantTexts.add('$groupName: $itemNames');
+      }
+    });
+    String variantText = variantTexts.isEmpty ? 'Tidak ada kustomisasi' : variantTexts.join('\n');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -201,7 +196,7 @@ class PembayaranPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Gula : $gula\nEs : $es\nAdd On : $addOnText',
+                          variantText,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 10,
@@ -449,11 +444,7 @@ class PembayaranPage extends StatelessWidget {
                                           builder: (context) => PaymentMethodPage(
                                             menuName: menuName,
                                             totalPrice: finalTotal,
-                                            gula: gula,
-                                            es: es,
-                                            addBiscoff: addBiscoff,
-                                            addCaramel: addCaramel,
-                                            espressoShots: espressoShots,
+                                            selectedVariants: selectedVariants,
                                           ),
                                         ),
                                       );

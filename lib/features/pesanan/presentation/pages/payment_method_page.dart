@@ -6,21 +6,13 @@ import 'qris_scan_page.dart';
 class PaymentMethodPage extends StatelessWidget {
   final String menuName;
   final double totalPrice;
-  final String gula;
-  final String es;
-  final bool addBiscoff;
-  final bool addCaramel;
-  final int espressoShots;
+  final Map<String, List<Map<String, dynamic>>> selectedVariants;
 
   const PaymentMethodPage({
     Key? key,
     required this.menuName,
     required this.totalPrice,
-    required this.gula,
-    required this.es,
-    required this.addBiscoff,
-    required this.addCaramel,
-    required this.espressoShots,
+    required this.selectedVariants,
   }) : super(key: key);
 
   @override
@@ -167,11 +159,7 @@ class PaymentMethodPage extends StatelessWidget {
                     builder: (context) => QrisScanPage(
                       menuName: menuName,
                       totalPrice: totalPrice,
-                      gula: gula,
-                      es: es,
-                      addBiscoff: addBiscoff,
-                      addCaramel: addCaramel,
-                      espressoShots: espressoShots,
+                      selectedVariants: selectedVariants,
                     ),
                   ),
                 );

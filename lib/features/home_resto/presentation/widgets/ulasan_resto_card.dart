@@ -339,14 +339,17 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
               ),
               
               // 2. FILTER TABS
-              Row(
-                children: [
-                  _buildFilterTab('Semua', _reviews.length),
-                  const SizedBox(width: 8),
-                  _buildFilterTab('Positif', _reviews.where((r) => r.rating >= 4).length),
-                  const SizedBox(width: 8),
-                  _buildFilterTab('Kritik', _reviews.where((r) => r.rating <= 3).length),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterTab('Semua', _reviews.length),
+                    const SizedBox(width: 8),
+                    _buildFilterTab('Positif', _reviews.where((r) => r.rating >= 4).length),
+                    const SizedBox(width: 8),
+                    _buildFilterTab('Kritik', _reviews.where((r) => r.rating <= 3).length),
+                  ],
+                ),
               ),
               
               const SizedBox(height: 16),
