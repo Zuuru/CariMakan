@@ -2,15 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
 
 class RestaurantMarkerWidget extends StatelessWidget {
+  final String category;
   final VoidCallback onTap;
 
   const RestaurantMarkerWidget({
     super.key,
+    required this.category,
     required this.onTap,
   });
 
+  IconData _getIconForCategory() {
+    switch (category.toLowerCase()) {
+      case 'cafe':
+      case 'minuman':
+        return Icons.local_cafe;
+      case 'makanan berat':
+      case 'ayam':
+      case 'bakso':
+      case 'seafood':
+        return Icons.restaurant;
+      case 'fastfood':
+        return Icons.fastfood;
+      case 'dessert':
+        return Icons.icecream;
+      default:
+        return Icons.storefront;
+    }
+  }
+
+  Color _getColorForCategory() {
+    switch (category.toLowerCase()) {
+      case 'cafe':
+      case 'minuman':
+        return Colors.brown[600] ?? Colors.brown;
+      case 'makanan berat':
+      case 'ayam':
+      case 'bakso':
+      case 'seafood':
+        return AppColors.primary;
+      case 'fastfood':
+        return Colors.orange[800] ?? Colors.orange;
+      case 'dessert':
+        return Colors.pink[400] ?? Colors.pink;
+      default:
+        return Colors.teal;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final markerColor = _getColorForCategory();
     return GestureDetector(
       onTap: onTap,
       child: Stack(
@@ -40,26 +81,26 @@ class RestaurantMarkerWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: markerColor,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
+                      color: markerColor.withOpacity(0.4),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.restaurant,
+                child: Icon(
+                  _getIconForCategory(),
                   color: Colors.white,
                   size: 18,
                 ),
               ),
               CustomPaint(
                 size: const Size(10, 6),
-                painter: _TrianglePainter(color: AppColors.primary),
+                painter: _TrianglePainter(color: markerColor),
               ),
             ],
           ),

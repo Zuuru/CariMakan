@@ -12,6 +12,7 @@ class CardPesanan extends StatelessWidget {
   final String time;
   final OrderType orderType;
   final String imageUrl;
+  final String? statusText;
 
   const CardPesanan({
     super.key,
@@ -21,16 +22,42 @@ class CardPesanan extends StatelessWidget {
     required this.time,
     required this.orderType,
     required this.imageUrl,
+    this.statusText,
   });
 
   @override
   Widget build(BuildContext context) {
     final isProcess = status == PesananStatus.process;
-    final headerColor = isProcess ? const Color(0xFFCEE0FF) : const Color(0xFF61CF61);
-    final statusText = isProcess ? 'Baru proses' : 'Completed';
-    final statusIcon = isProcess 
-        ? 'assets/images/icon_pesanan/process.png' 
-        : 'assets/images/icon_pesanan/complete.png';
+    
+    final String displayStatus;
+    final Color headerColor;
+    final String statusIcon;
+
+    if (statusText != null) {
+      if (statusText == 'Diproses') {
+        displayStatus = 'Diproses';
+        headerColor = const Color(0xFFCEE0FF);
+        statusIcon = 'assets/images/icon_pesanan/process.png';
+      } else if (statusText == 'Siap') {
+        displayStatus = 'Siap';
+        headerColor = const Color(0xFFCEE0FF);
+        statusIcon = 'assets/images/icon_pesanan/process.png';
+      } else if (statusText == 'Selesai') {
+        displayStatus = 'Selesai';
+        headerColor = const Color(0xFF61CF61);
+        statusIcon = 'assets/images/icon_pesanan/complete.png';
+      } else {
+        displayStatus = 'Baru proses';
+        headerColor = const Color(0xFFCEE0FF);
+        statusIcon = 'assets/images/icon_pesanan/process.png';
+      }
+    } else {
+      displayStatus = isProcess ? 'Baru proses' : 'Completed';
+      headerColor = isProcess ? const Color(0xFFCEE0FF) : const Color(0xFF61CF61);
+      statusIcon = isProcess 
+          ? 'assets/images/icon_pesanan/process.png' 
+          : 'assets/images/icon_pesanan/complete.png';
+    }
 
     final isDineIn = orderType == OrderType.dineIn;
     final badgeColor = isDineIn ? const Color(0xFFD33400) : const Color(0xFFFF8800);
@@ -68,7 +95,7 @@ class CardPesanan extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  statusText,
+                  displayStatus,
                   style: GoogleFonts.outfit(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

@@ -21,7 +21,20 @@ class PesananService {
     try {
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid ?? 'guest_id';
-      final userName = user?.displayName ?? 'Guest User';
+      String userName = 'Guest User';
+
+      if (user != null) {
+        try {
+          final userDoc = await _db.collection('users').doc(userId).get();
+          if (userDoc.exists) {
+            userName = userDoc.data()?['nama'] ?? userDoc.data()?['name'] ?? user.displayName ?? 'Guest User';
+          } else {
+            userName = user.displayName ?? 'Guest User';
+          }
+        } catch (e) {
+          userName = user.displayName ?? 'Guest User';
+        }
+      }
 
       final docRef = _db.collection('orders').doc();
       final random = Random();

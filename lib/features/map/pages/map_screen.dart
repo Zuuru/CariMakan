@@ -39,11 +39,11 @@ class _MapScreenState extends State<MapScreen> {
 
   final List<String> _categories = [
     'Semua',
-    'Ayam',
-    'Bakso',
-    'Seafood',
-    'Minuman',
-    'Dessert'
+    'Cafe',
+    'Makanan Berat',
+    'Fastfood',
+    'Dessert',
+    'Minuman'
   ];
 
   final List<double> _radii = [1.0, 3.0, 5.0, 10.0]; // kept for quick-select buttons
@@ -69,8 +69,20 @@ class _MapScreenState extends State<MapScreen> {
     try {
       final position = await _mapService.getCurrentLocation();
       if (mounted) {
+        final distanceToSemarang = _mapService.calculateDistance(
+          position.latitude,
+          position.longitude,
+          -7.0494,
+          110.4382,
+        );
+
         setState(() {
-          _userLocation = LatLng(position.latitude, position.longitude);
+          if (distanceToSemarang > 100.0) {
+            // Device is too far (e.g. emulator in US), use Semarang coordinates
+            _userLocation = const LatLng(-7.0494, 110.4382);
+          } else {
+            _userLocation = LatLng(position.latitude, position.longitude);
+          }
           _isLoadingLocation = false;
         });
         _mapController.move(_userLocation, 15.0);
@@ -86,9 +98,19 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _loadRestaurants() {
+    // Dynamically scan and inject locations for any existing database entries missing coordinates
+    _firestoreService.injectLocationsToExistingRestaurants();
+
     // Stream restaurants from Firestore. Fallback to mock data if Firestore returns empty.
     _restoSubscription = _firestoreService.streamRestaurants().listen((restaurants) {
+      debugPrint('Firestore loaded ${restaurants.length} restaurants:');
+      for (final r in restaurants) {
+        debugPrint(' - Name: "${r.name}", Lat: ${r.latitude}, Lng: ${r.longitude}, Category: "${r.category}"');
+      }
+
       if (restaurants.isEmpty) {
+        // Trigger seeding in Firestore database so it is populated automatically
+        _firestoreService.seedRestaurants();
         // Mock fallback so the screen is wowed and works instantly
         _firestoreService.getMockRestaurants().then((mockList) {
           if (mounted) {
@@ -414,6 +436,7 @@ class _MapScreenState extends State<MapScreen> {
           width: 45,
           height: 45,
           child: RestaurantMarkerWidget(
+            category: resto.category,
             onTap: () => _showRestaurantDetails(resto),
           ),
         ),

@@ -2,20 +2,91 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'chat_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class TrackerTakeawayPage extends StatefulWidget {
-  const TrackerTakeawayPage({Key? key}) : super(key: key);
+  final String? orderId;
+  const TrackerTakeawayPage({Key? key, this.orderId}) : super(key: key);
 
   @override
   State<TrackerTakeawayPage> createState() => _TrackerTakeawayPageState();
 }
 
 class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
-  // Mock current step (0 = pending, 1 = preparing, 2 = ready)
   int currentStep = 1;
+  String _restoName = 'Loading resto...';
+  String _itemName = '';
+  String _orderTime = '';
+  bool _isLoading = true;
+  Map<String, dynamic>? _orderData;
+
 
   @override
   Widget build(BuildContext context) {
+    if (widget.orderId == null) {
+      // Setup default mock values
+      _restoName = 'Ideologist Coffee And Social Space';
+      _itemName = '1x Butterscotch Sea Salt';
+      _orderTime = '19.00';
+      return _buildMainLayout();
+    }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('orders').doc(widget.orderId).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator(color: Color(0xFFD33400))),
+          );
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Scaffold(
+            body: Center(child: Text('Pesanan tidak ditemukan')),
+          );
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        _orderData = data;
+        
+        final statusRaw = data['status'] ?? 'paid';
+        if (statusRaw == 'Diproses') {
+          currentStep = 1;
+        } else if (statusRaw == 'Siap') {
+          currentStep = 2;
+        } else if (statusRaw == 'Selesai') {
+          currentStep = 3;
+        } else {
+          currentStep = 0; // paid / pending
+        }
+
+        _itemName = data['menuName'] ?? '';
+        final Timestamp? ts = data['orderDate'] as Timestamp?;
+        if (ts != null) {
+          _orderTime = DateFormat('HH.mm').format(ts.toDate().toLocal());
+        } else {
+          _orderTime = '';
+        }
+
+        final restoId = data['resto_id'] ?? '';
+
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('restaurants').doc(restoId).get(),
+          builder: (context, restoSnapshot) {
+            if (restoSnapshot.hasData && restoSnapshot.data!.exists) {
+              final restoData = restoSnapshot.data!.data() as Map<String, dynamic>;
+              _restoName = restoData['nama'] ?? restoData['name'] ?? 'Resto';
+            } else {
+              _restoName = 'Loading Resto...';
+            }
+            return _buildMainLayout();
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMainLayout() {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
@@ -95,30 +166,39 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
         padding: const EdgeInsets.only(left: 16.0),
         child: const Center(child: CustomBackButton()),
       ),
-      title: Column(
-        children: [
-          Text(
-            'Ideologist Coffee And',
-            style: GoogleFonts.poppins(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Text(
-            'Social Space',
-            style: GoogleFonts.poppins(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+      title: Text(
+        _restoName,
+        style: GoogleFonts.poppins(
+          color: Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        maxLines: 2,
+        textAlign: TextAlign.center,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
   Widget _buildOrderSummaryCard() {
+    String summaryTitle = 'Pesananlu lagi disiapin nih';
+    if (currentStep == 0) {
+      summaryTitle = 'Nunggu acc dari resto';
+    } else if (currentStep == 2) {
+      summaryTitle = 'Makananlu dah jadi nih, buruan ambil';
+    } else if (currentStep >= 3) {
+      summaryTitle = 'Pesananlu udah selesai';
+    }
+
+    // Try to get first item image if available
+    String? menuImage;
+    if (_orderData != null) {
+      final items = _orderData!['items'] as List?;
+      if (items != null && items.isNotEmpty) {
+        menuImage = items.first['menuImage'] as String?;
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -136,20 +216,46 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/images/menu/makanan/Chicken Cordon Bleu.jpg', // Replace with actual image
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 70,
-                  height: 70,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.fastfood, color: Colors.grey),
-                );
-              },
-            ),
+            child: menuImage != null && menuImage.isNotEmpty
+                ? (menuImage.startsWith('http')
+                    ? Image.network(
+                        menuImage,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 70,
+                          height: 70,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.fastfood, color: Colors.grey),
+                        ),
+                      )
+                    : Image.asset(
+                        menuImage,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 70,
+                          height: 70,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.fastfood, color: Colors.grey),
+                        ),
+                      ))
+                : Image.asset(
+                    'assets/images/menu/makanan/Chicken Cordon Bleu.jpg', // Default fallback
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 70,
+                        height: 70,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.fastfood, color: Colors.grey),
+                      );
+                    },
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -157,23 +263,25 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pesananlu lagi disiapin nih',
+                  summaryTitle,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Order at 19.00',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                if (_orderTime.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Order at $_orderTime',
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 4),
                 Text(
-                  '1x Butterscotch Sea Salt',
+                  _itemName,
                   style: GoogleFonts.poppins(
                     color: Colors.black87,
                     fontSize: 12,

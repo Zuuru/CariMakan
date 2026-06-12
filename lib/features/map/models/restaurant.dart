@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Restaurant {
   final String id;
   final String name;
@@ -29,15 +31,36 @@ class Restaurant {
     if (data['lokasi'] != null) {
       try {
         final loc = data['lokasi'];
-        lat = loc.latitude;
-        lng = loc.longitude;
+        if (loc is GeoPoint) {
+          lat = loc.latitude;
+          lng = loc.longitude;
+        } else if (loc is Map) {
+          lat = (loc['latitude'] as num?)?.toDouble() ?? 0.0;
+          lng = (loc['longitude'] as num?)?.toDouble() ?? 0.0;
+        }
       } catch (e) {
-        // Fallback or ignore if it's not a GeoPoint
+        // Fallback or ignore
       }
     } else {
       lat = (data['latitude'] as num?)?.toDouble() ?? 0.0;
       lng = (data['longitude'] as num?)?.toDouble() ?? 0.0;
     }
+
+    // Auto-correct: Pulau Jawa/Semarang ada di belahan bumi SELATAN (latitude negatif).
+    // Jika latitude positif dan longitude ~105-115 (Indonesia), koreksi ke negatif.
+    if (lat > 0 && lng > 100 && lng < 120) {
+      lat = -lat;
+    }
+
+    // Resolve category: dari field 'category', atau fallback ke genres[0]
+    final rawCategory = data['category'] as String?;
+    final genresList = data['genres'] as List?;
+    final category = (rawCategory != null && rawCategory.trim().isNotEmpty)
+        ? rawCategory.trim()
+        : (genresList != null && genresList.isNotEmpty ? genresList[0] as String : '');
+
+    // Trim status untuk menghindari masalah spasi trailing seperti "aktif "
+    final status = (data['status'] as String? ?? '').trim();
 
     return Restaurant(
       id: id,
@@ -47,9 +70,9 @@ class Restaurant {
       longitude: lng,
       rating: (data['avg_rating'] as num?)?.toDouble() ?? (data['rating'] as num?)?.toDouble() ?? 0.0,
       imageUrl: data['foto_profil'] ?? data['imageUrl'] ?? 'https://via.placeholder.com/250x120',
-      isOpen: data['status'] == 'aktif' || (data['isOpen'] ?? true),
-      category: data['category'] ?? (data['genres'] != null && (data['genres'] as List).isNotEmpty ? data['genres'][0] : ''),
-      queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+      isOpen: status == 'aktif' || (data['isOpen'] as bool? ?? false),
+      category: category,
+      queueCount: (data['queueCount'] ?? data['total_review'] ?? 0) as int,
     );
   }
 }
