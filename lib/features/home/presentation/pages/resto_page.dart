@@ -113,7 +113,7 @@ class _RestoPageState extends State<RestoPage> {
     FirebaseFirestore.instance
         .collection('orders')
         .where('resto_id', isEqualTo: widget.restoId)
-        .where('status', whereIn: ['paid', 'processing'])
+        .where('status', whereIn: ['paid', 'processing', 'Diproses', 'Siap'])
         .snapshots()
         .listen((snapshot) {
       if (mounted) {
@@ -796,6 +796,15 @@ class _RestoPageState extends State<RestoPage> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context); // close bottom sheet
+                      if (!_isOpen) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Maaf, resto sedang tutup. Tidak dapat melanjutkan pesanan.', style: GoogleFonts.poppins(color: Colors.white)),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -858,34 +867,17 @@ class _RestoPageState extends State<RestoPage> {
   }
 
   Widget _buildMenuCard(String menuId, String name, String price, String imagePath, {bool isVertical = false, double rawPrice = 0.0}) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetailMenuPage(
-              restoId: widget.restoId,
-              menuId: menuId,
-              restoName: widget.name,
-              menuName: name,
-              menuImage: imagePath,
-              menuPrice: rawPrice > 0 ? rawPrice : double.tryParse(price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0.0,
-              description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
-            ),
-          ),
-        );
-      },
-      child: Container(
-        width: isVertical ? double.infinity : 150,
-        margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF1F1), // Cream/Pinkish
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    final Widget cardContent = Container(
+      width: isVertical ? double.infinity : 150,
+      margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF1F1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Stack(
             children: [
               ClipRRect(
@@ -941,7 +933,7 @@ class _RestoPageState extends State<RestoPage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFD33400), // Red
+                    color: Color(0xFFD33400),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(12),
                       bottomRight: Radius.circular(16),
@@ -986,8 +978,65 @@ class _RestoPageState extends State<RestoPage> {
           ),
         ],
       ),
-    ),
-   );
+    );
+
+    return GestureDetector(
+      onTap: () {
+        if (!_isOpen) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailMenuPage(
+              restoId: widget.restoId,
+              menuId: menuId,
+              restoName: widget.name,
+              menuName: name,
+              menuImage: imagePath,
+              menuPrice: rawPrice > 0 ? rawPrice : double.tryParse(price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0.0,
+              description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
+            ),
+          ),
+        );
+      },
+      child: Stack(
+        children: [
+          cardContent,
+          if (!_isOpen)
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  color: Colors.black.withOpacity(0.55),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.storefront_outlined, color: Colors.white70, size: 28),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Resto Tutup',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(
+                          'Tidak tersedia saat ini',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white70,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
-

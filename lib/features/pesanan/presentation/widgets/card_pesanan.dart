@@ -25,171 +25,216 @@ class CardPesanan extends StatelessWidget {
     this.statusText,
   });
 
+  Color _getStatusColor(String? statusText, bool isProcess) {
+    final status = statusText?.toLowerCase() ?? (isProcess ? 'diproses' : 'selesai');
+    if (status == 'paid') return const Color(0xFFE3861B); // Orange
+    if (status == 'diproses') return const Color(0xFF1D4ED8); // Blue
+    if (status == 'siap') return const Color(0xFF10B981); // Green
+    if (status == 'selesai' || status == 'complete') return const Color(0xFF6B7280); // Gray
+    return const Color(0xFFE3861B); // Default waiting (orange)
+  }
+
+  Color _getCardBgColor(String? statusText, bool isProcess) {
+    final status = statusText?.toLowerCase() ?? (isProcess ? 'diproses' : 'selesai');
+    if (status == 'paid') return const Color(0xFFFFF7ED); // Soft Orange
+    if (status == 'diproses') return const Color(0xFFEFF6FF); // Soft Blue
+    if (status == 'siap') return const Color(0xFFECFDF5); // Soft Green
+    if (status == 'selesai' || status == 'complete') return const Color(0xFFF9FAFB); // Soft Gray
+    return const Color(0xFFFFF7ED);
+  }
+
+  Color _getHeaderBgColor(String? statusText, bool isProcess) {
+    final status = statusText?.toLowerCase() ?? (isProcess ? 'diproses' : 'selesai');
+    if (status == 'paid') return const Color(0xFFFFEDD5); // Amber 100
+    if (status == 'diproses') return const Color(0xFFDBEAFE); // Blue 100
+    if (status == 'siap') return const Color(0xFFD1FAE5); // Emerald 100
+    if (status == 'selesai' || status == 'complete') return const Color(0xFFE5E7EB); // Gray 100
+    return const Color(0xFFFFEDD5);
+  }
+
+  Color _getTextColor(String? statusText, bool isProcess) {
+    final status = statusText?.toLowerCase() ?? (isProcess ? 'diproses' : 'selesai');
+    if (status == 'paid') return const Color(0xFFC2410C); // Amber 700
+    if (status == 'diproses') return const Color(0xFF1E40AF); // Blue 700
+    if (status == 'siap') return const Color(0xFF047857); // Emerald 700
+    if (status == 'selesai' || status == 'complete') return const Color(0xFF4B5563); // Gray 700
+    return const Color(0xFFC2410C);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isProcess = status == PesananStatus.process;
-    
+    final statusLow = statusText?.toLowerCase() ?? (isProcess ? 'diproses' : 'selesai');
+
     final String displayStatus;
-    final Color headerColor;
     final String statusIcon;
 
-    if (statusText != null) {
-      if (statusText == 'Diproses') {
-        displayStatus = 'Diproses';
-        headerColor = const Color(0xFFCEE0FF);
-        statusIcon = 'assets/images/icon_pesanan/process.png';
-      } else if (statusText == 'Siap') {
-        displayStatus = 'Siap';
-        headerColor = const Color(0xFFCEE0FF);
-        statusIcon = 'assets/images/icon_pesanan/process.png';
-      } else if (statusText == 'Selesai') {
-        displayStatus = 'Selesai';
-        headerColor = const Color(0xFF61CF61);
-        statusIcon = 'assets/images/icon_pesanan/complete.png';
-      } else {
-        displayStatus = 'Baru proses';
-        headerColor = const Color(0xFFCEE0FF);
-        statusIcon = 'assets/images/icon_pesanan/process.png';
-      }
+    if (statusLow == 'diproses') {
+      displayStatus = 'Diproses';
+      statusIcon = 'assets/images/icon_pesanan/process.png';
+    } else if (statusLow == 'siap') {
+      displayStatus = 'Siap Diambil';
+      statusIcon = 'assets/images/icon_pesanan/process.png';
+    } else if (statusLow == 'selesai' || statusLow == 'complete') {
+      displayStatus = 'Selesai';
+      statusIcon = 'assets/images/icon_pesanan/complete.png';
     } else {
-      displayStatus = isProcess ? 'Baru proses' : 'Completed';
-      headerColor = isProcess ? const Color(0xFFCEE0FF) : const Color(0xFF61CF61);
-      statusIcon = isProcess 
-          ? 'assets/images/icon_pesanan/process.png' 
-          : 'assets/images/icon_pesanan/complete.png';
+      displayStatus = 'Menunggu Konfirmasi';
+      statusIcon = 'assets/images/icon_pesanan/process.png';
     }
 
     final isDineIn = orderType == OrderType.dineIn;
-    final badgeColor = isDineIn ? const Color(0xFFD33400) : const Color(0xFFFF8800);
+    final badgeColor = isDineIn ? const Color(0xFFD33400) : const Color(0xFFE3861B);
     final badgeText = isDineIn ? 'Dine In' : 'Take Away';
+    final textColor = _getTextColor(statusText, isProcess);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _getCardBgColor(statusText, isProcess),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 15,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Header Status
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: headerColor,
-              borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left Accent Line
+            Container(
+              width: 6,
+              color: _getStatusColor(statusText, isProcess),
             ),
-            child: Row(
-              children: [
-                Image.asset(
-                  statusIcon,
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.info, size: 40),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  displayStatus,
-                  style: GoogleFonts.outfit(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textMain.withOpacity(0.5),
+            Expanded(
+              child: Column(
+                children: [
+                  // Header Status
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: _getHeaderBgColor(statusText, isProcess),
+                    ),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          statusIcon,
+                          width: 30,
+                          height: 30,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            statusLow == 'selesai' || statusLow == 'complete'
+                                ? Icons.check_circle_outline
+                                : Icons.schedule,
+                            color: textColor,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          displayStatus,
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          time,
+                          style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: textColor.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const Spacer(),
-                Text(
-                  time,
-                  style: GoogleFonts.outfit(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textMain.withOpacity(0.5),
+                  
+                  // Body Content
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                imageUrl,
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: 70,
+                                  height: 70,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.image, color: Colors.grey),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                restoName,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textMain,
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                itemName,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: badgeColor,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                badgeText,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          
-          // Body Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        imageUrl,
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 80,
-                          height: 80,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.image, color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        restoName,
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textMain,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        itemName,
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

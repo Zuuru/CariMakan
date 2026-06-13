@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/order_karyawan_card.dart';
 import '../widgets/order_detail_bottom_sheet.dart';
+import '../pages/qr_scanner_page.dart';
 import '../../../splash/pages/splash_screen.dart';
 
 class KaryawanHomePage extends StatefulWidget {
@@ -71,9 +72,8 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
             _showSnackBar('Pesanan siap! Notifikasi dikirim ke customer.');
           },
           onScanQR: () {
-            // Simulate QR Scan process
             Navigator.pop(context);
-            _showScannerMock(order['id']);
+            _openQrScanner(order['id']);
           },
         );
       },
@@ -81,9 +81,14 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
   }
 
   void _updateOrderStatus(String id, String newStatus) {
-    FirebaseFirestore.instance.collection('orders').doc(id).update({
+    final Map<String, dynamic> updates = {
       'status': newStatus,
-    }).catchError((e) {
+    };
+    if (newStatus == 'Siap') {
+      updates['readyAt'] = FieldValue.serverTimestamp();
+    }
+
+    FirebaseFirestore.instance.collection('orders').doc(id).update(updates).catchError((e) {
       _showSnackBar('Gagal memperbarui status: $e');
     });
   }
@@ -107,29 +112,19 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
     );
   }
 
-  void _showScannerMock(String id) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Membuka Kamera...', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: Text('Simulasi scan QR code pickup dari customer.', style: GoogleFonts.outfit()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Batal', style: GoogleFonts.outfit(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _removeOrder(id);
-              _showSnackBar('QR Valid! Pesanan selesai dan diserahkan.');
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD33400)),
-            child: Text('Simulasi Berhasil', style: GoogleFonts.outfit(color: Colors.white)),
-          ),
-        ],
+  void _openQrScanner(String orderId) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => QrScannerPage(
+          restoId: widget.restoId,
+          expectedOrderId: orderId,
+        ),
       ),
     );
+    if (result == true && mounted) {
+      _showSnackBar('✅ Pesanan berhasil dikonfirmasi dan diserahkan!');
+    }
   }
 
   Future<void> _handleLogout() async {

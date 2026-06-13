@@ -4,6 +4,7 @@ import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class TrackerTakeawayPage extends StatefulWidget {
   final String? orderId;
@@ -150,6 +151,10 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
                     _buildOrderSummaryCard(),
                     const SizedBox(height: 32),
                     _buildTrackerTimeline(),
+                    if (currentStep >= 2 && currentStep < 4) ...[
+                      const SizedBox(height: 32),
+                      _buildPickupQrCard(),
+                    ],
                     const SizedBox(height: 32),
                     _buildRestoContactCard(),
                   ],
@@ -403,6 +408,146 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPickupQrCard() {
+    final orderId = widget.orderId ?? '';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFD33400).withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD33400).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.qr_code_2_rounded,
+                  color: Color(0xFFD33400),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'QR Pickup Kamu',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1C1C1C),
+                    ),
+                  ),
+                  Text(
+                    'Tunjukkan ke karyawan untuk ambil pesanan',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // QR Code
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFF3F4F6),
+                width: 1.5,
+              ),
+            ),
+            child: QrImageView(
+              data: orderId,
+              version: QrVersions.auto,
+              size: 200,
+              backgroundColor: Colors.white,
+              eyeStyle: const QrEyeStyle(
+                eyeShape: QrEyeShape.square,
+                color: Color(0xFF1C1C1C),
+              ),
+              dataModuleStyle: const QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: Color(0xFF1C1C1C),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Order ID display
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'Order ID: ${orderId.length > 12 ? orderId.substring(0, 12).toUpperCase() + '...' : orderId.toUpperCase()}',
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF6B7280),
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Info chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.access_time_rounded,
+                  size: 14,
+                  color: Color(0xFFD33400),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Makanan kamu sudah siap diambil!',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFD33400),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

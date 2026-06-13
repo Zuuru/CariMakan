@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 class TrackerDineInPage extends StatefulWidget {
   final String? orderId;
@@ -19,6 +20,93 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
   String _orderTime = '';
   String _queueNumber = '';
   Map<String, dynamic>? _orderData;
+  Timer? _autoCompleteTimer;
+
+  @override
+  void dispose() {
+    _cancelTimer();
+    super.dispose();
+  }
+
+  void _checkAutoComplete(Map<String, dynamic> data) {
+    final statusRaw = data['status'] ?? 'paid';
+    if (statusRaw == 'Siap') {
+      final Timestamp? readyAt = data['readyAt'] as Timestamp?;
+      if (readyAt != null) {
+        final readyDateTime = readyAt.toDate().toLocal();
+        final now = DateTime.now();
+        final diff = now.difference(readyDateTime);
+        
+        if (diff.inMinutes >= 10) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _completeOrderSilently();
+          });
+        } else {
+          final remainingSeconds = 600 - diff.inSeconds;
+          _startAutoCompleteTimer(remainingSeconds);
+        }
+      }
+    } else {
+      _cancelTimer();
+    }
+  }
+
+  void _completeOrderSilently() {
+    FirebaseFirestore.instance
+        .collection('orders')
+        .doc(widget.orderId)
+        .update({'status': 'Selesai'}).catchError((e) {
+      // ignore
+    });
+  }
+
+  void _startAutoCompleteTimer(int seconds) {
+    _cancelTimer();
+    if (seconds <= 0) return;
+    _autoCompleteTimer = Timer(Duration(seconds: seconds), () {
+      _completeOrderSilently();
+    });
+  }
+
+  void _cancelTimer() {
+    _autoCompleteTimer?.cancel();
+    _autoCompleteTimer = null;
+  }
+
+  Future<void> _completeOrder() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(widget.orderId)
+          .update({'status': 'Selesai'});
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Pesanan selesai! Terima kasih.',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Gagal menyelesaikan pesanan: $e',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
 
   @override
@@ -53,6 +141,7 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
 
         final data = snapshot.data!.data() as Map<String, dynamic>;
         _orderData = data;
+        _checkAutoComplete(data);
         
         final statusRaw = data['status'] ?? 'paid';
         if (statusRaw == 'Diproses') {
@@ -152,6 +241,35 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
                     _buildTrackerTimeline(),
                     const SizedBox(height: 32),
                     _buildQueueNumberCard(),
+                    if (currentStep == 2) ...[
+                      const SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: _completeOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD33400),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 54),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle_outline, size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Pesanan Sudah Diambil',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
