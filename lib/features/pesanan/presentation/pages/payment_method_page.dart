@@ -84,10 +84,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       if (!mounted) return;
 
       if (paymentResult != null && paymentResult.status == MidtransPaymentStatus.success) {
-        // Clear global cart after successful payment
-        CartService.instance.clearCart(widget.restoId);
-
-        // Write order to Firestore
+        // Write order to Firestore first, before clearing the cart reference!
         final orderId = await PesananService.createOrder(
           cartItems: widget.cartItems,
           totalPrice: widget.totalPrice,
@@ -100,6 +97,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           tableOrPickupInfo: widget.tableOrPickupInfo,
         );
 
+        // Clear global cart after successful order creation
+        CartService.instance.clearCart(widget.restoId);
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -107,6 +107,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               orderId: orderId,
               menuName: itemName,
               totalPrice: widget.totalPrice,
+              isTakeaway: widget.type == 'Take Away',
             ),
           ),
         );
@@ -114,6 +115,53 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     } catch (e) {
       if (!mounted) return;
       _showErrorDialog('Gagal memulai pembayaran: $e');
+    } finally {
+      if (mounted) setState(() => _isProcessingPayment = false);
+    }
+  }
+
+  Future<void> _bypassPayment() async {
+    setState(() => _isProcessingPayment = true);
+
+    try {
+      final itemName = widget.cartItems.isEmpty 
+          ? 'Makanan' 
+          : (widget.cartItems.length == 1 
+              ? widget.cartItems.first.menuName 
+              : '${widget.cartItems.first.menuName} dan ${widget.cartItems.length - 1} lainnya');
+
+      // Write order to Firestore first, before clearing the cart reference!
+      final orderId = await PesananService.createOrder(
+        cartItems: widget.cartItems,
+        totalPrice: widget.totalPrice,
+        paymentMethod: 'QRIS (Bypass)',
+        restoId: widget.restoId,
+        appliedPromo: widget.appliedPromo,
+        discount: widget.discount,
+        subtotal: widget.subtotal,
+        type: widget.type,
+        tableOrPickupInfo: widget.tableOrPickupInfo,
+      );
+
+      // Clear global cart after successful order creation
+      CartService.instance.clearCart(widget.restoId);
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OrderReceiptPage(
+            orderId: orderId,
+            menuName: itemName,
+            totalPrice: widget.totalPrice,
+            isTakeaway: widget.type == 'Take Away',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorDialog('Gagal memproses bypass: $e');
     } finally {
       if (mounted) setState(() => _isProcessingPayment = false);
     }
@@ -197,7 +245,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       ),
                     ),
                     Text(
-                      '1 Metode Tersedia',
+                      '2 Metode Tersedia',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.grey,
@@ -211,8 +259,17 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 _buildMethodItem(
                   imagePath: 'assets/images/Icon/qris.png',
                   title: 'QRIS (Midtrans)',
-                  subtitle: 'Bayar instan via GoPay, ShopeePay, DANA, OVO, LinkAja, & m-Banking',
+                  subtitle: 'Bayar instan via GoPay, ShopeePay, DANA, OVO, dll',
                   onTap: _isProcessingPayment ? () {} : _startMidtransPayment,
+                ),
+                const SizedBox(height: 16),
+
+                // Bypass Method Item
+                _buildMethodItem(
+                  imagePath: 'assets/images/Icon/qris.png',
+                  title: 'Bypass QRIS (Testing)',
+                  subtitle: 'Langsung sukses bayar tanpa lewat Midtrans',
+                  onTap: _isProcessingPayment ? () {} : _bypassPayment,
                 ),
                 const SizedBox(height: 32),
 

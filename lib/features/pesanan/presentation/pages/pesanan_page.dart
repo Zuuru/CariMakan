@@ -327,14 +327,32 @@ class _PesananPageState extends State<PesananPage> {
             final restoName = restoData?['nama'] ?? restoData?['name'] ?? 'Resto';
 
             String? imageUrl;
+            String itemName = data['menuName'] ?? '';
             final items = data['items'] as List?;
+
             if (items != null && items.isNotEmpty) {
+              // 1. Ambil gambar dari menu pertama yang dipesan
               imageUrl = items.first['menuImage'] as String?;
+              
+              // 2. Jika menuName kosong, kita construct dari list items
+              if (itemName.isEmpty) {
+                if (items.length == 1) {
+                  itemName = items.first['menuName'] ?? 'Menu Makanan';
+                } else {
+                  itemName = '${items.first['menuName']} + ${items.length - 1} item';
+                }
+              }
             }
+
+            // Jika tidak ada gambar menu, gunakan foto profil resto, atau gambar default sementara
             if (imageUrl == null || imageUrl.isEmpty) {
               imageUrl = restoData?['foto_profil'] as String?;
             }
-            imageUrl ??= 'assets/images/menu/makanan/Chicken Cordon Bleu.jpg';
+            imageUrl ??= 'assets/images/background/bg 2.png'; // Placeholder sementara yang ada di project
+
+            if (itemName.isEmpty) {
+               itemName = 'Pesanan';
+            }
 
             final statusRaw = data['status'] ?? 'paid';
             final status = (statusRaw == 'Selesai')

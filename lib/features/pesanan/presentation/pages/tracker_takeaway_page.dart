@@ -25,11 +25,17 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
   @override
   Widget build(BuildContext context) {
     if (widget.orderId == null) {
-      // Setup default mock values
-      _restoName = 'Ideologist Coffee And Social Space';
-      _itemName = '1x Butterscotch Sea Salt';
-      _orderTime = '19.00';
-      return _buildMainLayout();
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: const CustomBackButton(),
+        ),
+        body: const Center(
+          child: Text('Invalid Order ID', style: TextStyle(color: Colors.black)),
+        ),
+      );
     }
 
     return StreamBuilder<DocumentSnapshot>(

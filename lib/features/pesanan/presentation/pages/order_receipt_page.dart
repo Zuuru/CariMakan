@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'tracker_takeaway_page.dart';
+import 'tracker_dine_in_page.dart';
 import 'package:intl/intl.dart';
 
 class OrderReceiptPage extends StatelessWidget {
   final String orderId;
   final String menuName;
   final double totalPrice;
+  final bool isTakeaway;
 
   const OrderReceiptPage({
     Key? key,
     required this.orderId,
     required this.menuName,
     required this.totalPrice,
+    this.isTakeaway = true,
   }) : super(key: key);
 
   String _formatRupiah(double value) {
@@ -162,7 +165,7 @@ class OrderReceiptPage extends StatelessWidget {
                               ),
                               
                               Text(
-                                'Take away',
+                                isTakeaway ? 'Take away' : 'Dine In',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -207,8 +210,12 @@ class OrderReceiptPage extends StatelessWidget {
                           onPressed: () {
                             Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(builder: (context) => const TrackerTakeawayPage()),
-                              (route) => route.isFirst, // Keep the very first route (Home) and push Tracker
+                              MaterialPageRoute(
+                                builder: (context) => isTakeaway 
+                                    ? TrackerTakeawayPage(orderId: orderId)
+                                    : TrackerDineInPage(orderId: orderId)
+                              ),
+                              (route) => route.isFirst,
                             );
                           },
                           style: ElevatedButton.styleFrom(
