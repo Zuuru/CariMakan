@@ -1,30 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-class MockReview {
-  final String id;
-  final String namaPelanggan;
-  final double rating;
-  final String waktu;
-  final String ulasan;
-  final String menuDipesan;
-  final String varianDipesan;
-  String? balasanOwner;
-
-  MockReview({
-    required this.id,
-    required this.namaPelanggan,
-    required this.rating,
-    required this.waktu,
-    required this.ulasan,
-    required this.menuDipesan,
-    required this.varianDipesan,
-    this.balasanOwner,
-  });
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class UlasanRestoCard extends StatefulWidget {
-  const UlasanRestoCard({Key? key}) : super(key: key);
+  final String? restoId;
+  final bool isCustomer;
+
+  const UlasanRestoCard({
+    Key? key,
+    this.restoId,
+    this.isCustomer = false,
+  }) : super(key: key);
 
   @override
   State<UlasanRestoCard> createState() => _UlasanRestoCardState();
@@ -32,62 +20,6 @@ class UlasanRestoCard extends StatefulWidget {
 
 class _UlasanRestoCardState extends State<UlasanRestoCard> {
   String _selectedFilter = 'Semua'; // 'Semua', 'Positif', 'Kritik'
-  
-  // In-memory list of mock reviews
-  late List<MockReview> _reviews;
-
-  @override
-  void initState() {
-    super.initState();
-    _reviews = [
-      MockReview(
-        id: '1',
-        namaPelanggan: 'Ahmad Fauzi',
-        rating: 5.0,
-        waktu: '2 jam yang lalu',
-        ulasan: 'Mie ayam level 3-nya pas mantap banget! Pedes gurihnya juara. Pangsit gorengnya juga renyah poll. Porsi pas buat makan siang.',
-        menuDipesan: 'Mie Ayam',
-        varianDipesan: 'Pedes: Level 3, Toping: Pangsit Goreng',
-      ),
-      MockReview(
-        id: '2',
-        namaPelanggan: 'Jessica Putri',
-        rating: 4.0,
-        waktu: 'Kemarin',
-        ulasan: 'Es teh manisnya segar banget pas diminum siang-siang. Untuk chicken cordon bleu-nya rasanya enak, tapi keju di dalamnya agak asin dikit. Overall worth it dan ngenyangin.',
-        menuDipesan: 'Chicken Cordon Bleu & Es Teh',
-        varianDipesan: 'Minuman: Manis, Ukuran: Sedang',
-        balasanOwner: 'Halo Kak Jessica, terima kasih atas masukannya! Keasinan keju mozarella di dalam ayam akan kami evaluasi lagi ke tim dapur ya. Ditunggu orderan berikutnya!',
-      ),
-      MockReview(
-        id: '3',
-        namaPelanggan: 'Budi Santoso',
-        rating: 3.0,
-        waktu: '3 hari yang lalu',
-        ulasan: 'Rasa makanan enak tidak mengecewakan, cuman antrean pas jam makan siang cukup panjang dan pelayanannya agak lambat. Semoga ke depannya bisa dipercepat kinerjanya.',
-        menuDipesan: 'Mie Ayam Goreng',
-        varianDipesan: 'Pedes: Level 1, Toping: Bakso',
-      ),
-      MockReview(
-        id: '4',
-        namaPelanggan: 'Clara Devina',
-        rating: 5.0,
-        waktu: '4 hari yang lalu',
-        ulasan: 'Butterscotch sea salt kopi-nya rasanya unik banget! Perpaduan manis gurihnya gurih asin sea salt-nya dapet banget. Tempatnya juga estetik nyaman buat nugas.',
-        menuDipesan: 'Butterscotch Sea Salt',
-        varianDipesan: 'Es: Sedikit, Gula: Normal',
-      ),
-      MockReview(
-        id: '5',
-        namaPelanggan: 'Rian Hidayat',
-        rating: 2.0,
-        waktu: '1 minggu yang lalu',
-        ulasan: 'Ayam goreng spesialnya agak kurang matang di bagian dekat tulangnya, masih kemerahan. Tolong koki lebih teliti lagi saat menggoreng. Sambalnya sih enak pedes.',
-        menuDipesan: 'Ayam Goreng Spesial',
-        varianDipesan: 'Bagian: Paha Atas, Sambal: Bawang',
-      ),
-    ];
-  }
 
   // Get color for avatar based on name initials
   Color _getAvatarColor(String name) {
@@ -103,7 +35,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
   }
 
   // Show dialog for owner to reply to a review
-  void _showReplyDialog(MockReview review) {
+  void _showReplyDialog(String orderId, String namaPelanggan, String ulasan) {
     final textController = TextEditingController();
     showDialog(
       context: context,
@@ -113,7 +45,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
-            'Balas Ulasan ${review.namaPelanggan}',
+            'Balas Ulasan $namaPelanggan',
             style: GoogleFonts.outfit(
               fontWeight: FontWeight.bold,
               fontSize: 18,
@@ -124,7 +56,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '"${review.ulasan}"',
+                '"$ulasan"',
                 style: GoogleFonts.outfit(
                   fontStyle: FontStyle.italic,
                   color: Colors.grey[700],
@@ -161,21 +93,39 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (textController.text.trim().isNotEmpty) {
-                  setState(() {
-                    review.balasanOwner = textController.text.trim();
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Balasan untuk ${review.namaPelanggan} berhasil dikirim!',
-                        style: GoogleFonts.outfit(),
-                      ),
-                      backgroundColor: const Color(0xFF34C759),
-                    ),
-                  );
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('orders')
+                        .doc(orderId)
+                        .update({'balasan_owner': textController.text.trim()});
+                    
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Balasan untuk $namaPelanggan berhasil dikirim!',
+                            style: GoogleFonts.outfit(),
+                          ),
+                          backgroundColor: const Color(0xFF34C759),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Gagal mengirim balasan: $e',
+                            style: GoogleFonts.outfit(),
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -200,188 +150,354 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter reviews
-    final filteredReviews = _reviews.where((review) {
-      if (_selectedFilter == 'Positif') {
-        return review.rating >= 4.0;
-      } else if (_selectedFilter == 'Kritik') {
-        return review.rating <= 3.0;
-      }
-      return true; // 'Semua'
-    }).toList();
+    if (widget.restoId != null) {
+      return _buildContent(widget.restoId!);
+    }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Review & Ulasan',
-              style: GoogleFonts.outfit(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFEBEB),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.analytics_outlined, size: 14, color: Color(0xFFD33400)),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Analisis Aktif',
-                    style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFD33400),
+    // If restoId is not provided (e.g. from owner dashboard), fetch it using current user's UID
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
+        }
+        if (snapshot.data!.docs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        final realRestoId = snapshot.data!.docs.first.id;
+        return _buildContent(realRestoId);
+      },
+    );
+  }
+
+  Widget _buildContent(String restoId) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('restaurants').doc(restoId).snapshots(),
+      builder: (context, restoSnapshot) {
+        if (restoSnapshot.hasError) {
+          return Center(child: Text('Error: ${restoSnapshot.error}', style: const TextStyle(color: Colors.red)));
+        }
+        if (!restoSnapshot.hasData || !restoSnapshot.data!.exists) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
+        }
+
+        final restoData = restoSnapshot.data!.data() as Map<String, dynamic>? ?? {};
+        final avgRating = (restoData['avg_rating'] as num?)?.toDouble() ?? 0.0;
+        final totalReview = (restoData['total_review'] as num?)?.toInt() ?? 0;
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('orders')
+              .where('resto_id', isEqualTo: restoId)
+              .where('sudah_direview', isEqualTo: true)
+              .snapshots(),
+          builder: (context, reviewsSnapshot) {
+            if (reviewsSnapshot.hasError) {
+              return Center(child: Text('Error ulasan: ${reviewsSnapshot.error}', style: const TextStyle(color: Colors.red)));
+            }
+            if (!reviewsSnapshot.hasData) {
+              return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
+            }
+
+            final allDocs = reviewsSnapshot.data!.docs;
+            // Sort client-side to avoid needing a Firestore composite index
+            final sortedDocs = allDocs.toList()..sort((a, b) {
+              final dataA = a.data() as Map<String, dynamic>;
+              final dataB = b.data() as Map<String, dynamic>;
+              final timeA = dataA['reviewed_at'] as Timestamp?;
+              final timeB = dataB['reviewed_at'] as Timestamp?;
+              if (timeA == null && timeB == null) return 0;
+              if (timeA == null) return 1;
+              if (timeB == null) return -1;
+              return timeB.compareTo(timeA); // descending
+            });
+
+            final allReviews = sortedDocs.map((d) => d.data() as Map<String, dynamic>..['id'] = d.id).toList();
+
+            // Calculate exact averages based on all returned reviews for the aspect bars
+            double totalPelayanan = 0;
+            double totalMakanan = 0;
+            double totalFasilitas = 0;
+            
+            int count5 = 0;
+            int count4 = 0;
+            int countKritik = 0;
+
+            for (var r in allReviews) {
+              totalPelayanan += (r['rating_pelayanan'] as num?)?.toDouble() ?? 0;
+              totalMakanan += (r['rating_makanan'] as num?)?.toDouble() ?? 0;
+              totalFasilitas += (r['rating_fasilitas'] as num?)?.toDouble() ?? 0;
+              
+              final total = (r['rating_total'] as num?)?.toDouble() ?? 0;
+              if (total >= 4.5) {
+                count5++;
+              } else if (total >= 3.5) {
+                count4++;
+              } else {
+                countKritik++;
+              }
+            }
+
+            final len = allReviews.isNotEmpty ? allReviews.length : 1;
+            final avgPelayanan = totalPelayanan / len;
+            final avgMakanan = totalMakanan / len;
+            final avgFasilitas = totalFasilitas / len;
+
+            // Filter reviews
+            final filteredReviews = allReviews.where((review) {
+              final rating = (review['rating_total'] as num?)?.toDouble() ?? 0;
+              if (_selectedFilter == 'Positif') {
+                return rating >= 4.0;
+              } else if (_selectedFilter == 'Kritik') {
+                return rating <= 3.0;
+              }
+              return true; // 'Semua'
+            }).toList();
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Review & Ulasan',
+                      style: GoogleFonts.outfit(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. ANALYTICS ROW (AVERAGE RATING & PROGRESS BARS)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Left side: Big Rating
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            '4.8',
-                            style: GoogleFonts.outfit(
-                              fontSize: 42,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '/5',
-                            style: GoogleFonts.outfit(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: List.generate(5, (index) {
-                          return const Icon(
-                            Icons.star_rounded,
-                            color: Colors.amber,
-                            size: 18,
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '1,248 Ulasan',
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF8C8C8C),
+                    if (!widget.isCustomer)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEBEB),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.analytics_outlined, size: 14, color: Color(0xFFD33400)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Analisis Aktif',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFD33400),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 24),
-                  
-                  // Right side: Rating Distribution Bars
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _buildDistributionRow('5 ★', 0.82, '82%'),
-                        const SizedBox(height: 4),
-                        _buildDistributionRow('4 ★', 0.12, '12%'),
-                        const SizedBox(height: 4),
-                        _buildDistributionRow('Kritik', 0.06, '6%'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Divider(color: Color(0xFFEEEEEE), thickness: 1),
-              ),
-              
-              // 2. FILTER TABS
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildFilterTab('Semua', _reviews.length),
-                    const SizedBox(width: 8),
-                    _buildFilterTab('Positif', _reviews.where((r) => r.rating >= 4).length),
-                    const SizedBox(width: 8),
-                    _buildFilterTab('Kritik', _reviews.where((r) => r.rating <= 3).length),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // 3. REVIEWS LIST
-              filteredReviews.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24.0),
-                        child: Text(
-                          'Tidak ada ulasan dalam kategori ini',
-                          style: GoogleFonts.outfit(
-                            color: Colors.grey,
-                            fontStyle: FontStyle.italic,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. ANALYTICS ROW (AVERAGE RATING & PROGRESS BARS)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Left side: Big Rating
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    avgRating.toStringAsFixed(1),
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 42,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '/5',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: List.generate(5, (index) {
+                                  return Icon(
+                                    index < avgRating.round() ? Icons.star_rounded : Icons.star_outline_rounded,
+                                    color: Colors.amber,
+                                    size: 18,
+                                  );
+                                }),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '$totalReview Ulasan',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF8C8C8C),
+                                ),
+                              ),
+                            ],
                           ),
+                          const SizedBox(width: 24),
+                          
+                          // Right side: Rating Distribution Bars
+                          Expanded(
+                            child: widget.isCustomer
+                                ? Column(
+                                    children: [
+                                      _buildAspectRow('Pelayanan', avgPelayanan),
+                                      const SizedBox(height: 6),
+                                      _buildAspectRow('Makanan', avgMakanan),
+                                      const SizedBox(height: 6),
+                                      _buildAspectRow('Fasilitas', avgFasilitas),
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      _buildDistributionRow('5 ★', allReviews.isEmpty ? 0 : count5 / allReviews.length, '${allReviews.isEmpty ? 0 : (count5 / allReviews.length * 100).round()}%'),
+                                      const SizedBox(height: 4),
+                                      _buildDistributionRow('4 ★', allReviews.isEmpty ? 0 : count4 / allReviews.length, '${allReviews.isEmpty ? 0 : (count4 / allReviews.length * 100).round()}%'),
+                                      const SizedBox(height: 4),
+                                      _buildDistributionRow('Kritik', allReviews.isEmpty ? 0 : countKritik / allReviews.length, '${allReviews.isEmpty ? 0 : (countKritik / allReviews.length * 100).round()}%'),
+                                    ],
+                                  ),
+                          ),
+                        ],
+                      ),
+                      
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: Divider(color: Color(0xFFEEEEEE), thickness: 1),
+                      ),
+                      
+                      // 2. FILTER TABS
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildFilterTab('Semua', allReviews.length),
+                            const SizedBox(width: 8),
+                            _buildFilterTab('Positif', count5 + count4),
+                            const SizedBox(width: 8),
+                            _buildFilterTab('Kritik', countKritik),
+                          ],
                         ),
                       ),
-                    )
-                  : ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredReviews.length,
-                      separatorBuilder: (context, index) => const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12.0),
-                        child: Divider(color: Color(0xFFF5F5F5), thickness: 1),
-                      ),
-                      itemBuilder: (context, index) {
-                        final review = filteredReviews[index];
-                        return _buildReviewItem(review);
-                      },
-                    ),
-            ],
+                      
+                      const SizedBox(height: 16),
+                      
+                      // 3. REVIEWS LIST
+                      filteredReviews.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                child: Text(
+                                  'Tidak ada ulasan dalam kategori ini',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: filteredReviews.length,
+                              separatorBuilder: (context, index) => const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12.0),
+                                child: Divider(color: Color(0xFFF5F5F5), thickness: 1),
+                              ),
+                              itemBuilder: (context, index) {
+                                final review = filteredReviews[index];
+                                return _buildReviewItem(review);
+                              },
+                            ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildAspectRow(String label, double val) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 55,
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: val / 5.0,
+              backgroundColor: const Color(0xFFEEEEEE),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                const Color(0xFFD33400).withValues(alpha: 0.8),
+              ),
+              minHeight: 6,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 20,
+          child: Text(
+            val.toStringAsFixed(1),
+            style: GoogleFonts.outfit(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.end,
           ),
         ),
       ],
@@ -468,7 +584,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withOpacity(0.25) : const Color(0xFFEEEEEE),
+                color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFEEEEEE),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -486,13 +602,32 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
     );
   }
 
-  Widget _buildReviewItem(MockReview review) {
-    final initials = review.namaPelanggan
+  Widget _buildReviewItem(Map<String, dynamic> review) {
+    String nama = review['userName'] ?? 'Customer';
+    final parts = nama.split(' ');
+    if (widget.isCustomer && parts.length > 1) {
+      nama = '${parts[0]} ${parts[1][0]}.';
+    }
+
+    final initials = nama
         .split(' ')
         .map((e) => e.isNotEmpty ? e[0] : '')
         .take(2)
         .join('');
-    final avatarColor = _getAvatarColor(review.namaPelanggan);
+    final avatarColor = _getAvatarColor(nama);
+    
+    final rating = (review['rating_total'] as num?)?.toDouble() ?? 0.0;
+    final timestamp = review['reviewed_at'] as Timestamp?;
+    String waktu = '';
+    if (timestamp != null) {
+      waktu = DateFormat('dd MMM yyyy').format(timestamp.toDate().toLocal());
+    }
+    
+    final ulasan = review['komentar'] as String? ?? '';
+    final balasanOwner = review['balasan_owner'] as String?;
+    final tags = (review['selected_tags'] as List?)?.cast<String>() ?? [];
+    
+    final menuDipesan = review['menuName'] ?? 'Pesanan';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,7 +639,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: avatarColor.withOpacity(0.15),
+                color: avatarColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
@@ -523,7 +658,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    review.namaPelanggan,
+                    nama,
                     style: GoogleFonts.outfit(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -531,7 +666,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                     ),
                   ),
                   Text(
-                    review.waktu,
+                    waktu,
                     style: GoogleFonts.outfit(
                       fontSize: 11,
                       color: Colors.grey,
@@ -544,8 +679,8 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
             Row(
               children: List.generate(5, (index) {
                 return Icon(
-                  Icons.star_rounded,
-                  color: index < review.rating ? Colors.amber : Colors.grey[300],
+                  index < rating.round() ? Icons.star_rounded : Icons.star_outline_rounded,
+                  color: Colors.amber,
                   size: 16,
                 );
               }),
@@ -553,19 +688,44 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
           ],
         ),
         
-        const SizedBox(height: 8),
-        
-        // Review comment
-        Text(
-          review.ulasan,
-          style: GoogleFonts.outfit(
-            fontSize: 13,
-            color: Colors.black87,
-            height: 1.4,
+        if (ulasan.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            ulasan,
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              color: Colors.black87,
+              height: 1.4,
+            ),
           ),
-        ),
+        ],
         
         const SizedBox(height: 8),
+        
+        // Tags
+        if (tags.isNotEmpty) ...[
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: tags.map((tag) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
+              ),
+              child: Text(
+                tag,
+                style: GoogleFonts.outfit(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+            )).toList(),
+          ),
+          const SizedBox(height: 10),
+        ],
         
         // Tag ordered items
         Container(
@@ -586,7 +746,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
-                  '${review.menuDipesan} (${review.varianDipesan})',
+                  menuDipesan,
                   style: GoogleFonts.outfit(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -602,7 +762,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
         const SizedBox(height: 10),
         
         // Owner Reply Box OR Reply Button
-        review.balasanOwner != null
+        balasanOwner != null
             ? Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
@@ -623,7 +783,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Balasan Anda',
+                          'Balasan Resto',
                           style: GoogleFonts.outfit(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -634,7 +794,7 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      review.balasanOwner!,
+                      balasanOwner,
                       style: GoogleFonts.outfit(
                         fontSize: 12,
                         color: Colors.black87,
@@ -644,26 +804,28 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
                   ],
                 ),
               )
-            : Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => _showReplyDialog(review),
-                  icon: const Icon(Icons.reply, size: 14, color: Color(0xFFD33400)),
-                  label: Text(
-                    'Balas Ulasan',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFD33400),
+            : (!widget.isCustomer)
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: () => _showReplyDialog(review['id'], nama, ulasan),
+                      icon: const Icon(Icons.reply, size: 14, color: Color(0xFFD33400)),
+                      label: Text(
+                        'Balas Ulasan',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFD33400),
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                     ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-              ),
+                  )
+                : const SizedBox.shrink(),
       ],
     );
   }

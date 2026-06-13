@@ -5,6 +5,7 @@ import 'chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../widgets/review_bottom_sheet.dart';
 
 class TrackerTakeawayPage extends StatefulWidget {
   final String? orderId;
@@ -21,6 +22,7 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
   String _orderTime = '';
   bool _isLoading = true;
   Map<String, dynamic>? _orderData;
+  bool _sudahDireview = false;
 
 
   @override
@@ -55,6 +57,7 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
 
         final data = snapshot.data!.data() as Map<String, dynamic>;
         _orderData = data;
+        _sudahDireview = data['sudah_direview'] == true;
         
         final statusRaw = data['status'] ?? 'paid';
         if (statusRaw == 'Diproses') {
@@ -154,6 +157,10 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
                     if (currentStep >= 2 && currentStep < 4) ...[
                       const SizedBox(height: 32),
                       _buildPickupQrCard(),
+                    ],
+                    if (currentStep >= 3) ...[
+                      const SizedBox(height: 32),
+                      _buildReviewSection(),
                     ],
                     const SizedBox(height: 32),
                     _buildRestoContactCard(),
@@ -637,6 +644,118 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReviewSection() {
+    final orderId = widget.orderId ?? '';
+    final restoId = _orderData?['resto_id'] ?? '';
+    final orderSummary = '${_itemName.isNotEmpty ? _itemName : 'Pesanan'} · $_orderTime';
+
+    if (_sudahDireview) {
+      return GestureDetector(
+        onTap: () {
+          ReviewBottomSheet.show(
+            context,
+            orderId: orderId,
+            restoId: restoId,
+            restoName: _restoName,
+            orderSummary: orderSummary,
+            existingReview: _orderData,
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0FDF4),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF10B981),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ulasan sudah dikirim ✅',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Row(
+                      children: List.generate(5, (i) {
+                        final total = (_orderData?['rating_total'] as num?)?.toDouble() ?? 0;
+                        return Icon(
+                          i < total.round() ? Icons.star_rounded : Icons.star_outline_rounded,
+                          color: Colors.amber,
+                          size: 14,
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                'Lihat',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, color: Color(0xFF10B981), size: 18),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ElevatedButton.icon(
+      onPressed: () async {
+        final result = await ReviewBottomSheet.show(
+          context,
+          orderId: orderId,
+          restoId: restoId,
+          restoName: _restoName,
+          orderSummary: orderSummary,
+        );
+        if (result == true) {
+          setState(() => _sudahDireview = true);
+        }
+      },
+      icon: const Icon(Icons.star_rate_rounded, size: 20),
+      label: Text(
+        'Beri Ulasan',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.black87,
+        minimumSize: const Size(double.infinity, 54),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 2,
       ),
     );
   }

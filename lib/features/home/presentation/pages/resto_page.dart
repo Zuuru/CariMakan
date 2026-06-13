@@ -5,6 +5,7 @@ import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'detail_menu_page.dart';
 import '../../../pesanan/data/cart_service.dart';
 import '../../../pesanan/presentation/pages/pembayaran_page.dart';
+import '../../../home_resto/presentation/widgets/ulasan_resto_card.dart';
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -567,6 +568,11 @@ class _RestoPageState extends State<RestoPage> {
                 ),
               ),
               
+              const SizedBox(height: 24),
+              UlasanRestoCard(
+                restoId: widget.restoId,
+                isCustomer: true,
+              ),
               const SizedBox(height: 100),
             ],
           ),
