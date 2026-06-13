@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -36,30 +37,41 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Pattern
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/bg 1.png',
-              fit: BoxFit.cover,
-            ),
+    return Stack(
+      children: [
+        // Background Pattern
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/background/bg 1.png',
+            fit: BoxFit.cover,
           ),
+        ),
 
-          // Main Content
-          SafeArea(
+        // Main Content
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
             child: Column(
               children: [
                 _buildAppBar(context),
                 Expanded(
                   child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 30),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLabel('Kata sandi sekarang'),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Kata sandi sekarang'),
                         const SizedBox(height: 8),
                         _buildPasswordField(
                           hint: 'Masukkan password yang sekarang',
@@ -100,6 +112,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                             });
                           },
                         ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 40),
                         _buildUpdateButton(),
                       ],
@@ -109,8 +124,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -120,32 +135,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF99BDD5).withOpacity(0.3),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-                size: 20,
-                color: Colors.black,
-              ),
-            ),
-          ),
+          const CustomBackButton(),
           ClipRRect(
             borderRadius: BorderRadius.circular(40),
             child: BackdropFilter(
@@ -202,7 +192,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     
     // Colors from design.yaml
     final Color backgroundColor = isFocused ? const Color(0xFFE7F0FA) : const Color(0xFFF1F1F1);
-    final Color iconColor = isFocused ? const Color(0xFF1269CC) : const Color(0xFFED001E);
+    final Color iconColor = isFocused ? const Color(0xFF1269CC) : const Color(0xFFD33400);
     final Color hintColor = isFocused ? const Color(0xFF1269CC).withOpacity(0.7) : Colors.black54;
     final Color textColor = isFocused ? const Color(0xFF1269CC) : Colors.black;
 
@@ -258,11 +248,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFED001E),
+          color: const Color(0xFFD33400),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFED001E).withOpacity(0.3),
+              color: const Color(0xFFD33400).withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

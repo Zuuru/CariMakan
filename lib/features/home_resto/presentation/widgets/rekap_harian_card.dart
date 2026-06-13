@@ -23,7 +23,7 @@ class RekapHarianCard extends StatelessWidget {
           width: double.infinity,
           height: 140,
           decoration: BoxDecoration(
-            color: const Color(0xFFE31B23),
+            color: const Color(0xFFD33400),
             borderRadius: BorderRadius.circular(18),
           ),
           child: Stack(

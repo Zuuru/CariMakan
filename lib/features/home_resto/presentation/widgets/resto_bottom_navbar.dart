@@ -52,7 +52,7 @@ class RestoBottomNavbar extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: isActive ? 20 : 0),
         width: isActive ? 140 : 54, // Expanded vs Circular
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFED001E) : Colors.transparent,
+          color: isActive ? const Color(0xFFD33400) : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: Stack(

@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:carimakan/core/widgets/custom_back_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -8,10 +10,10 @@ import '../../../home/presentation/widgets/custom_bottom_nav.dart';
 import '../../../pendaftaran_resto/presentation/pages/validasi_diri_page.dart';
 import '../../../pendaftaran_resto/presentation/pages/status_pendaftaran_page.dart';
 import '../../../home_resto/presentation/pages/home_resto_page.dart';
-import '../../../login/pages/login_page.dart';
+import '../../../splash/pages/splash_screen.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
-import 'wallet_payment.dart';
+import 'edit_profile_page.dart';
 import '../widgets/menu_item.dart';
 
 class CustomerProfilePage extends StatefulWidget {
@@ -24,6 +26,104 @@ class CustomerProfilePage extends StatefulWidget {
 
 class _CustomerProfilePageState extends State<CustomerProfilePage> {
   int _currentIndex = 3; // Index for Profile
+  String _userName = 'Jett Heartcliff';
+  String _userEmail = 'babababamjett@gmail.com';
+  String? _photoUrl;
+  String? _photoBase64;
+  String _buttonText = 'Daftar sebagai owner resto';
+  bool _isOwner = false;
+  bool _isLoadingStatus = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserAndRestoStatus();
+  }
+
+  Future<void> _loadUserAndRestoStatus() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      if (mounted) {
+        setState(() {
+          _isLoadingStatus = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      // 1. Fetch user doc
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      String? role;
+      if (userDoc.exists) {
+        final userData = userDoc.data();
+        if (userData != null) {
+          role = userData['role'] as String?;
+          if (userData['nama'] != null) {
+            _userName = userData['nama'] as String;
+          }
+          if (userData['email'] != null) {
+            _userEmail = userData['email'] as String;
+          }
+          if (userData['photoUrl'] != null) {
+            _photoUrl = userData['photoUrl'] as String;
+          }
+          if (userData['photoBase64'] != null) {
+            _photoBase64 = userData['photoBase64'] as String;
+          }
+        }
+      }
+
+      final normalizedRole = role?.trim().toLowerCase();
+      if (normalizedRole == 'owner' || normalizedRole == 'owner resto' || normalizedRole == 'owner_resto') {
+        if (mounted) {
+          setState(() {
+            _isOwner = true;
+            _buttonText = 'Masuk ke Dashboard Resto';
+            _isLoadingStatus = false;
+          });
+        }
+        return;
+      }
+
+      // 2. Fetch restaurant doc
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (mounted) {
+        setState(() {
+          if (querySnapshot.docs.isEmpty) {
+            _buttonText = 'Daftar sebagai owner resto';
+          } else {
+            final restoData = querySnapshot.docs.first.data();
+            final statusStr = (restoData['status'] as String?)?.trim().toLowerCase();
+            if (statusStr == 'aktif') {
+              _isOwner = true;
+              _buttonText = 'Masuk ke Dashboard Resto';
+            } else if (statusStr == 'rejected') {
+              _buttonText = 'Pendaftaran Ditolak (Cek Detail)';
+            } else {
+              _buttonText = 'Menunggu Konfirmasi Pendaftaran';
+            }
+          }
+          _isLoadingStatus = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingStatus = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +144,13 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               _buildAppBar(context),
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
                       const SizedBox(height: 25),
                       _buildProfileCard(),
                       const SizedBox(height: 25),
-                      _buildWalletItem(),
-                      const SizedBox(height: 16),
                       _buildMenuSection(),
                       const SizedBox(height: 16),
                       _buildToggleSection(),
@@ -75,58 +174,16 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: widget.onBack ?? () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF99BDD5).withOpacity(0.3),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-                size: 20,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(40),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 45,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  'Profil',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
+          CustomBackButton(onPressed: widget.onBack),
+          Expanded(
+            child: Center(
+              child: Text(
+                'Profil',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textMain,
                 ),
               ),
             ),
@@ -159,8 +216,12 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/profile.png'),
+                      image: DecorationImage(
+                        image: _photoBase64 != null
+                            ? MemoryImage(base64Decode(_photoBase64!)) as ImageProvider
+                            : (_photoUrl != null 
+                                ? NetworkImage(_photoUrl!) as ImageProvider
+                                : const AssetImage('assets/images/profile.png')),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -189,7 +250,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Jett Heartcliff',
+                      _userName,
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -197,7 +258,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                       ),
                     ),
                     Text(
-                      'babababamjett@gmail.com',
+                      _userEmail,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w300,
@@ -214,39 +275,35 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
   }
 
-  Widget _buildWalletItem() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F1).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ProfileMenuItem(
-        icon: Icons.account_balance_wallet,
-        title: 'Wallet',
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const WalletPaymentPage(),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildMenuSection() {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F1).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
-        children: [
-          const ProfileMenuItem(
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F1F1).withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+          ProfileMenuItem(
             icon: Icons.person,
             title: 'Edit Profil',
             showDivider: true,
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfilePage(),
+                ),
+              );
+              if (result == true) {
+                _loadUserAndRestoStatus();
+              }
+            },
           ),
           ProfileMenuItem(
             icon: Icons.settings,
@@ -281,18 +338,25 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           ),
         ],
       ),
+      ),
     );
   }
 
 
   Widget _buildToggleSection() {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F1).withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
-        children: [
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F1F1).withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
           _buildToggleItem(
             icon: Icons.notifications,
             title: 'Notifikasi',
@@ -304,6 +368,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           ),
           _buildToggleItem(icon: Icons.download, title: 'Update', value: true),
         ],
+      ),
       ),
     );
   }
@@ -365,6 +430,30 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
 
     try {
+      // 1. Fetch user doc first to check role
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!mounted) return;
+
+      String? role;
+      if (userDoc.exists) {
+        role = userDoc.data()?['role'] as String?;
+      }
+
+      final normalizedRole = role?.trim().toLowerCase();
+      if (normalizedRole == 'owner' || normalizedRole == 'owner resto' || normalizedRole == 'owner_resto') {
+        Navigator.pop(context); // Close loading dialog
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeRestoPage()),
+        );
+        return;
+      }
+
+      // 2. Otherwise check restaurant doc
       final querySnapshot = await FirebaseFirestore.instance
           .collection('restaurants')
           .where('owner_id', isEqualTo: userId)
@@ -382,9 +471,9 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         );
       } else {
         final restoData = querySnapshot.docs.first.data();
-        final statusStr = restoData['status'] as String?;
+        final statusStr = (restoData['status'] as String?)?.trim().toLowerCase();
 
-        if (statusStr == 'approved') {
+        if (statusStr == 'aktif') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const HomeRestoPage()),
@@ -439,7 +528,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           child: const Icon(Icons.restaurant, color: Colors.white, size: 18),
         ),
         title: Text(
-          'Daftar sebagai owner resto',
+          _buttonText,
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -459,7 +548,9 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
+            MaterialPageRoute(
+              builder: (context) => const SplashScreen(showLoginImmediately: true),
+            ),
             (route) => false,
           );
         }

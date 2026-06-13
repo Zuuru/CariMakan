@@ -41,19 +41,23 @@ class CardResto extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: imageUrl.startsWith('http')
-                    ? Image.network(
-                        imageUrl,
-                        height: 152,
-                        width: 147,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.asset(
-                        imageUrl,
-                        height: 152,
-                        width: 147,
-                        fit: BoxFit.cover,
-                      ),
+                child: imageUrl.isEmpty
+                    ? _buildPlaceholder()
+                    : imageUrl.startsWith('http')
+                        ? Image.network(
+                            imageUrl,
+                            height: 152,
+                            width: 147,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                          )
+                        : Image.asset(
+                            imageUrl,
+                            height: 152,
+                            width: 147,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                          ),
               ),
               Positioned(
                 top: 10,
@@ -104,15 +108,22 @@ class CardResto extends StatelessWidget {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      distance,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
+                    Flexible(
+                      child: Text(
+                        distance,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 6),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.people_outline, size: 12, color: AppColors.textSecondary),
                         const SizedBox(width: 4),
@@ -144,6 +155,21 @@ class CardResto extends StatelessWidget {
         ],
       ),
     ));
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      height: 152,
+      width: 147,
+      color: Colors.grey.shade200,
+      child: Center(
+        child: Icon(
+          Icons.storefront_rounded,
+          size: 40,
+          color: Colors.grey.shade400,
+        ),
+      ),
+    );
   }
 }
 

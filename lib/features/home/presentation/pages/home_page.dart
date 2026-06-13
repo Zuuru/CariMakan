@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
@@ -9,8 +11,17 @@ import '../widgets/icon_makanan.dart';
 import '../widgets/user_points.dart';
 import 'scan_page.dart';
 import 'resto_page.dart';
+import 'search_page.dart';
+import 'location_picker_page.dart';
 import '../../../promo/presentation/pages/promo_page.dart';
 import '../../../pesanan/presentation/pages/pesanan_page.dart';
+import 'package:carimakan/features/map/pages/map_screen.dart';
+import '../widgets/mini_map_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:latlong2/latlong.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -64,9 +75,119 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   final VoidCallback onProfileTap;
   const HomeContent({super.key, required this.onProfileTap});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  String _userName = 'Guest';
+  String? _photoUrl;
+  String? _photoBase64;
+  String _userAddress = 'Mencari lokasi...';
+  String? _customAddress;
+  double? _customLat;
+  double? _customLng;
+
+  StreamSubscription<DocumentSnapshot>? _userSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenUserData();
+    _loadLocation();
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenUserData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userSubscription = FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots().listen((doc) {
+        if (doc.exists) {
+          final fullName = doc.data()?['nama'] as String? ?? 'Guest';
+          // Ambil nama depan saja
+          final firstName = fullName.split(' ').first;
+          final photoUrl = doc.data()?['photoUrl'] as String?;
+          final photoBase64 = doc.data()?['photoBase64'] as String?;
+          if (mounted) {
+            setState(() {
+              _userName = firstName;
+              _photoUrl = photoUrl;
+              _photoBase64 = photoBase64;
+            });
+          }
+        }
+      });
+    }
+  }
+
+  Future<void> _loadLocation() async {
+    if (_customAddress != null) return;
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
+
+      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        final address = '${place.street ?? place.name}, ${place.subLocality ?? place.locality}';
+        if (mounted && _customAddress == null) {
+          setState(() {
+            _userAddress = address;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted && _customAddress == null) {
+        setState(() {
+          _userAddress = 'Gagal memuat lokasi';
+        });
+      }
+    }
+  }
+
+  Future<void> _setCustomLocation() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationPickerPage(
+          initialAddress: (_userAddress == 'Mencari lokasi...' || _userAddress == 'Gagal memuat lokasi')
+              ? null
+              : _userAddress,
+          initialLocation: (_customLat != null && _customLng != null)
+              ? LatLng(_customLat!, _customLng!)
+              : null,
+        ),
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _userAddress = result['address'] as String? ?? _userAddress;
+        _customAddress = _userAddress;
+        _customLat = result['latitude'] as double?;
+        _customLng = result['longitude'] as double?;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,11 +203,11 @@ class HomeContent extends StatelessWidget {
               const SizedBox(height: 20),
               _buildGreeting(),
               const SizedBox(height: 15),
-              _buildSearchBar(),
+              _buildSearchBar(context),
               const SizedBox(height: 25),
               _buildPromotionSection(),
               const SizedBox(height: 25),
-              _buildMapSection(),
+              _buildMapSection(context),
               const SizedBox(height: 25),
               const IconMakanan(),
               const SizedBox(height: 25),
@@ -103,36 +224,61 @@ class HomeContent extends StatelessWidget {
     return Row(
       children: [
         GestureDetector(
-          onTap: onProfileTap,
-          child: CircleAvatar(
-            radius: 25,
-            backgroundColor: Colors.grey[200],
-            backgroundImage: const AssetImage('assets/images/profile.png'),
+          onTap: widget.onProfileTap,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[200],
+              image: DecorationImage(
+                image: _photoBase64 != null
+                    ? MemoryImage(base64Decode(_photoBase64!)) as ImageProvider
+                    : (_photoUrl != null
+                        ? NetworkImage(_photoUrl!) as ImageProvider
+                        : const AssetImage('assets/images/profile.png')),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Yo, Jett',
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMain,
-              ),
+        Expanded(
+          child: GestureDetector(
+            onTap: _setCustomLocation,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Yo, $_userName',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMain,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _userAddress,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_drop_down, size: 16, color: AppColors.textSecondary),
+                  ],
+                ),
+              ],
             ),
-            Text(
-              'Jl. Baskoro 38 Tembala...',
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
+          ),
         ),
-        const Spacer(),
         _buildHeaderIcon(Icons.notifications_none_outlined),
         const SizedBox(width: 10),
         GestureDetector(
@@ -193,52 +339,46 @@ class HomeContent extends StatelessWidget {
   }
 
 
-  Widget _buildSearchBar() {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(50),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari makan atau tempat nih',
-                hintStyle: GoogleFonts.poppins(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: AppColors.textMain,
-              ),
-            ),
+  Widget _buildSearchBar(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
-        ),
-        const SizedBox(width: 10),
-        Container(
-          height: 50,
-          width: 50,
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
+        ],
+      ),
+      child: TextField(
+        readOnly: true,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SearchPage(),
+            ),
+          );
+        },
+        decoration: InputDecoration(
+          hintText: 'Cari resto atau menu...',
+          hintStyle: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 14,
           ),
-          child: const Icon(Icons.tune, color: Colors.white),
+          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
-      ],
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          color: AppColors.textMain,
+        ),
+      ),
     );
   }
 
@@ -246,7 +386,7 @@ class HomeContent extends StatelessWidget {
     return const PromoBanner();
   }
 
-  Widget _buildMapSection() {
+  Widget _buildMapSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -258,51 +398,13 @@ class HomeContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 15),
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.grey[200],
-            image: const DecorationImage(
-              image: NetworkImage('https://via.placeholder.com/400x200?text=Map+View+Placeholder'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 50,
-                left: 100,
-                child: _buildMapMarker(),
-              ),
-              Positioned(
-                bottom: 60,
-                right: 80,
-                child: _buildMapMarker(),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMapMarker() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.restaurant, color: Colors.white, size: 12),
-        ),
-        Container(
-          width: 2,
-          height: 5,
-          color: AppColors.primary,
+        MiniMapWidget(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MapScreen()),
+            );
+          },
         ),
       ],
     );
@@ -322,67 +424,54 @@ class HomeContent extends StatelessWidget {
         const SizedBox(height: 15),
         SizedBox(
           height: 240,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              CardResto(
-                imageUrl: 'assets/images/ideologist.jpg',
-                name: 'Ideologist Coffee And Social Space',
-                distance: '2,14 km',
-                queueCount: 4,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestoPage(
-                        name: 'Ideologist Coffee And Social Space',
-                        imageUrl: 'assets/images/ideologist.jpg',
-                        distance: '2,14 km',
-                        queueCount: 4,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              CardResto(
-                imageUrl: 'assets/images/parjo sipodang.jpg',
-                name: 'Burjo Parjo Sipodang',
-                distance: '0,95 km',
-                queueCount: 8,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestoPage(
-                        name: 'Burjo Parjo Sipodang',
-                        imageUrl: 'assets/images/parjo sipodang.jpg',
-                        distance: '0,95 km',
-                        queueCount: 8,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              CardResto(
-                imageUrl: 'https://via.placeholder.com/250x120',
-                name: 'Warmindo Berkah',
-                distance: '1,2 km',
-                queueCount: 2,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestoPage(
-                        name: 'Warmindo Berkah',
-                        imageUrl: 'https://via.placeholder.com/250x120',
-                        distance: '1,2 km',
-                        queueCount: 2,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('restaurants').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
+              }
+
+              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: snapshot.data!.docs.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return CardResto(
+                      imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                      name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
+                      distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
+                      queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RestoPage(
+                              name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
+                              imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                              distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
+                              queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                              restoId: doc.id,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                );
+              }
+
+              // Empty state
+              return Center(
+                child: Text(
+                  'Belum ada resto yang terdaftar di area kamu nih',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
           ),
         ),
       ],
