@@ -15,6 +15,10 @@ class DetailMenuPage extends StatefulWidget {
   final String menuImage;
   final double menuPrice;
   final String description;
+  
+  final Map<String, List<Map<String, dynamic>>>? initialSelectedVariants;
+  final int? initialQuantity;
+  final int? cartIndex; // 💡 TAMBAHKAN PARAMETER INDEX INI UNTUK MENUNJUK DATA YANG MAU DIEDIT
 
   const DetailMenuPage({
     Key? key,
@@ -25,6 +29,9 @@ class DetailMenuPage extends StatefulWidget {
     required this.menuImage,
     required this.menuPrice,
     required this.description,
+    this.initialSelectedVariants, // null jika tambah baru
+    this.initialQuantity,          // null jika tambah baru
+    this.cartIndex,               // 💡 null jika tambah baru, terisi angka index jika mode edit
   }) : super(key: key);
 
   @override
@@ -40,6 +47,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
   @override
   void initState() {
     super.initState();
+    _quantity = widget.initialQuantity ?? 1;
     _fetchVariants();
   }
 
@@ -49,11 +57,28 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
       if (mounted) {
         setState(() {
           _optionGroups = groups;
-          // Initialize default selections
+          
+          // Initialize selections
           for (var group in groups) {
             _selectedOptions[group.id] = {};
-            if (group.wajib && group.tipe == 'single' && group.items.isNotEmpty) {
-              _selectedOptions[group.id]!.add(group.items.first);
+
+            if (widget.initialSelectedVariants != null && 
+                widget.initialSelectedVariants!.containsKey(group.nama)) {
+              
+              final savedItems = widget.initialSelectedVariants![group.nama] ?? [];
+              
+              // COCOKKAN item dari DB dengan nama item yang ada di keranjang
+              for (var savedItem in savedItems) {
+                for (var dbItem in group.items) {
+                  if (dbItem.nama == savedItem['nama']) {
+                    _selectedOptions[group.id]!.add(dbItem);
+                  }
+                }
+              }
+            } else {
+              if (group.wajib && group.tipe == 'single' && group.items.isNotEmpty) {
+                _selectedOptions[group.id]!.add(group.items.first);
+              }
             }
           }
           _isLoading = false;
@@ -118,9 +143,17 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
       totalPrice: _totalPrice,
       quantity: _quantity,
       selectedVariants: finalVariants,
+      description: widget.description,
     );
 
-    CartService.instance.addItem(widget.restoId, cartItem);
+    // 💡 PERUBAHAN LOGIKA UTAMA DI SINI
+    if (widget.cartIndex != null) {
+      // 🔄 MODE EDIT: Panggil fungsi updateItem berdasarkan index-nya agar tidak menduplikasi pesanan baru
+      CartService.instance.updateItem(widget.restoId, widget.cartIndex!, cartItem);
+    } else {
+      // ➕ MODE TAMBAH BARU: Jalankan penambahan menu baru seperti biasa
+      CartService.instance.addItem(widget.restoId, cartItem);
+    }
     
     Navigator.pop(context); // Go back to Resto Page
   }
@@ -162,11 +195,9 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Image and Detail Card
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Image Container
                       Expanded(
                         flex: 5,
                         child: Stack(
@@ -209,7 +240,6 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                           ],
                         ),
                       ),
-                      // Detail Container
                       Expanded(
                         flex: 5,
                         child: Container(
@@ -217,12 +247,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                           padding: const EdgeInsets.all(12),
                           decoration: const BoxDecoration(
                             color: Color(0xFFD33400),
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
-                              topLeft: Radius.circular(16),
-                              bottomLeft: Radius.circular(16),
-                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +318,6 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
 
                   const SizedBox(height: 16),
                   
-                  // Quantity Selector
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -354,7 +378,6 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
 
                   const SizedBox(height: 32),
 
-                  // Footer Total & Add to Cart
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -367,7 +390,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                            ),
+                        ),
                           ),
                           Text(
                             _formatRupiah(_totalPrice * _quantity),
@@ -382,7 +405,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                         onPressed: _onAddToCart,
                         icon: const Icon(Icons.add, color: Colors.white, size: 16),
                         label: Text(
-                          'Tambah ke Keranjang',
+                          widget.cartIndex != null ? 'Simpan Perubahan' : 'Tambah ke Keranjang',
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12,

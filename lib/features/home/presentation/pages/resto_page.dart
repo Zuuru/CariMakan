@@ -759,6 +759,43 @@ class _RestoPageState extends State<RestoPage> {
                             ),
                             Row(
                               children: [
+                                // 🛠️ TOMBOL EDIT (SUDAH DISINKRONKAN NAVIGASINYA)
+                                GestureDetector(
+                                  onTap: () {
+                                    // 1. Tutup bottom sheet keranjang belanja terlebih dahulu agar tidak menumpuk
+                                    Navigator.pop(context); 
+                                    
+                                    // 2. Buka kembali halaman DetailMenuPage dengan membawa data 'item' dari keranjang
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailMenuPage(
+                                          restoId: widget.restoId,
+                                          menuId: item.menuId,
+                                          restoName: widget.name,
+                                          menuName: item.menuName,
+                                          menuImage: item.menuImage,
+                                          menuPrice: item.basePrice,
+                                          description: item.description,
+                                          initialSelectedVariants: item.selectedVariants,
+                                          initialQuantity: item.quantity,
+                                          cartIndex: index, // 💡 JANGAN LUPA PASANG INI JUGA DI HALAMAN SEBELUMNYA!
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle, 
+                                      border: Border.all(color: Colors.orange.shade400),
+                                    ),
+                                    child: const Icon(Icons.edit, size: 16, color: Colors.orange),
+                                  ),
+                                ),
+                                const SizedBox(width: 12), // Jarak antara tombol edit dan tombol minus
+
+                                // ➖ TOMBOL MINUS BAWAAN KAMU
                                 GestureDetector(
                                   onTap: () {
                                     CartService.instance.updateQuantity(widget.restoId, item, item.quantity - 1);
@@ -770,11 +807,15 @@ class _RestoPageState extends State<RestoPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
+                                
+                                // 🔢 ANGKA KUANTITAS BAWAAN KAMU
                                 Text(
                                   '${item.quantity}',
                                   style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
                                 const SizedBox(width: 12),
+                                
+                                // ➕ TOMBOL PLUS BAWAAN KAMU
                                 GestureDetector(
                                   onTap: () {
                                     CartService.instance.updateQuantity(widget.restoId, item, item.quantity + 1);
@@ -786,7 +827,7 @@ class _RestoPageState extends State<RestoPage> {
                                   ),
                                 ),
                               ],
-                            ),
+                            )
                           ],
                         );
                       },

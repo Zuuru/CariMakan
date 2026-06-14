@@ -9,6 +9,7 @@ class CartItemModel {
   final double totalPrice;
   int quantity;
   final Map<String, List<Map<String, dynamic>>> selectedVariants;
+  final String description; // 💡 TAMBAHKAN INI
 
   CartItemModel({
     required this.menuId,
@@ -18,6 +19,7 @@ class CartItemModel {
     required this.totalPrice,
     this.quantity = 1,
     required this.selectedVariants,
+    required this.description, // 💡 TAMBAHKAN INI
   });
 
   /// Check if two items are exactly the same (same menu and variants)
@@ -65,6 +67,15 @@ class CartService extends ChangeNotifier {
       items.add(newItem);
     }
     notifyListeners();
+  }
+
+  // 💡 INI FUNGSI BARU YANG DITAMBAHKAN
+  void updateItem(String restoId, int index, CartItemModel newItem) {
+    final items = _carts[restoId];
+    if (items != null && index >= 0 && index < items.length) {
+      items[index] = newItem; // Mengganti item lama di index tersebut dengan data baru
+      notifyListeners();      // Memberitahu UI untuk me-refresh tampilan keranjang
+    }
   }
 
   void updateQuantity(String restoId, CartItemModel targetItem, int newQuantity) {
