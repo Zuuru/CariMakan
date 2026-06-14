@@ -6,6 +6,7 @@ import '../../../pesanan/data/cart_service.dart';
 import '../../../menu_resto/data/menu_service.dart';
 import '../../../menu_resto/data/option_group_model.dart';
 import '../../../menu_resto/data/option_item_model.dart';
+import 'package:carimakan/core/widgets/favorite_button.dart';
 
 class DetailMenuPage extends StatefulWidget {
   final String restoId;
@@ -197,13 +198,11 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                             Positioned(
                               top: 8,
                               right: 8,
-                              child: Container(
+                              child: FavoriteButton(
+                                itemId: widget.menuId,
+                                isResto: false,
+                                iconSize: 16,
                                 padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.favorite_border, size: 16, color: Colors.black54),
                               ),
                             ),
                           ],

@@ -14,6 +14,7 @@ import '../../../splash/pages/splash_screen.dart';
 import 'about_app_page.dart';
 import 'security_privacy.dart';
 import 'edit_profile_page.dart';
+import 'favorites_page.dart';
 import '../widgets/menu_item.dart';
 
 class CustomerProfilePage extends StatefulWidget {
@@ -303,6 +304,19 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               if (result == true) {
                 _loadUserAndRestoStatus();
               }
+            },
+          ),
+          ProfileMenuItem(
+            icon: Icons.favorite,
+            title: 'Favorites',
+            showDivider: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FavoritesPage(),
+                ),
+              );
             },
           ),
           ProfileMenuItem(

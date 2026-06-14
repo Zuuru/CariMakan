@@ -6,6 +6,7 @@ import 'detail_menu_page.dart';
 import '../../../pesanan/data/cart_service.dart';
 import '../../../pesanan/presentation/pages/pembayaran_page.dart';
 import '../../../home_resto/presentation/widgets/ulasan_resto_card.dart';
+import 'package:carimakan/core/widgets/favorite_button.dart';
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -151,15 +152,12 @@ class _RestoPageState extends State<RestoPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.favorite_border, size: 20, color: Colors.black),
-                onPressed: () {},
-              ),
+            child: FavoriteButton(
+              itemId: widget.restoId,
+              iconSize: 20,
+              iconColor: Colors.black,
+              padding: const EdgeInsets.all(8.0),
+              border: Border.all(color: Colors.blue.withOpacity(0.3)),
             ),
           ),
         ],
@@ -924,13 +922,11 @@ class _RestoPageState extends State<RestoPage> {
               Positioned(
                 top: 8,
                 right: 8,
-                child: Container(
+                child: FavoriteButton(
+                  itemId: menuId,
+                  isResto: false,
+                  iconSize: 16,
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.favorite_border, size: 16, color: Colors.black54),
                 ),
               ),
               Positioned(

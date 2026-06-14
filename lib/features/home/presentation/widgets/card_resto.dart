@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
+import 'package:carimakan/core/widgets/favorite_button.dart';
 
 class CardResto extends StatelessWidget {
+  final String id;
   final String imageUrl;
   final String name;
   final String distance;
@@ -13,6 +15,7 @@ class CardResto extends StatelessWidget {
 
   const CardResto({
     super.key,
+    required this.id,
     required this.imageUrl,
     required this.name,
     required this.distance,
@@ -62,14 +65,7 @@ class CardResto extends StatelessWidget {
               Positioned(
                 top: 10,
                 right: 10,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.favorite_border, size: 18, color: Colors.black54),
-                ),
+                child: FavoriteButton(itemId: id),
               ),
               Positioned(
                 bottom: 0,

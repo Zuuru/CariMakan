@@ -437,6 +437,7 @@ class _HomeContentState extends State<HomeContent> {
                   children: snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     return CardResto(
+                      id: doc.id,
                       imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
                       name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
                       distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
