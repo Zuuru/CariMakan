@@ -108,7 +108,6 @@ class NotificationService {
     _userNotificationSubscription = FirebaseFirestore.instance
         .collection('notifications')
         .where('userId', whereIn: [userId, 'all'])
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((snapshot) {
           for (var change in snapshot.docChanges) {
@@ -119,10 +118,11 @@ class NotificationService {
               final String notifId = data['id'] ?? change.doc.id;
               final Timestamp? createdAt = data['createdAt'] as Timestamp?;
               
+              bool isNew = createdAt == null || 
+                           createdAt.toDate().isAfter(startSessionTime.subtract(const Duration(seconds: 5)));
+              
               // Only alert for new notifications created in this session, and prevent duplicates
-              if (createdAt != null && 
-                  createdAt.toDate().isAfter(startSessionTime.subtract(const Duration(seconds: 5))) &&
-                  !_shownNotificationIds.contains(notifId)) {
+              if (isNew && !_shownNotificationIds.contains(notifId)) {
                 
                 _shownNotificationIds.add(notifId);
                 
