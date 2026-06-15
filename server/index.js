@@ -30,6 +30,9 @@ app.use(express.json());
 const karyawanRoutes = require('./routes/karyawan');
 app.use('/karyawan', karyawanRoutes);
 
+const { startPoinQueueListener } = require('./routes/poin');
+startPoinQueueListener();
+
 // Health check
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'CariMakan Backend Running' });

@@ -10,6 +10,7 @@ class OrderReceiptPage extends StatelessWidget {
   final String menuName;
   final double totalPrice;
   final bool isTakeaway;
+  final int poinDidapat;
 
   const OrderReceiptPage({
     Key? key,
@@ -17,6 +18,7 @@ class OrderReceiptPage extends StatelessWidget {
     required this.menuName,
     required this.totalPrice,
     this.isTakeaway = true,
+    this.poinDidapat = 0,
   }) : super(key: key);
 
   String _formatRupiah(double value) {
@@ -183,6 +185,10 @@ class OrderReceiptPage extends StatelessWidget {
                               ),
                               
                               _buildReceiptRow('Total', _formatRupiah(totalPrice), isBold: true),
+                              if (poinDidapat > 0) ...[
+                                const SizedBox(height: 8),
+                                _buildReceiptRow('Poin Didapat', '+$poinDidapat poin', isBold: true, color: Colors.green),
+                              ],
                               const SizedBox(height: 32),
                               
                               Text(
@@ -254,7 +260,7 @@ class OrderReceiptPage extends StatelessWidget {
     );
   }
 
-  Widget _buildReceiptRow(String title, String value, {bool isBold = false}) {
+  Widget _buildReceiptRow(String title, String value, {bool isBold = false, Color? color}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -270,7 +276,7 @@ class OrderReceiptPage extends StatelessWidget {
           value,
           style: GoogleFonts.poppins(
             fontSize: 10,
-            color: Colors.black,
+            color: color ?? Colors.black,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carimakan/core/services/midtrans_service.dart';
 import 'package:carimakan/features/order/midtrans_payment_page.dart';
+import 'package:carimakan/features/pesanan/data/poin_service.dart';
 import 'cart_summary_bar.dart'; // File tempat globalCartQuantity & globalSubtotal berada
 
 class PembayaranPage extends StatefulWidget {
@@ -30,6 +31,23 @@ class PembayaranPage extends StatefulWidget {
 class _PembayaranPageState extends State<PembayaranPage> {
   int _itemQuantity = 1;
   bool _isProcessingPayment = false;
+  int _userPoin = 0;
+  bool _pakaiPoin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPoin();
+  }
+
+  Future<void> _loadPoin() async {
+    final poin = await PoinService.getPoinUser();
+    if (mounted) {
+      setState(() {
+        _userPoin = poin;
+      });
+    }
+  }
 
   // Fungsi pembantu untuk mengubah format rupiah string menjadi integer murni
   int _parsePrice(String priceString) {
@@ -65,7 +83,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
     
     int ppn = _itemQuantity > 0 ? (totalHargaItem * 0.1).toInt() : 0; 
     int biayaLainnya = _itemQuantity > 0 ? 1000 : 0; 
-    int totalSemua = totalHargaItem + ppn + biayaLainnya;
+    
+    int subtotal = totalHargaItem + ppn + biayaLainnya;
+    int maksPotonganPoin = _itemQuantity > 0 ? PoinService.hitungMaksPotongan(subtotal.toDouble()) : 0;
+    int poinDigunakan = (_pakaiPoin && _itemQuantity > 0) ? PoinService.hitungPoinDigunakan(_userPoin, subtotal.toDouble()) : 0;
+    
+    int totalSemua = subtotal - poinDigunakan;
+    int poinDidapat = (totalSemua * 0.5 / 100).floor();
 
     // Sinkronisasi nilai totalSemua ke globalSubtotal tanpa merusak siklus build Flutter
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -288,6 +312,58 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 ],
               ),
               const SizedBox(height: 24),
+              
+              // 4.5. Section Poin Reward
+              Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('💰', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Reward Poin',
+                              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                          ),
+                          Switch(
+                            value: _pakaiPoin,
+                            activeColor: const Color(0xFFD33400),
+                            onChanged: _userPoin > 0 ? (value) {
+                              setState(() {
+                                _pakaiPoin = value;
+                              });
+                            } : null,
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Poin kamu: $_userPoin poin (= ${_formatRupiah(_userPoin)})',
+                        style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                      if (_pakaiPoin) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Potongan: ${_formatRupiah(poinDigunakan)}',
+                          style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFFD33400), fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Maks pakai: ${_formatRupiah(maksPotonganPoin)} (25% dari pesanan)',
+                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[500]),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
   
               // 5. Section Detail Nota Pembayaran Ringkasan
               Text(
@@ -308,6 +384,10 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     _buildNotaRow('PPN', _formatRupiah(ppn)),
                     const SizedBox(height: 8),
                     _buildNotaRow('Biaya lainnya', _formatRupiah(biayaLainnya)),
+                    if (poinDigunakan > 0) ...[
+                      const SizedBox(height: 8),
+                      _buildNotaRow('Potongan Poin', '-${_formatRupiah(poinDigunakan)}'),
+                    ],
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12.0),
                       child: Divider(color: Colors.white, thickness: 1),
@@ -319,6 +399,16 @@ class _PembayaranPageState extends State<PembayaranPage> {
                         Text(_formatRupiah(totalSemua), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                       ],
                     ),
+                    if (poinDidapat > 0) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Poin didapatkan', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
+                          Text('+$poinDidapat poin', style: GoogleFonts.poppins(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -329,7 +419,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _itemQuantity > 0 && !_isProcessingPayment
-                      ? () => _showKonfirmasiDialog(context, totalSemua, totalHargaItem, ppn, biayaLainnya)
+                      ? () => _showKonfirmasiDialog(context, totalSemua, totalHargaItem, ppn, biayaLainnya, poinDigunakan)
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD33400),
@@ -371,6 +461,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
     int totalHargaItem,
     int ppn,
     int biayaLainnya,
+    int poinDigunakan,
   ) {
     showDialog(
       context: context,
@@ -415,12 +506,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          _startMidtransPayment(
-                            totalSemua: totalSemua,
-                            totalHargaItem: totalHargaItem,
-                            ppn: ppn,
-                            biayaLainnya: biayaLainnya,
-                          );
+                            _startMidtransPayment(
+                              totalSemua: totalSemua,
+                              totalHargaItem: totalHargaItem,
+                              ppn: ppn,
+                              biayaLainnya: biayaLainnya,
+                              poinDigunakan: poinDigunakan,
+                            );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD33400),
@@ -446,6 +538,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
     required int totalHargaItem,
     required int ppn,
     required int biayaLainnya,
+    required int poinDigunakan,
   }) async {
     setState(() => _isProcessingPayment = true);
 
@@ -458,6 +551,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
         itemQuantity: _itemQuantity,
         ppn: ppn,
         otherFee: biayaLainnya,
+        poinDiscount: poinDigunakan,
         customerName: user?.displayName ?? 'Pelanggan CariMakan',
         customerEmail: user?.email ?? 'customer@carimakan.app',
       );
@@ -474,6 +568,22 @@ class _PembayaranPageState extends State<PembayaranPage> {
       if (!mounted) return;
 
       if (paymentResult != null) {
+        if (paymentResult.status == MidtransPaymentStatus.success) {
+          if (poinDigunakan > 0 && user != null) {
+            await PoinService.enqueueRedeem(
+              orderId: paymentResult.orderId ?? '',
+              userId: user.uid,
+              poinDigunakan: poinDigunakan,
+            );
+          }
+          if (user != null) {
+            await PoinService.enqueueEarn(
+              orderId: paymentResult.orderId ?? '',
+              userId: user.uid,
+              totalAkhir: totalSemua.toDouble(),
+            );
+          }
+        }
         _showPaymentResultDialog(paymentResult, totalSemua);
       }
     } catch (e) {

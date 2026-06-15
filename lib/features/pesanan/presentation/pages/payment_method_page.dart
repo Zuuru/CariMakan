@@ -8,6 +8,7 @@ import '../../data/cart_service.dart';
 import '../../data/pesanan_service.dart';
 import '../../../promo/data/promo_model.dart';
 import 'order_receipt_page.dart';
+import '../../data/poin_service.dart';
 
 class PaymentMethodPage extends StatefulWidget {
   final List<CartItemModel> cartItems;
@@ -18,6 +19,8 @@ class PaymentMethodPage extends StatefulWidget {
   final double subtotal;
   final String type;
   final String tableOrPickupInfo;
+  final int poinDigunakan;
+  final int poinDidapat;
 
   const PaymentMethodPage({
     Key? key,
@@ -29,6 +32,8 @@ class PaymentMethodPage extends StatefulWidget {
     required this.subtotal,
     required this.type,
     required this.tableOrPickupInfo,
+    this.poinDigunakan = 0,
+    this.poinDidapat = 0,
   }) : super(key: key);
 
   @override
@@ -68,6 +73,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         itemQuantity: 1,
         ppn: ppn,
         otherFee: biayaLainnya,
+        poinDiscount: widget.poinDigunakan,
         customerName: user?.displayName ?? 'Pelanggan CariMakan',
         customerEmail: user?.email ?? 'customer@carimakan.app',
       );
@@ -100,6 +106,21 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         // Clear global cart after successful order creation
         CartService.instance.clearCart(widget.restoId);
 
+        if (widget.poinDigunakan > 0 && user != null) {
+          await PoinService.enqueueRedeem(
+            orderId: orderId,
+            userId: user.uid,
+            poinDigunakan: widget.poinDigunakan,
+          );
+        }
+        if (user != null) {
+          await PoinService.enqueueEarn(
+            orderId: orderId,
+            userId: user.uid,
+            totalAkhir: widget.totalPrice,
+          );
+        }
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -108,6 +129,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               menuName: itemName,
               totalPrice: widget.totalPrice,
               isTakeaway: widget.type == 'Take Away',
+              poinDidapat: widget.poinDidapat,
             ),
           ),
         );
@@ -146,6 +168,22 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       // Clear global cart after successful order creation
       CartService.instance.clearCart(widget.restoId);
 
+      final user = FirebaseAuth.instance.currentUser;
+      if (widget.poinDigunakan > 0 && user != null) {
+        await PoinService.enqueueRedeem(
+          orderId: orderId,
+          userId: user.uid,
+          poinDigunakan: widget.poinDigunakan,
+        );
+      }
+      if (user != null) {
+        await PoinService.enqueueEarn(
+          orderId: orderId,
+          userId: user.uid,
+          totalAkhir: widget.totalPrice,
+        );
+      }
+
       if (!mounted) return;
 
       Navigator.pushReplacement(
@@ -156,6 +194,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             menuName: itemName,
             totalPrice: widget.totalPrice,
             isTakeaway: widget.type == 'Take Away',
+            poinDidapat: widget.poinDidapat,
           ),
         ),
       );

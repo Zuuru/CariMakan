@@ -32,6 +32,7 @@ class MidtransService {
     required int itemQuantity,
     int? ppn,
     int? otherFee,
+    int? poinDiscount,
     String? customerName,
     String? customerEmail,
   }) async {
@@ -42,6 +43,7 @@ class MidtransService {
       itemQuantity: itemQuantity,
       ppn: ppn,
       otherFee: otherFee,
+      poinDiscount: poinDiscount,
     );
 
     final body = <String, dynamic>{
@@ -139,6 +141,7 @@ class MidtransService {
     required int itemQuantity,
     int? ppn,
     int? otherFee,
+    int? poinDiscount,
   }) {
     final itemDetails = <Map<String, dynamic>>[
       {
@@ -164,6 +167,15 @@ class MidtransService {
         'price': otherFee,
         'quantity': 1,
         'name': 'Biaya lainnya',
+      });
+    }
+
+    if (poinDiscount != null && poinDiscount > 0) {
+      itemDetails.add({
+        'id': 'poin',
+        'price': -poinDiscount,
+        'quantity': 1,
+        'name': 'Potongan Poin',
       });
     }
 

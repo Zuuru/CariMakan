@@ -5,6 +5,7 @@ import '../../data/cart_service.dart';
 import 'payment_method_page.dart';
 import '../../../promo/data/promo_model.dart';
 import '../../../promo/data/promo_service.dart';
+import '../../data/poin_service.dart';
 
 class PembayaranPage extends StatefulWidget {
   final List<CartItemModel> cartItems;
@@ -28,6 +29,8 @@ class _PembayaranPageState extends State<PembayaranPage> {
   PromoModel? _selectedPromo;
   String _deliveryType = 'Take Away';
   String? _nomorMeja;
+  int _userPoin = 0;
+  bool _pakaiPoin = false;
 
   @override
   void initState() {
@@ -35,6 +38,16 @@ class _PembayaranPageState extends State<PembayaranPage> {
     _nomorMeja = widget.nomorMeja;
     if (_nomorMeja != null && _nomorMeja!.isNotEmpty) {
       _deliveryType = 'Dine In';
+    }
+    _loadPoin();
+  }
+
+  Future<void> _loadPoin() async {
+    final poin = await PoinService.getPoinUser();
+    if (mounted) {
+      setState(() {
+        _userPoin = poin;
+      });
     }
   }
 
@@ -389,7 +402,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
     // Tax calculated after discount
     final double ppn = (totalPrice - discount) * 0.10;
     final double biayaLain = 1000.0;
-    final double finalTotal = (totalPrice - discount) + ppn + biayaLain;
+    final double subtotalBeforePoin = (totalPrice - discount) + ppn + biayaLain;
+    
+    final int maksPotonganPoin = PoinService.hitungMaksPotongan(subtotalBeforePoin);
+    final int poinDigunakan = _pakaiPoin ? PoinService.hitungPoinDigunakan(_userPoin, subtotalBeforePoin) : 0;
+    
+    final double finalTotal = subtotalBeforePoin - poinDigunakan;
+    final int poinDidapat = (finalTotal * 0.5 / 100).floor();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -688,6 +707,58 @@ class _PembayaranPageState extends State<PembayaranPage> {
               ),
             ),
             const SizedBox(height: 24),
+            
+            // Section Poin Reward
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('💰', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Reward Poin',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                      Switch(
+                        value: _pakaiPoin,
+                        activeColor: const Color(0xFFD33400),
+                        onChanged: _userPoin > 0 ? (value) {
+                          setState(() {
+                            _pakaiPoin = value;
+                          });
+                        } : null,
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Poin kamu: $_userPoin poin (= ${_formatRupiah(_userPoin.toDouble())})',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  if (_pakaiPoin) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Potongan: ${_formatRupiah(poinDigunakan.toDouble())}',
+                      style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFFD33400), fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Maks pakai: ${_formatRupiah(maksPotonganPoin.toDouble())} (25% dari pesanan)',
+                      style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[500]),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
 
             // Detail Pesanan
             Text(
@@ -715,6 +786,10 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   _buildPriceRow('PPN', _formatRupiah(ppn)),
                   const SizedBox(height: 8),
                   _buildPriceRow('Biaya lainnya', _formatRupiah(biayaLain)),
+                  if (poinDigunakan > 0) ...[
+                    const SizedBox(height: 8),
+                    _buildPriceRow('Potongan Poin', '- ${_formatRupiah(poinDigunakan.toDouble())}'),
+                  ],
                   const SizedBox(height: 12),
                   const Divider(color: Colors.white54, thickness: 1),
                   const SizedBox(height: 12),
@@ -739,6 +814,16 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ),
                     ],
                   ),
+                  if (poinDidapat > 0) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Poin didapatkan', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
+                        Text('+$poinDidapat poin', style: GoogleFonts.poppins(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -811,6 +896,8 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                             tableOrPickupInfo: _deliveryType == 'Dine In'
                                                 ? 'Meja ${_nomorMeja ?? "-"}'
                                                 : 'Take Away',
+                                            poinDigunakan: poinDigunakan,
+                                            poinDidapat: poinDidapat,
                                           ),
                                         ),
                                       );
