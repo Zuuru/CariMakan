@@ -66,6 +66,8 @@ class PromoPage extends StatelessWidget {
                 distance: distanceStr,
                 queueCount: restaurant.queueCount,
                 restoId: restaurant.id,
+                initialRating: restaurant.rating,
+                initialReviewCount: restaurant.reviewCount,
               ),
             ),
           );

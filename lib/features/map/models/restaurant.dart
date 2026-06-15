@@ -7,6 +7,7 @@ class Restaurant {
   final double latitude;
   final double longitude;
   final double rating;
+  final int reviewCount;
   final String imageUrl;
   final bool isOpen;
   final String category;
@@ -19,6 +20,7 @@ class Restaurant {
     required this.latitude,
     required this.longitude,
     required this.rating,
+    required this.reviewCount,
     required this.imageUrl,
     required this.isOpen,
     required this.category,
@@ -47,7 +49,7 @@ class Restaurant {
     }
 
     // Auto-correct: Pulau Jawa/Semarang ada di belahan bumi SELATAN (latitude negatif).
-    // Jika latitude positif dan longitude ~105-115 (Indonesia), koreksi ke negatif.
+    // Jika latitude positif and longitude ~105-115 (Indonesia), koreksi ke negatif.
     if (lat > 0 && lng > 100 && lng < 120) {
       lat = -lat;
     }
@@ -69,6 +71,7 @@ class Restaurant {
       latitude: lat,
       longitude: lng,
       rating: (data['avg_rating'] as num?)?.toDouble() ?? (data['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: (data['total_review'] as num?)?.toInt() ?? 0,
       imageUrl: data['foto_profil'] ?? data['imageUrl'] ?? 'https://via.placeholder.com/250x120',
       isOpen: status == 'aktif' || (data['isOpen'] as bool? ?? false),
       category: category,

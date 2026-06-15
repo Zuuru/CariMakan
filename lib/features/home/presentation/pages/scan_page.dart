@@ -127,6 +127,8 @@ class _ScanPageState extends State<ScanPage> {
                                 tableId: tableId,
                                 nomorMeja: nomorMeja,
                                 restoId: restoId,
+                                initialRating: (data['avg_rating'] as num?)?.toDouble() ?? 0.0,
+                                initialReviewCount: (data['total_review'] as num?)?.toInt() ?? 0,
                               ),
                             ),
                           );

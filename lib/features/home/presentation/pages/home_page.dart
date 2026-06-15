@@ -436,12 +436,16 @@ class _HomeContentState extends State<HomeContent> {
                   scrollDirection: Axis.horizontal,
                   children: snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
+                    final double avgRating = (data['avg_rating'] as num?)?.toDouble() ?? 0.0;
+                    final int totalReview = (data['total_review'] as num?)?.toInt() ?? 0;
                     return CardResto(
                       id: doc.id,
                       imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
                       name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
                       distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
                       queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                      rating: avgRating,
+                      reviewCount: totalReview,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -452,6 +456,8 @@ class _HomeContentState extends State<HomeContent> {
                               distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
                               queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
                               restoId: doc.id,
+                              initialRating: avgRating,
+                              initialReviewCount: totalReview,
                             ),
                           ),
                         );

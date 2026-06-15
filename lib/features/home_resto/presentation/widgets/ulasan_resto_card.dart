@@ -189,8 +189,16 @@ class _UlasanRestoCardState extends State<UlasanRestoCard> {
         if (restoSnapshot.hasError) {
           return Center(child: Text('Error: ${restoSnapshot.error}', style: const TextStyle(color: Colors.red)));
         }
-        if (!restoSnapshot.hasData || !restoSnapshot.data!.exists) {
+        if (!restoSnapshot.hasData) {
           return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
+        }
+        if (!restoSnapshot.data!.exists) {
+          return Center(
+            child: Text(
+              'Restoran tidak ditemukan',
+              style: GoogleFonts.outfit(color: Colors.grey),
+            ),
+          );
         }
 
         final restoData = restoSnapshot.data!.data() as Map<String, dynamic>? ?? {};

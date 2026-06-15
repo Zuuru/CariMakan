@@ -518,6 +518,8 @@ class _SearchPageState extends State<SearchPage> {
               distance: distanceStr,
               queueCount: resto.queueCount,
               restoId: resto.id,
+              initialRating: resto.rating,
+              initialReviewCount: resto.reviewCount,
             ),
           ),
         );
@@ -664,6 +666,8 @@ class _SearchPageState extends State<SearchPage> {
               distance: distanceStr,
               queueCount: item.restaurant.queueCount,
               restoId: item.restaurant.id,
+              initialRating: item.restaurant.rating,
+              initialReviewCount: item.restaurant.reviewCount,
             ),
           ),
         );

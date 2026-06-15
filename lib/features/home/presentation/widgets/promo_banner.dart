@@ -96,6 +96,8 @@ class _PromoBannerState extends State<PromoBanner> {
                 distance: distanceStr,
                 queueCount: restaurant.queueCount,
                 restoId: restaurant.id,
+                initialRating: restaurant.rating,
+                initialReviewCount: restaurant.reviewCount,
               ),
             ),
           );

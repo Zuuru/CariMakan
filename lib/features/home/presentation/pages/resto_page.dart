@@ -16,6 +16,8 @@ class RestoPage extends StatefulWidget {
   final String? tableId;
   final String? nomorMeja;
   final String restoId;
+  final double initialRating;
+  final int initialReviewCount;
 
   const RestoPage({
     super.key,
@@ -26,6 +28,8 @@ class RestoPage extends StatefulWidget {
     this.tableId,
     this.nomorMeja,
     required this.restoId,
+    this.initialRating = 4.9,
+    this.initialReviewCount = 999,
   });
 
   @override
@@ -41,13 +45,18 @@ class _RestoPageState extends State<RestoPage> {
   bool _isOpen = true;
   String _operationalHoursDisplay = 'Loading...';
   int _activeQueueCount = 0;
+  double _avgRating = 4.9;
+  int _totalReview = 999;
 
   @override
   void initState() {
     super.initState();
     _activeQueueCount = widget.queueCount;
+    _avgRating = widget.initialRating;
+    _totalReview = widget.initialReviewCount;
     _listenOperationalHours();
     _listenActiveOrders();
+    _listenRestoDetails();
   }
 
   @override
@@ -121,6 +130,22 @@ class _RestoPageState extends State<RestoPage> {
       if (mounted) {
         setState(() {
           _activeQueueCount = snapshot.docs.length;
+        });
+      }
+    });
+  }
+
+  void _listenRestoDetails() {
+    FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(widget.restoId)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists && mounted) {
+        final data = doc.data()!;
+        setState(() {
+          _avgRating = (data['avg_rating'] as num?)?.toDouble() ?? 0.0;
+          _totalReview = (data['total_review'] as num?)?.toInt() ?? 0;
         });
       }
     });
@@ -265,7 +290,7 @@ class _RestoPageState extends State<RestoPage> {
                           const Icon(Icons.star, color: Colors.amber, size: 16),
                           const SizedBox(width: 4),
                           Text(
-                            '4.9 (999)',
+                            '$_avgRating ($_totalReview)',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -754,9 +779,58 @@ class _RestoPageState extends State<RestoPage> {
                                     style: GoogleFonts.poppins(fontSize: 10, color: Colors.grey.shade600),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(
-                                    _formatRupiah(item.totalPrice * item.quantity),
-                                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 12),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _formatRupiah(item.totalPrice * item.quantity),
+                                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.pop(context); // close bottom sheet
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => DetailMenuPage(
+                                                restoId: widget.restoId,
+                                                menuId: item.menuId,
+                                                restoName: widget.name,
+                                                menuName: item.menuName,
+                                                menuImage: item.menuImage,
+                                                menuPrice: item.basePrice,
+                                                description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
+                                                initialRating: _avgRating,
+                                                initialReviewCount: _totalReview,
+                                                editingItem: item,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: const Color(0xFFD33400), width: 0.8),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.edit_outlined, size: 10, color: Color(0xFFD33400)),
+                                              const SizedBox(width: 2),
+                                              Text(
+                                                'Ubah',
+                                                style: GoogleFonts.poppins(
+                                                  color: const Color(0xFFD33400),
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -946,7 +1020,7 @@ class _RestoPageState extends State<RestoPage> {
                       const Icon(Icons.star, color: Colors.amber, size: 10),
                       const SizedBox(width: 2),
                       Text(
-                        '4.9 (999)',
+                        '$_avgRating ($_totalReview)',
                         style: GoogleFonts.poppins(
                           fontSize: 8,
                           fontWeight: FontWeight.w600,
@@ -996,6 +1070,8 @@ class _RestoPageState extends State<RestoPage> {
               menuImage: imagePath,
               menuPrice: rawPrice > 0 ? rawPrice : double.tryParse(price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0.0,
               description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
+              initialRating: _avgRating,
+              initialReviewCount: _totalReview,
             ),
           ),
         );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
 import '../../../pesanan/presentation/pages/pembayaran_page.dart';
 import '../../../pesanan/data/cart_service.dart';
@@ -16,6 +18,9 @@ class DetailMenuPage extends StatefulWidget {
   final String menuImage;
   final double menuPrice;
   final String description;
+  final double initialRating;
+  final int initialReviewCount;
+  final CartItemModel? editingItem;
 
   const DetailMenuPage({
     Key? key,
@@ -26,6 +31,9 @@ class DetailMenuPage extends StatefulWidget {
     required this.menuImage,
     required this.menuPrice,
     required this.description,
+    this.initialRating = 4.9,
+    this.initialReviewCount = 999,
+    this.editingItem,
   }) : super(key: key);
 
   @override
@@ -37,11 +45,42 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
   List<OptionGroupModel> _optionGroups = [];
   Map<String, Set<OptionItemModel>> _selectedOptions = {};
   int _quantity = 1;
+  double _restoRating = 4.9;
+  int _restoReviewCount = 999;
+  StreamSubscription<DocumentSnapshot>? _restoSubscription;
 
   @override
   void initState() {
     super.initState();
+    _restoRating = widget.initialRating;
+    _restoReviewCount = widget.initialReviewCount;
+    if (widget.editingItem != null) {
+      _quantity = widget.editingItem!.quantity;
+    }
     _fetchVariants();
+    _listenRestoDetails();
+  }
+
+  @override
+  void dispose() {
+    _restoSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenRestoDetails() {
+    _restoSubscription = FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(widget.restoId)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists && mounted) {
+        final data = doc.data()!;
+        setState(() {
+          _restoRating = (data['avg_rating'] as num?)?.toDouble() ?? 0.0;
+          _restoReviewCount = (data['total_review'] as num?)?.toInt() ?? 0;
+        });
+      }
+    });
   }
 
   Future<void> _fetchVariants() async {
@@ -57,6 +96,22 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
               _selectedOptions[group.id]!.add(group.items.first);
             }
           }
+          
+          // Match selected options if editing an existing cart item
+          if (widget.editingItem != null) {
+            for (var group in _optionGroups) {
+              final selectedForGroup = widget.editingItem!.selectedVariants[group.nama];
+              if (selectedForGroup != null) {
+                _selectedOptions[group.id] = {};
+                for (var optItem in group.items) {
+                  if (selectedForGroup.any((e) => e['nama'] == optItem.nama)) {
+                    _selectedOptions[group.id]!.add(optItem);
+                  }
+                }
+              }
+            }
+          }
+          
           _isLoading = false;
         });
       }
@@ -121,7 +176,11 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
       selectedVariants: finalVariants,
     );
 
-    CartService.instance.addItem(widget.restoId, cartItem);
+    if (widget.editingItem != null) {
+      CartService.instance.updateItem(widget.restoId, widget.editingItem!, cartItem);
+    } else {
+      CartService.instance.addItem(widget.restoId, cartItem);
+    }
     
     Navigator.pop(context); // Go back to Resto Page
   }
@@ -253,7 +312,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                                   const Icon(Icons.star, color: Colors.amber, size: 12),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '4.9 (999)',
+                                    '$_restoRating ($_restoReviewCount)',
                                     style: GoogleFonts.poppins(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -379,9 +438,13 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                       ),
                       ElevatedButton.icon(
                         onPressed: _onAddToCart,
-                        icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                        icon: Icon(
+                          widget.editingItem != null ? Icons.check : Icons.add,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                         label: Text(
-                          'Tambah ke Keranjang',
+                          widget.editingItem != null ? 'Simpan Perubahan' : 'Tambah ke Keranjang',
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 12,

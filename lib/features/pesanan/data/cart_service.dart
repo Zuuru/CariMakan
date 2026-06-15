@@ -82,6 +82,26 @@ class CartService extends ChangeNotifier {
     }
   }
 
+  void updateItem(String restoId, CartItemModel oldItem, CartItemModel newItem) {
+    final items = _carts[restoId];
+    if (items == null) return;
+
+    final index = items.indexOf(oldItem);
+    if (index >= 0) {
+      // Check if another identical item (same menu and variants) already exists in the cart
+      final existingIndex = items.indexWhere((item) => item != oldItem && item.isSameAs(newItem));
+      if (existingIndex >= 0) {
+        // Merge them and remove the old item
+        items[existingIndex].quantity += newItem.quantity;
+        items.removeAt(index);
+      } else {
+        // Replace old item with the new one
+        items[index] = newItem;
+      }
+      notifyListeners();
+    }
+  }
+
   void clearCart(String restoId) {
     _carts[restoId]?.clear();
     notifyListeners();
