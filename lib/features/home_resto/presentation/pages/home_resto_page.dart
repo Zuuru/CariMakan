@@ -10,6 +10,7 @@ import '../widgets/menu_terlaris_card.dart';
 import '../../../menu_resto/presentation/pages/manajemen_menu_page.dart';
 import '../../../recap_resto/presentation/pages/recap_page.dart';
 import '../../../profile_resto/presentation/pages/profile_page.dart';
+import '../../../recap_resto/data/recap_service.dart';
 
 class HomeRestoPage extends StatefulWidget {
   const HomeRestoPage({Key? key}) : super(key: key);
@@ -100,26 +101,32 @@ class _HomeRestoPageState extends State<HomeRestoPage> {
   }
 
   Widget _buildDashboardContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(),
-        const SizedBox(height: 20),
-        Text(
-          'Halo!!',
-          style: GoogleFonts.montserrat(
-            fontSize: 48,
-            fontWeight: FontWeight.w500,
-            color: Colors.black,
-          ),
-        ),
-        const SizedBox(height: 30),
-        const RekapHarianCard(),
-        const SizedBox(height: 30),
-        const UlasanRestoCard(),
-        const SizedBox(height: 30),
-        const MenuTerlarisCard(),
-      ],
+    return FutureBuilder<String?>(
+      future: RecapService.getCurrentRestoId(),
+      builder: (context, snapshot) {
+        final restoId = snapshot.data;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 20),
+            Text(
+              'Halo!!',
+              style: GoogleFonts.montserrat(
+                fontSize: 48,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 30),
+            RekapHarianCard(restoId: restoId),
+            const SizedBox(height: 30),
+            const UlasanRestoCard(),
+            const SizedBox(height: 30),
+            MenuTerlarisCard(restoId: restoId),
+          ],
+        );
+      },
     );
   }
 
