@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../home/presentation/pages/home_page.dart';
 import '../../home_karyawan/presentation/pages/home_karyawan_page.dart';
 import 'forgot_password_page.dart';
+import 'verify_email_page.dart';
 
 class SplashScreen extends StatefulWidget {
   final bool showLoginImmediately;
@@ -464,11 +465,34 @@ class _LoginFormState extends State<_LoginForm> {
               }
               return;
             }
+          } else if (role == 'customer' && !user.emailVerified) {
+            if (mounted) {
+              Navigator.of(context).pop(); // Close bottom sheet
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const VerifyEmailPage(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(0.0, 1.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOutQuart;
+                    var tween = Tween(begin: begin, end: end)
+                        .chain(CurveTween(curve: curve));
+                    return SlideTransition(
+                        position: animation.drive(tween), child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 800),
+                ),
+              );
+            }
+            return;
           }
         }
       }
 
-      // Default redirect for customers/owners
+      // Default redirect for verified customers or owners
       if (mounted) {
         Navigator.of(context).pop(); // Close bottom sheet
         Navigator.pushReplacement(
@@ -710,7 +734,7 @@ class _RegisterFormState extends State<_RegisterForm> {
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  const HomePage(),
+                  const VerifyEmailPage(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
                 const begin = Offset(0.0, 1.0);
