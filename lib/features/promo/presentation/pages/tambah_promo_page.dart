@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../data/promo_model.dart';
 import '../../data/promo_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carimakan/core/services/notification_service.dart';
 
 /// Halaman form untuk membuat promo baru atau mengedit promo yang sudah ada.
 ///
@@ -160,6 +162,18 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
         await PromoService.updatePromo(promo);
       } else {
         await PromoService.tambahPromo(promo);
+        
+        // Fetch restaurant name
+        final restoSnap = await FirebaseFirestore.instance.collection('restaurants').doc(widget.restoId).get();
+        final restoName = restoSnap.exists ? (restoSnap.data()?['nama'] ?? 'Resto') : 'Resto';
+
+        await NotificationService().sendNotification(
+          userId: 'all',
+          title: 'Promo Baru dari $restoName! 🎉',
+          body: '${promo.nama}: ${promo.deskripsi}. Buruan cek promonya!',
+          type: 'promo',
+          restoId: widget.restoId,
+        );
       }
 
       if (mounted) {

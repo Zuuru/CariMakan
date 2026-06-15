@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carimakan/core/services/notification_service.dart';
 
 import '../../../../features/home_resto/presentation/pages/home_resto_page.dart';
 
@@ -50,6 +51,14 @@ class _StatusPendaftaranPageState extends State<StatusPendaftaranPage> {
             setState(() {
               _currentStatus = RegistrationStatus.approved;
             });
+            
+            NotificationService().sendNotification(
+              userId: user.uid,
+              title: 'Pendaftaran Resto Disetujui! 🏪',
+              body: 'Selamat! Restoran Anda telah disetujui oleh admin dan kini berstatus aktif.',
+              type: 'resto_registration',
+            );
+
             // Auto navigate after showing success briefly
             Future.delayed(const Duration(seconds: 2), () {
               if (mounted) {
@@ -63,6 +72,13 @@ class _StatusPendaftaranPageState extends State<StatusPendaftaranPage> {
             setState(() {
               _currentStatus = RegistrationStatus.rejected;
             });
+
+            NotificationService().sendNotification(
+              userId: user.uid,
+              title: 'Pendaftaran Resto Ditolak ❌',
+              body: 'Mohon maaf, data pendaftaran restoran Anda tidak memenuhi kriteria kami saat ini.',
+              type: 'resto_registration',
+            );
           } else if (statusString == 'pending' && _currentStatus != RegistrationStatus.pending) {
             setState(() {
               _currentStatus = RegistrationStatus.pending;
@@ -138,11 +154,28 @@ class _StatusPendaftaranPageState extends State<StatusPendaftaranPage> {
 
   // --- Secret Developer Action to toggle state for presentation ---
   void _cycleStatus() {
+    final user = FirebaseAuth.instance.currentUser;
     setState(() {
       if (_currentStatus == RegistrationStatus.pending) {
         _currentStatus = RegistrationStatus.approved;
+        if (user != null) {
+          NotificationService().sendNotification(
+            userId: user.uid,
+            title: 'Pendaftaran Resto Disetujui! 🏪 (Test)',
+            body: 'Selamat! Restoran Anda telah disetujui oleh admin dan kini berstatus aktif.',
+            type: 'resto_registration',
+          );
+        }
       } else if (_currentStatus == RegistrationStatus.approved) {
         _currentStatus = RegistrationStatus.rejected;
+        if (user != null) {
+          NotificationService().sendNotification(
+            userId: user.uid,
+            title: 'Pendaftaran Resto Ditolak ❌ (Test)',
+            body: 'Mohon maaf, data pendaftaran restoran Anda tidak memenuhi kriteria kami saat ini.',
+            type: 'resto_registration',
+          );
+        }
       } else {
         _currentStatus = RegistrationStatus.pending;
       }

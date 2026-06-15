@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carimakan/core/services/notification_service.dart';
 
 class QrScannerPage extends StatefulWidget {
   final String restoId;
@@ -93,6 +94,26 @@ class _QrScannerPageState extends State<QrScannerPage> {
         'status': 'Selesai',
         'updated_at': FieldValue.serverTimestamp(),
       });
+
+      final userId = data['userId'] as String? ?? '';
+      final queueNumber = data['queueNumber'] ?? '';
+      
+      if (userId.isNotEmpty) {
+        // Fetch restaurant name
+        final restoSnap = await FirebaseFirestore.instance.collection('restaurants').doc(restoId).get();
+        final restoName = restoSnap.exists ? (restoSnap.data()?['nama'] ?? 'Resto') : 'Resto';
+
+        await NotificationService().sendNotification(
+          userId: userId,
+          title: 'Pesanan Selesai 🎉',
+          body: 'Terima kasih! Pesanan $queueNumber kamu di $restoName telah diserahkan dan selesai.',
+          type: 'order_status',
+          additionalData: {
+            'orderId': orderId,
+            'orderType': 'Take Away',
+          },
+        );
+      }
 
       if (mounted) {
         setState(() {

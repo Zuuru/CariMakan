@@ -22,6 +22,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:carimakan/core/services/notification_service.dart';
+import 'notification_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -104,12 +106,16 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void dispose() {
     _userSubscription?.cancel();
+    NotificationService().stopListening();
     super.dispose();
   }
 
   void _listenUserData() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      // Start listening to push/in-app notifications for this user
+      NotificationService().startListeningForUser(user.uid);
+
       _userSubscription = FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots().listen((doc) {
         if (doc.exists) {
           final fullName = doc.data()?['nama'] as String? ?? 'Guest';
@@ -279,7 +285,55 @@ class _HomeContentState extends State<HomeContent> {
             ),
           ),
         ),
-        _buildHeaderIcon(Icons.notifications_none_outlined),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('notifications')
+              .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+              .where('isRead', isEqualTo: false)
+              .snapshots(),
+          builder: (context, snapshot) {
+            final unreadCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationPage()),
+                );
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _buildHeaderIcon(Icons.notifications_none_outlined),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: -2,
+                      top: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
         const SizedBox(width: 10),
         GestureDetector(
           onTap: () {

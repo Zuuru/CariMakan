@@ -7,6 +7,7 @@ import '../widgets/order_karyawan_card.dart';
 import '../widgets/order_detail_bottom_sheet.dart';
 import '../pages/qr_scanner_page.dart';
 import '../../../splash/pages/splash_screen.dart';
+import 'package:carimakan/core/services/notification_service.dart';
 
 class KaryawanHomePage extends StatefulWidget {
   final String restoId;
@@ -33,6 +34,13 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
   void initState() {
     super.initState();
     _loadRestoName();
+    NotificationService().startListeningForResto(widget.restoId);
+  }
+
+  @override
+  void dispose() {
+    NotificationService().stopListening();
+    super.dispose();
   }
 
   /// Load nama resto dari Firestore berdasarkan restoId
@@ -62,12 +70,12 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
         return OrderDetailBottomSheet(
           orderData: order,
           onMulaiProses: () {
-            _updateOrderStatus(order['id'], 'Diproses');
+            _updateOrderStatus(order, 'Diproses');
             Navigator.pop(context);
             _showSnackBar('Pesanan sedang diproses. Notifikasi dikirim ke customer.');
           },
           onTandaiSiap: () {
-            _updateOrderStatus(order['id'], 'Siap');
+            _updateOrderStatus(order, 'Siap');
             Navigator.pop(context);
             _showSnackBar('Pesanan siap! Notifikasi dikirim ke customer.');
           },
@@ -80,7 +88,12 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
     );
   }
 
-  void _updateOrderStatus(String id, String newStatus) {
+  void _updateOrderStatus(Map<String, dynamic> order, String newStatus) {
+    final String id = order['id'] ?? '';
+    final String customerId = order['userId'] ?? '';
+    final String orderType = order['type'] ?? 'Dine In';
+    final String queueNumber = order['queueNumber'] ?? '';
+
     final Map<String, dynamic> updates = {
       'status': newStatus,
     };
@@ -88,14 +101,57 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
       updates['readyAt'] = FieldValue.serverTimestamp();
     }
 
-    FirebaseFirestore.instance.collection('orders').doc(id).update(updates).catchError((e) {
+    FirebaseFirestore.instance.collection('orders').doc(id).update(updates).then((_) {
+      if (customerId.isNotEmpty) {
+        String title = '';
+        String body = '';
+        if (newStatus == 'Diproses') {
+          title = 'Pesanan Sedang Diproses 🍳';
+          body = 'Pesanan $queueNumber kamu sedang diproses oleh $_namaResto.';
+        } else if (newStatus == 'Siap') {
+          title = 'Pesanan Siap! 🍽️';
+          body = orderType == 'Take Away' 
+              ? 'Pesanan $queueNumber kamu siap diambil!' 
+              : 'Pesanan $queueNumber kamu sudah siap di meja!';
+        }
+
+        NotificationService().sendNotification(
+          userId: customerId,
+          title: title,
+          body: body,
+          type: 'order_status',
+          additionalData: {
+            'orderId': id,
+            'orderType': orderType,
+          },
+        );
+      }
+    }).catchError((e) {
       _showSnackBar('Gagal memperbarui status: $e');
     });
   }
 
-  void _removeOrder(String id) {
+  void _removeOrder(Map<String, dynamic> order) {
+    final String id = order['id'] ?? '';
+    final String customerId = order['userId'] ?? '';
+    final String orderType = order['type'] ?? 'Dine In';
+    final String queueNumber = order['queueNumber'] ?? '';
+
     FirebaseFirestore.instance.collection('orders').doc(id).update({
       'status': 'Selesai',
+    }).then((_) {
+      if (customerId.isNotEmpty) {
+        NotificationService().sendNotification(
+          userId: customerId,
+          title: 'Pesanan Selesai 🎉',
+          body: 'Terima kasih! Pesanan $queueNumber kamu di $_namaResto telah selesai.',
+          type: 'order_status',
+          additionalData: {
+            'orderId': id,
+            'orderType': orderType,
+          },
+        );
+      }
     }).catchError((e) {
       _showSnackBar('Gagal menyelesaikan pesanan: $e');
     });
@@ -264,6 +320,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
 
                     ordersList.add({
                       'id': doc.id,
+                      'userId': data['userId'] ?? '',
                       'queueNumber': data['queueNumber'] ?? ('#' + doc.id.substring(doc.id.length - 2).toUpperCase()),
                       'type': orderType,
                       'tableOrPickupInfo': data['tableOrPickupInfo'] ?? '',

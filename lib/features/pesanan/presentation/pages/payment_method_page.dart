@@ -9,6 +9,7 @@ import '../../data/pesanan_service.dart';
 import '../../../promo/data/promo_model.dart';
 import 'order_receipt_page.dart';
 import '../../data/poin_service.dart';
+import 'package:carimakan/core/services/notification_service.dart';
 
 class PaymentMethodPage extends StatefulWidget {
   final List<CartItemModel> cartItems;
@@ -52,9 +53,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
   Future<void> _startMidtransPayment() async {
     setState(() => _isProcessingPayment = true);
+    final user = FirebaseAuth.instance.currentUser;
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
       final totalSemua = widget.totalPrice.toInt();
       final totalHargaItem = (widget.subtotal - widget.discount).toInt();
       final ppn = (totalHargaItem * 0.1).toInt();
@@ -121,6 +122,19 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           );
         }
 
+        if (user != null) {
+          await NotificationService().sendNotification(
+            userId: user.uid,
+            title: 'Pembayaran Berhasil! 💳',
+            body: 'Pembayaran ${_formatRupiah(widget.totalPrice)} untuk pesanan $itemName telah berhasil dikonfirmasi.',
+            type: 'order_status',
+            additionalData: {
+              'orderId': orderId,
+              'orderType': widget.type,
+            },
+          );
+        }
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -135,6 +149,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         );
       }
     } catch (e) {
+      if (user != null) {
+        await NotificationService().sendNotification(
+          userId: user.uid,
+          title: 'Pembayaran Gagal ❌',
+          body: 'Pembayaran sebesar ${_formatRupiah(widget.totalPrice)} gagal diproses: $e',
+          type: 'order_status',
+        );
+      }
       if (!mounted) return;
       _showErrorDialog('Gagal memulai pembayaran: $e');
     } finally {
@@ -181,6 +203,19 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           orderId: orderId,
           userId: user.uid,
           totalAkhir: widget.totalPrice,
+        );
+      }
+
+      if (user != null) {
+        await NotificationService().sendNotification(
+          userId: user.uid,
+          title: 'Pembayaran Berhasil! 💳',
+          body: 'Pembayaran ${_formatRupiah(widget.totalPrice)} untuk pesanan $itemName telah berhasil dikonfirmasi (Bypass).',
+          type: 'order_status',
+          additionalData: {
+            'orderId': orderId,
+            'orderType': widget.type,
+          },
         );
       }
 
