@@ -35,6 +35,12 @@ class NotificationService {
       settings: initializationSettings,
     );
 
+    // Request permissions for Android 13+
+    await _localNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+
     _isInitialized = true;
   }
 
@@ -167,7 +173,7 @@ class NotificationService {
 
                 showNotification(
                   id: orderId.hashCode,
-                  title: 'Orderan Baru Masuk! 🍔',
+                  title: 'Hai haii, ada pesanan masuk 👋',
                   body: 'Order $queueNumber ($type): $menuName',
                   payload: 'incoming_order',
                 );
@@ -176,7 +182,7 @@ class NotificationService {
                 sendNotification(
                   userId: 'resto_$restoId',
                   restoId: restoId,
-                  title: 'Orderan Baru Masuk! 🍔',
+                  title: 'Hai haii, ada pesanan masuk 👋',
                   body: 'Order $queueNumber ($type): $menuName',
                   type: 'incoming_order',
                   additionalData: {'orderId': orderId},

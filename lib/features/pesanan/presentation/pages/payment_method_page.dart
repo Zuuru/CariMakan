@@ -125,7 +125,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         if (user != null) {
           await NotificationService().sendNotification(
             userId: user.uid,
-            title: 'Pembayaran Berhasil! 💳',
+            title: 'Nunggu acc dari resto ⏳',
             body: 'Pembayaran ${_formatRupiah(widget.totalPrice)} untuk pesanan $itemName telah berhasil dikonfirmasi.',
             type: 'order_status',
             additionalData: {
@@ -209,7 +209,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       if (user != null) {
         await NotificationService().sendNotification(
           userId: user.uid,
-          title: 'Pembayaran Berhasil! 💳',
+          title: 'Nunggu acc dari resto ⏳',
           body: 'Pembayaran ${_formatRupiah(widget.totalPrice)} untuk pesanan $itemName telah berhasil dikonfirmasi (Bypass).',
           type: 'order_status',
           additionalData: {

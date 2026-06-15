@@ -106,10 +106,10 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
         String title = '';
         String body = '';
         if (newStatus == 'Diproses') {
-          title = 'Pesanan Sedang Diproses 🍳';
+          title = 'Resto lagi bikinin makanan lu 🍳';
           body = 'Pesanan $queueNumber kamu sedang diproses oleh $_namaResto.';
         } else if (newStatus == 'Siap') {
-          title = 'Pesanan Siap! 🍽️';
+          title = 'Makananlu dah jadi nih, buruan ambil 🛍️';
           body = orderType == 'Take Away' 
               ? 'Pesanan $queueNumber kamu siap diambil!' 
               : 'Pesanan $queueNumber kamu sudah siap di meja!';
@@ -143,7 +143,7 @@ class _KaryawanHomePageState extends State<KaryawanHomePage> {
       if (customerId.isNotEmpty) {
         NotificationService().sendNotification(
           userId: customerId,
-          title: 'Pesanan Selesai 🎉',
+          title: 'Pesananlu udah selesai 🎉',
           body: 'Terima kasih! Pesanan $queueNumber kamu di $_namaResto telah selesai.',
           type: 'order_status',
           additionalData: {
