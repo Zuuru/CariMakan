@@ -324,11 +324,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               );
             },
           ),
-          const ProfileMenuItem(
-            icon: Icons.language,
-            title: 'Bahasa',
-            showDivider: true,
-          ),
+
           ProfileMenuItem(
             icon: Icons.security,
             title: 'Keamanan/Privasi',

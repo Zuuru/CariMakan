@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -38,6 +39,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
   DateTime? _mulai;
   DateTime? _berakhir;
   bool _isLoading = false;
+  File? _imageFile;
 
   bool get _isEditMode => widget.existingPromo != null;
 
@@ -129,7 +131,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
     setState(() => _isLoading = true);
 
     try {
-      final String? finalImageUrl = _imageUrlController.text.trim().isNotEmpty
+      String? finalImageUrl = _imageUrlController.text.trim().isNotEmpty
           ? _imageUrlController.text.trim()
           : null;
       if (_imageFile != null) {
