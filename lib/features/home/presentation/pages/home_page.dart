@@ -9,6 +9,9 @@ import '../widgets/card_resto.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/icon_makanan.dart';
 import '../widgets/user_points.dart';
+import '../widgets/card_menu_home.dart';
+import '../widgets/card_promo_resto.dart';
+
 import 'scan_page.dart';
 import 'resto_page.dart';
 import 'search_page.dart';
@@ -16,6 +19,7 @@ import 'location_picker_page.dart';
 import '../../../promo/presentation/pages/promo_page.dart';
 import '../../../pesanan/presentation/pages/pesanan_page.dart';
 import 'package:carimakan/features/map/pages/map_screen.dart';
+import 'new_local_resto_page.dart';
 import '../widgets/mini_map_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -225,7 +229,11 @@ class _HomeContentState extends State<HomeContent> {
               const IconMakanan(),
               const SizedBox(height: 25),
               _buildNearbySection(context),
-              const SizedBox(height: 200), // Space for bottom nav
+              const SizedBox(height: 25),
+              _buildTopMenusSection(context),
+              const SizedBox(height: 25),
+              _buildNewLocalRestoSection(context),
+              const SizedBox(height: 100), // Space for bottom nav
             ],
           ),
         ),
@@ -541,4 +549,244 @@ class _HomeContentState extends State<HomeContent> {
       ],
     );
   }
+
+  Widget _buildTopMenusSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Menu yang gacor top rated \uD83D\uDD25',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 15),
+        SizedBox(
+          height: 210,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('menus').limit(6).snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));
+              }
+
+              if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: snapshot.data!.docs.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final String name = data['nama'] ?? 'Unknown Menu';
+                    final String imageUrl = data['image_url'] ?? '';
+                    final double rawPrice = (data['harga'] ?? 0).toDouble();
+
+                    final String valStr = rawPrice.toInt().toString();
+                    final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+                    final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
+                    final String priceStr = 'Rp $formatted';
+
+                    final restoId = data['resto_id'];
+
+                    Widget cardMenu(String rName) {
+                      return CardMenuHome(
+                        imageUrl: imageUrl,
+                        name: name,
+                        price: priceStr,
+                        restoName: rName,
+                        onTap: () {
+                          if (restoId != null) {
+                            FirebaseFirestore.instance.collection('restaurants').doc(restoId).get().then((restoDoc) {
+                              if (restoDoc.exists && mounted) {
+                                final restoData = restoDoc.data()!;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RestoPage(
+                                      name: restoData['nama'] ?? restoData['name'] ?? 'Unknown Resto',
+                                      imageUrl: restoData['imageUrl'] ?? restoData['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                                      distance: restoData['lokasi_alamat'] ?? restoData['distance'] ?? '-',
+                                      queueCount: restoData['queueCount'] ?? restoData['total_review'] ?? 0,
+                                      restoId: restoDoc.id,
+                                      initialRating: (restoData['avg_rating'] as num?)?.toDouble() ?? 0.0,
+                                      initialReviewCount: (restoData['total_review'] as num?)?.toInt() ?? 0,
+                                    ),
+                                  ),
+                                );
+                              }
+                            });
+                          }
+                        },
+                      );
+                    }
+
+                    if (restoId != null) {
+                      return FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance.collection('restaurants').doc(restoId).get(),
+                        builder: (context, restoSnap) {
+                          String rName = 'Memuat...';
+                          if (restoSnap.connectionState == ConnectionState.done && restoSnap.hasData && restoSnap.data!.exists) {
+                            final rData = restoSnap.data!.data() as Map<String, dynamic>?;
+                            rName = rData?['nama'] ?? rData?['name'] ?? 'Restoran';
+                          }
+                          return cardMenu(rName);
+                        },
+                      );
+                    }
+
+                    return cardMenu('Restoran');
+                  }).toList(),
+                );
+              }
+
+              return Center(
+                child: Text(
+                  'Belum ada menu yang terdaftar',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewLocalRestoSection(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFD32F2F), // Merah ciri khas promo
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Resto lokal yang baru',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Cobain UMKM yang mulai naik daun',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NewLocalRestoPage()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9), // Light green
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Lihat semua',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF008A00), // Dark green
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 270,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('restaurants').limit(4).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: Colors.white));
+                }
+
+                if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                  return ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: snapshot.data!.docs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final double avgRating = (data['avg_rating'] as num?)?.toDouble() ?? 4.5;
+
+                      return FutureBuilder<QuerySnapshot>(
+                        future: FirebaseFirestore.instance.collection('promos').where('resto_id', isEqualTo: doc.id).limit(1).get(),
+                        builder: (context, promoSnap) {
+                          String promoText = ''; // Default to empty if no promo exists
+                          if (promoSnap.connectionState == ConnectionState.done && promoSnap.hasData && promoSnap.data!.docs.isNotEmpty) {
+                            final promoData = promoSnap.data!.docs.first.data() as Map<String, dynamic>;
+                            promoText = promoData['nama'] ?? '';
+                          }
+
+                          return CardPromoResto(
+                            imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                            name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
+                            category: data['category'] ?? 'Makanan, Minuman',
+                            rating: avgRating,
+                            deliveryTime: '15-25 min',
+                            distance: '0.8 km',
+                            promoText: promoText,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RestoPage(
+                                    name: data['nama'] ?? data['name'] ?? 'Unknown Resto',
+                                    imageUrl: data['imageUrl'] ?? data['foto_profil'] ?? 'https://via.placeholder.com/250x120',
+                                    distance: data['lokasi_alamat'] ?? data['distance'] ?? '-',
+                                    queueCount: data['queueCount'] ?? data['total_review'] ?? 0,
+                                    restoId: doc.id,
+                                    initialRating: avgRating,
+                                    initialReviewCount: (data['total_review'] as num?)?.toInt() ?? 0,
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    }).toList(),
+                  );
+                }
+
+                return Center(
+                  child: Text(
+                    'Belum ada resto promo',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

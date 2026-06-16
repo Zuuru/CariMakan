@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
+import 'package:carimakan/features/home/presentation/pages/category_products_page.dart';
 
 class IconMakanan extends StatefulWidget {
   const IconMakanan({super.key});
@@ -80,10 +81,21 @@ class _IconMakananState extends State<IconMakanan> {
                 ),
                 itemCount: pageItems.length,
                 itemBuilder: (context, index) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryProductsPage(
+                            categoryName: pageItems[index]['name']!,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
                         height: 75,
                         width: 75,
                         decoration: BoxDecoration(
@@ -122,8 +134,9 @@ class _IconMakananState extends State<IconMakanan> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                  );
-                },
+                  ),
+                );
+              },
               );
             },
           ),
