@@ -276,7 +276,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 image: _imageFile != null 
                     ? FileImage(_imageFile!) as ImageProvider
                     : (_currentPhotoUrl != null
-                        ? NetworkImage(_currentPhotoUrl!) as ImageProvider
+                        ? NetworkImage('$_currentPhotoUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
                         : (_currentPhotoBase64 != null 
                             ? MemoryImage(base64Decode(_currentPhotoBase64!)) as ImageProvider
                             : const AssetImage('assets/images/profile.png'))),

@@ -344,7 +344,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                               ? FileImage(_imageFile!) as ImageProvider
                               : (_currentImageUrl != null && _currentImageUrl!.isNotEmpty
                                   ? (_currentImageUrl!.startsWith('http')
-                                      ? NetworkImage(_currentImageUrl!) as ImageProvider
+                                      ? NetworkImage('$_currentImageUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
                                       : AssetImage(_currentImageUrl!) as ImageProvider)
                                   : const AssetImage('assets/images/background/bg_login.png')),
                           fit: BoxFit.cover,

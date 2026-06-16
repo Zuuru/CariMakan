@@ -198,7 +198,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           image: _imageFile != null 
                               ? FileImage(_imageFile!) as ImageProvider
                               : (_currentPhotoUrl != null && _currentPhotoUrl!.isNotEmpty
-                                  ? NetworkImage(_currentPhotoUrl!) as ImageProvider
+                                  ? NetworkImage('$_currentPhotoUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
                                   : (_currentPhotoBase64 != null && _currentPhotoBase64!.isNotEmpty
                                       ? MemoryImage(base64Decode(_currentPhotoBase64!)) as ImageProvider
                                       : const AssetImage('assets/images/Icon/icon_carimakan.png'))),

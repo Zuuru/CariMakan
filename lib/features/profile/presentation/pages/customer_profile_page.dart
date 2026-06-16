@@ -213,7 +213,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                         image: _photoBase64 != null
                             ? MemoryImage(base64Decode(_photoBase64!)) as ImageProvider
                             : (_photoUrl != null 
-                                ? NetworkImage(_photoUrl!) as ImageProvider
+                                ? NetworkImage('$_photoUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
                                 : const AssetImage('assets/images/profile.png')),
                         fit: BoxFit.cover,
                       ),

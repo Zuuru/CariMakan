@@ -229,11 +229,11 @@ class _ProfilePageState extends State<ProfilePage> {
             image: DecorationImage(
               image: _restoPhotoUrl != null && _restoPhotoUrl!.isNotEmpty
                   ? (_restoPhotoUrl!.startsWith('http')
-                      ? NetworkImage(_restoPhotoUrl!) as ImageProvider
+                      ? NetworkImage('$_restoPhotoUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
                       : AssetImage(_restoPhotoUrl!) as ImageProvider)
                   : (_userPhotoUrl != null && _userPhotoUrl!.isNotEmpty
                       ? (_userPhotoUrl!.startsWith('http')
-                          ? NetworkImage(_userPhotoUrl!) as ImageProvider
+                          ? NetworkImage('$_userPhotoUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
                           : AssetImage(_userPhotoUrl!) as ImageProvider)
                       : const AssetImage('assets/images/Icon/icon_carimakan.png')),
               fit: BoxFit.cover,
