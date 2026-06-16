@@ -8,7 +8,7 @@ class MenuModel {
   final String id;
   final String restoId;
   final String nama;
-  final int harga;
+  final int _hargaAsli;
   final String kategori;
   final String deskripsi;
   final String? imageUrl;
@@ -20,14 +20,20 @@ class MenuModel {
     required this.id,
     required this.restoId,
     required this.nama,
-    required this.harga,
+    required int harga,
     this.kategori = 'Makanan',
     this.deskripsi = '',
     this.imageUrl,
     this.isAvailable = true,
     this.urutan = 0,
     this.createdAt,
-  });
+  }) : _hargaAsli = harga;
+
+  /// Harga yang sudah di-markup 10% untuk ditampilkan ke customer
+  int get harga => (_hargaAsli * 1.10).round();
+  
+  /// Harga asli dari restoran
+  int get hargaAsli => _hargaAsli;
 
   /// Factory constructor dari dokumen Firestore.
   factory MenuModel.fromFirestore(DocumentSnapshot doc) {
@@ -48,12 +54,11 @@ class MenuModel {
     );
   }
 
-  /// Konversi ke Map untuk disimpan ke Firestore.
   Map<String, dynamic> toFirestore() {
     return {
       'resto_id': restoId,
       'nama': nama,
-      'harga': harga,
+      'harga': _hargaAsli,
       'kategori': kategori,
       'deskripsi': deskripsi,
       'image_url': imageUrl,
@@ -93,7 +98,7 @@ class MenuModel {
       id: id ?? this.id,
       restoId: restoId ?? this.restoId,
       nama: nama ?? this.nama,
-      harga: harga ?? this.harga,
+      harga: harga ?? this._hargaAsli,
       kategori: kategori ?? this.kategori,
       deskripsi: deskripsi ?? this.deskripsi,
       imageUrl: imageUrl ?? this.imageUrl,

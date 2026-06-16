@@ -12,7 +12,20 @@
           "package_name": "com.example.carimakan"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "895200161283-n4ollbkv45ho662pcmn8m7ln4d2rdfvu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.carimakan",
+            "certificate_hash": "8b15dfb84bae1e9ae9bec3b06f86fbfc6670bcc9"
+          }
+        },
+        {
+          "client_id": "895200161283-gaaohade4lfpbnej9mu51hm18e5bcbvv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBCa-2bnWEnu7QRiM1E3L_zVQb8ouV7-V0"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "895200161283-gaaohade4lfpbnej9mu51hm18e5bcbvv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "895200161283-l4k8mbug3kp7ov8ik89vvmhishfi4u9u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.carimakan"
+              }
+            }
+          ]
         }
       }
     }
