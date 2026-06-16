@@ -21,11 +21,13 @@ class _PromoBannerState extends State<PromoBanner> {
   Timer? _timer;
   int _currentPage = 0;
   List<PromoModel> _activePromos = [];
+  late final Stream<List<PromoModel>> _promosStream;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(viewportFraction: 0.9, initialPage: 0);
+    _promosStream = PromoService.getActivePromos();
   }
 
   void _startAutoSlide(int itemCount) {
@@ -130,7 +132,7 @@ class _PromoBannerState extends State<PromoBanner> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<PromoModel>>(
-      stream: PromoService.getActivePromos(),
+      stream: _promosStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const SizedBox.shrink(); // Hide banner if database error occurs

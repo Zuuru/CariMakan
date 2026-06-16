@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:carimakan/features/home/presentation/pages/location_picker_page.dart';
 
 class EditProfileRestoPage extends StatefulWidget {
   const EditProfileRestoPage({Key? key}) : super(key: key);
@@ -33,6 +35,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
   String? _restoId;
   double? _latitude;
   double? _longitude;
+  String? _lokasiAlamat;
 
   @override
   void initState() {
@@ -59,6 +62,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
         _namaRestController.text = data['nama'] ?? '';
         _deskripsiController.text = data['deskripsi'] ?? '';
         _waRestController.text = data['url_whatsapp'] ?? '';
+        _lokasiAlamat = data['lokasi_alamat'] as String?;
         
         if (data['lokasi'] is GeoPoint) {
           final geo = data['lokasi'] as GeoPoint;
@@ -141,13 +145,22 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
     try {
       final docRef = FirebaseFirestore.instance.collection('restaurants').doc(_restoId);
       
-      // Update restaurant doc
-      await docRef.update({
+      final Map<String, dynamic> updateData = {
         'nama': _namaRestController.text.trim(),
         'deskripsi': _deskripsiController.text.trim(),
         'url_whatsapp': _waRestController.text.trim(),
         'badges': _fasilitasTerpilih,
-      });
+      };
+
+      if (_latitude != null && _longitude != null) {
+        updateData['lokasi'] = GeoPoint(_latitude!, _longitude!);
+      }
+      if (_lokasiAlamat != null) {
+        updateData['lokasi_alamat'] = _lokasiAlamat!;
+      }
+
+      // Update restaurant doc
+      await docRef.update(updateData);
 
       // Update operational hours for all days in the subcollection
       final batch = FirebaseFirestore.instance.batch();
@@ -445,17 +458,55 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
                           style: GoogleFonts.outfit(
                             fontSize: 12,
                             color: const Color(0xFF6B7280),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                        if (_lokasiAlamat != null && _lokasiAlamat!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            _lokasiAlamat!,
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: const Color(0xFF8C8C8C),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ],
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      // Mock update location
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Lokasi GPS berhasil diperbarui!')),
+                    onPressed: () async {
+                      final result = await Navigator.push<Map<String, dynamic>>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LocationPickerPage(
+                            initialLocation: _latitude != null && _longitude != null
+                                ? LatLng(_latitude!, _longitude!)
+                                : null,
+                            initialAddress: _lokasiAlamat,
+                          ),
+                        ),
                       );
+
+                      if (result != null && context.mounted) {
+                        setState(() {
+                          _latitude = result['latitude'] as double?;
+                          _longitude = result['longitude'] as double?;
+                          _lokasiAlamat = result['address'] as String?;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Lokasi GPS berhasil diperbarui! Klik Simpan untuk menyimpan ke database.',
+                              style: GoogleFonts.outfit(),
+                            ),
+                            backgroundColor: const Color(0xFFD33400),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
                     },
                     child: Text(
                       'Update',

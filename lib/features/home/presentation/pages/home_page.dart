@@ -95,6 +95,13 @@ class _HomeContentState extends State<HomeContent> {
   double? _customLng;
 
   StreamSubscription<DocumentSnapshot>? _userSubscription;
+  late final Stream<QuerySnapshot> _restaurantsStream =
+      FirebaseFirestore.instance.collection('restaurants').snapshots();
+  late final Stream<QuerySnapshot> _notificationsStream = FirebaseFirestore.instance
+      .collection('notifications')
+      .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+      .where('isRead', isEqualTo: false)
+      .snapshots();
 
   @override
   void initState() {
@@ -286,11 +293,7 @@ class _HomeContentState extends State<HomeContent> {
           ),
         ),
         StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('notifications')
-              .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-              .where('isRead', isEqualTo: false)
-              .snapshots(),
+          stream: _notificationsStream,
           builder: (context, snapshot) {
             final unreadCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
             return GestureDetector(
@@ -479,7 +482,7 @@ class _HomeContentState extends State<HomeContent> {
         SizedBox(
           height: 240,
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('restaurants').snapshots(),
+            stream: _restaurantsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator(color: Color(0xFFD33400)));

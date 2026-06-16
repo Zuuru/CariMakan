@@ -61,15 +61,6 @@ class OrderReceiptPage extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                // AppBar area
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: const CustomBackButton(),
-                  ),
-                ),
-                
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
