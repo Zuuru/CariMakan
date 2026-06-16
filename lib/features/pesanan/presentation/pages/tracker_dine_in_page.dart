@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import '../widgets/review_bottom_sheet.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class TrackerDineInPage extends StatefulWidget {
   final String? orderId;
@@ -184,6 +185,85 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
     );
   }
 
+  Widget _buildCashPaymentQrCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'QR Pembayaran Tunai',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tunjukkan QR ini ke kasir untuk melakukan pembayaran tunai',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade100),
+            ),
+            child: QrImageView(
+              data: widget.orderId ?? '',
+              version: QrVersions.auto,
+              size: 200.0,
+              gapless: false,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'TOTAL BAYAR',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _orderData != null ? _formatRupiah((_orderData!['totalPrice'] as num?)?.toDouble() ?? 0.0) : '-',
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFFD33400),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatRupiah(double value) {
+    final String valStr = value.toInt().toString();
+    final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
+    return 'Rp $formatted';
+  }
+
   Widget _buildMainLayout() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -241,9 +321,18 @@ class _TrackerDineInPageState extends State<TrackerDineInPage> {
                   children: [
                     _buildOrderSummaryCard(),
                     const SizedBox(height: 32),
+                    if (_orderData != null &&
+                        _orderData!['paymentMethod'] == 'Tunai' &&
+                        _orderData!['status'] == 'pending_tunai') ...[
+                      _buildCashPaymentQrCard(),
+                      const SizedBox(height: 32),
+                    ],
                     _buildTrackerTimeline(),
-                    const SizedBox(height: 32),
-                    _buildQueueNumberCard(),
+                    if (_orderData != null &&
+                        _orderData!['status'] != 'pending_tunai') ...[
+                      const SizedBox(height: 32),
+                      _buildQueueNumberCard(),
+                    ],
                     if (currentStep == 2) ...[
                       const SizedBox(height: 32),
                       ElevatedButton(

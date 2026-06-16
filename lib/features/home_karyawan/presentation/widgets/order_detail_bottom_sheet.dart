@@ -19,6 +19,8 @@ class OrderDetailBottomSheet extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'menunggu':
         return const Color(0xFFE3861B); // Orange
+      case 'pending_tunai':
+        return const Color(0xFFEF4444); // Red
       case 'diproses':
         return const Color(0xFF1D4ED8); // Blue
       case 'siap':
@@ -226,7 +228,36 @@ class OrderDetailBottomSheet extends StatelessWidget {
   }
 
   Widget _buildActionButtons(String status, String type) {
-    if (status.toLowerCase() == 'menunggu') {
+    if (status.toLowerCase() == 'pending_tunai') {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: onScanQR,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFD33400),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.qr_code_scanner, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                'Scan QR Pembayaran Tunai',
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (status.toLowerCase() == 'menunggu') {
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton(

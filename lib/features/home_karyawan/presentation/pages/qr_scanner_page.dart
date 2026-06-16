@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carimakan/core/services/notification_service.dart';
+import 'package:carimakan/features/pesanan/data/poin_service.dart';
 
 class QrScannerPage extends StatefulWidget {
   final String restoId;
@@ -31,6 +32,13 @@ class _QrScannerPageState extends State<QrScannerPage> {
   void dispose() {
     _scannerController.dispose();
     super.dispose();
+  }
+
+  String _formatRupiah(double value) {
+    final String valStr = value.toInt().toString();
+    final RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    final String formatted = valStr.replaceAllMapped(reg, (Match m) => '${m[1]}.');
+    return 'Rp $formatted';
   }
 
   Future<void> _onQrDetected(String rawValue) async {
@@ -70,6 +78,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
       final status = data['status'] as String? ?? '';
       final tipe = data['type'] as String? ?? '';
       final restoId = data['resto_id'] as String? ?? '';
+      final paymentMethod = data['paymentMethod'] as String? ?? '';
+      final userId = data['userId'] as String? ?? '';
+      final queueNumber = data['queueNumber'] ?? '';
 
       // Validasi resto
       if (restoId != widget.restoId) {
@@ -77,50 +88,87 @@ class _QrScannerPageState extends State<QrScannerPage> {
         return;
       }
 
-      // Validasi tipe harus Take Away
-      if (tipe.toLowerCase() != 'take away') {
-        _setError('Pesanan ini bukan Take Away.');
-        return;
+      final bool isCashDineIn = (paymentMethod == 'Tunai' || paymentMethod.toLowerCase().contains('tunai')) && tipe.toLowerCase() == 'dine in';
+
+      if (isCashDineIn) {
+        if (status != 'pending_tunai') {
+          _setError('Pesanan belum berstatus Pending Tunai.\nStatus saat ini: $status');
+          return;
+        }
+      } else {
+        // Validasi tipe harus Take Away
+        if (tipe.toLowerCase() != 'take away') {
+          _setError('Pesanan ini bukan Take Away.');
+          return;
+        }
+
+        // Validasi status harus Siap
+        if (status.toLowerCase() != 'siap') {
+          _setError('Pesanan belum berstatus Siap.\nStatus saat ini: $status');
+          return;
+        }
       }
 
-      // Validasi status harus Siap
-      if (status.toLowerCase() != 'siap') {
-        _setError('Pesanan belum berstatus Siap.\nStatus saat ini: $status');
-        return;
+      // Action based on order type
+      if (isCashDineIn) {
+        await docRef.update({
+          'status': 'Diproses',
+          'poin_earned': true,
+          'updated_at': FieldValue.serverTimestamp(),
+        });
+
+        final double totalPrice = (data['totalPrice'] as num?)?.toDouble() ?? 0.0;
+        if (userId.isNotEmpty) {
+          await PoinService.enqueueEarn(
+            orderId: orderId,
+            userId: userId,
+            totalAkhir: totalPrice,
+          );
+        }
+      } else {
+        await docRef.update({
+          'status': 'Selesai',
+          'updated_at': FieldValue.serverTimestamp(),
+        });
       }
 
-      // Semua valid — update status ke Selesai
-      await docRef.update({
-        'status': 'Selesai',
-        'updated_at': FieldValue.serverTimestamp(),
-      });
-
-      final userId = data['userId'] as String? ?? '';
-      final queueNumber = data['queueNumber'] ?? '';
-      
       if (userId.isNotEmpty) {
         // Fetch restaurant name
         final restoSnap = await FirebaseFirestore.instance.collection('restaurants').doc(restoId).get();
         final restoName = restoSnap.exists ? (restoSnap.data()?['nama'] ?? 'Resto') : 'Resto';
 
-        await NotificationService().sendNotification(
-          userId: userId,
-          title: 'Pesanan Selesai 🎉',
-          body: 'Terima kasih! Pesanan $queueNumber kamu di $restoName telah diserahkan dan selesai.',
-          type: 'order_status',
-          additionalData: {
-            'orderId': orderId,
-            'orderType': 'Take Away',
-          },
-        );
+        if (isCashDineIn) {
+          await NotificationService().sendNotification(
+            userId: userId,
+            title: 'Pembayaran Tunai Diterima! 🍽️',
+            body: 'Pembayaran tunai sebesar ${_formatRupiah((data['totalPrice'] as num?)?.toDouble() ?? 0.0)} sukses dikonfirmasi. Makanan kamu sedang disiapkan!',
+            type: 'order_status',
+            additionalData: {
+              'orderId': orderId,
+              'orderType': 'Dine In',
+            },
+          );
+        } else {
+          await NotificationService().sendNotification(
+            userId: userId,
+            title: 'Pesanan Selesai 🎉',
+            body: 'Terima kasih! Pesanan $queueNumber kamu di $restoName telah diserahkan dan selesai.',
+            type: 'order_status',
+            additionalData: {
+              'orderId': orderId,
+              'orderType': 'Take Away',
+            },
+          );
+        }
       }
 
       if (mounted) {
         setState(() {
           _isProcessing = false;
           _isSuccess = true;
-          _statusMessage =
-              'QR Valid! Pesanan berhasil dikonfirmasi\ndan diserahkan ke customer.';
+          _statusMessage = isCashDineIn
+              ? 'QR Valid! Pembayaran tunai berhasil dikonfirmasi\ndan pesanan diproses.'
+              : 'QR Valid! Pesanan berhasil dikonfirmasi\ndan diserahkan ke customer.';
         });
       }
     } catch (e) {
@@ -329,7 +377,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'QR hanya berlaku untuk pesanan Take Away\nyang sudah berstatus Siap',
+                              'QR untuk pesanan Take Away (Siap) atau Dine In (Tunai)',
                               style: GoogleFonts.outfit(
                                 color: Colors.white70,
                                 fontSize: 12,

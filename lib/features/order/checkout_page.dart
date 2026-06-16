@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carimakan/core/services/midtrans_service.dart';
 import 'package:carimakan/features/order/midtrans_payment_page.dart';
@@ -182,7 +183,15 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final Uri url = Uri.parse(
+                            'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent('Jl. Setia Budi No.28, Ngesrep, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50262')}'
+                          );
+                          final bool launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                          if (!launched) {
+                            await launchUrl(url);
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD33400),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
+import 'package:carimakan/core/services/midtrans_service.dart';
+import 'package:carimakan/features/order/midtrans_payment_page.dart';
+import 'package:carimakan/core/services/notification_service.dart';
+import 'package:carimakan/features/pesanan/data/pesanan_service.dart';
+import 'package:carimakan/features/pesanan/presentation/pages/order_receipt_page.dart';
+import 'tracker_dine_in_page.dart';
+import 'tracker_takeaway_page.dart';
 import '../../data/cart_service.dart';
-import 'payment_method_page.dart';
 import '../../../promo/data/promo_model.dart';
 import '../../../promo/data/promo_service.dart';
 import '../../data/poin_service.dart';
@@ -31,6 +40,12 @@ class _PembayaranPageState extends State<PembayaranPage> {
   String? _nomorMeja;
   int _userPoin = 0;
   bool _pakaiPoin = false;
+  String _selectedPaymentMethod = 'QRIS';
+  bool _isProcessing = false;
+
+  String _restoAlamat = 'Jl. Setia Budi No.28, Ngesrep, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50262';
+  double? _restoLat;
+  double? _restoLng;
 
   @override
   void initState() {
@@ -40,6 +55,396 @@ class _PembayaranPageState extends State<PembayaranPage> {
       _deliveryType = 'Dine In';
     }
     _loadPoin();
+    _fetchRestoLocation();
+  }
+
+  Future<void> _fetchRestoLocation() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('restaurants')
+          .doc(widget.restoId)
+          .get();
+      if (doc.exists && mounted) {
+        final data = doc.data();
+        if (data != null) {
+          setState(() {
+            if (data['lokasi_alamat'] != null && data['lokasi_alamat'].toString().isNotEmpty) {
+              _restoAlamat = data['lokasi_alamat'] as String;
+            }
+            if (data['lokasi'] is GeoPoint) {
+              final geo = data['lokasi'] as GeoPoint;
+              _restoLat = geo.latitude;
+              _restoLng = geo.longitude;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching restaurant location: $e');
+    }
+  }
+
+
+
+  Future<void> _processCheckout({
+    required double finalTotal,
+    required double totalPrice,
+    required double discount,
+    required int poinDigunakan,
+    required int poinDidapat,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final itemName = widget.cartItems.isEmpty
+        ? 'Makanan'
+        : (widget.cartItems.length == 1
+            ? widget.cartItems.first.menuName
+            : '${widget.cartItems.first.menuName} dan ${widget.cartItems.length - 1} lainnya');
+
+    if (_selectedPaymentMethod == 'Tunai') {
+      setState(() {
+        _isProcessing = true;
+      });
+
+      try {
+        final tableOrPickupInfo = _deliveryType == 'Dine In'
+            ? 'Meja ${_nomorMeja ?? "-"}'
+            : 'Take Away';
+
+        // 1. Create order in Firestore
+        final orderId = await PesananService.createOrder(
+          cartItems: widget.cartItems,
+          totalPrice: finalTotal,
+          paymentMethod: 'Tunai',
+          restoId: widget.restoId,
+          appliedPromo: _selectedPromo,
+          discount: discount,
+          subtotal: totalPrice,
+          type: _deliveryType,
+          tableOrPickupInfo: tableOrPickupInfo,
+        );
+
+        // Update the status of the order to 'pending_tunai' (since createOrder sets status to 'paid')
+        await FirebaseFirestore.instance.collection('orders').doc(orderId).update({
+          'status': 'pending_tunai',
+          'poin_earned': false,
+        });
+
+        // 2. Clear global cart
+        CartService.instance.clearCart(widget.restoId);
+
+        // 3. Redeem points if applicable
+        if (poinDigunakan > 0 && user != null) {
+          await PoinService.enqueueRedeem(
+            orderId: orderId,
+            userId: user.uid,
+            poinDigunakan: poinDigunakan,
+          );
+        }
+
+        // 4. Send notification
+        if (user != null) {
+          await NotificationService().sendNotification(
+            userId: user.uid,
+            title: 'Pesanan Tunai Dibuat ⏳',
+            body: 'Silakan lakukan pembayaran tunai di kasir sebesar ${_formatRupiah(finalTotal)}.',
+            type: 'order_status',
+            additionalData: {
+              'orderId': orderId,
+              'orderType': _deliveryType,
+            },
+          );
+        }
+
+        if (!mounted) return;
+
+        // 5. Navigate directly to Tracker Page
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => _deliveryType == 'Dine In'
+                ? TrackerDineInPage(orderId: orderId)
+                : TrackerTakeawayPage(orderId: orderId),
+          ),
+          (route) => route.isFirst,
+        );
+      } catch (e) {
+        debugPrint('Error creating cash order: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal membuat pesanan: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+          });
+        }
+      }
+    } else if (_selectedPaymentMethod == 'Bypass') {
+      setState(() {
+        _isProcessing = true;
+      });
+      try {
+        final tableOrPickupInfo = _deliveryType == 'Dine In'
+            ? 'Meja ${_nomorMeja ?? "-"}'
+            : 'Take Away';
+
+        final orderId = await PesananService.createOrder(
+          cartItems: widget.cartItems,
+          totalPrice: finalTotal,
+          paymentMethod: 'QRIS (Bypass)',
+          restoId: widget.restoId,
+          appliedPromo: _selectedPromo,
+          discount: discount,
+          subtotal: totalPrice,
+          type: _deliveryType,
+          tableOrPickupInfo: tableOrPickupInfo,
+        );
+
+        CartService.instance.clearCart(widget.restoId);
+
+        if (poinDigunakan > 0 && user != null) {
+          await PoinService.enqueueRedeem(
+            orderId: orderId,
+            userId: user.uid,
+            poinDigunakan: poinDigunakan,
+          );
+        }
+        if (user != null) {
+          await PoinService.enqueueEarn(
+            orderId: orderId,
+            userId: user.uid,
+            totalAkhir: finalTotal,
+          );
+        }
+
+        if (user != null) {
+          await NotificationService().sendNotification(
+            userId: user.uid,
+            title: 'Nunggu acc dari resto ⏳',
+            body: 'Pembayaran ${_formatRupiah(finalTotal)} untuk pesanan $itemName telah berhasil dikonfirmasi (Bypass).',
+            type: 'order_status',
+            additionalData: {
+              'orderId': orderId,
+              'orderType': _deliveryType,
+            },
+          );
+        }
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderReceiptPage(
+              orderId: orderId,
+              menuName: itemName,
+              totalPrice: finalTotal,
+              isTakeaway: _deliveryType == 'Take Away',
+              poinDidapat: poinDidapat,
+            ),
+          ),
+        );
+      } catch (e) {
+        debugPrint('Error bypass order: $e');
+      } finally {
+        if (mounted) setState(() => _isProcessing = false);
+      }
+    } else {
+      setState(() {
+        _isProcessing = true;
+      });
+      try {
+        final totalSemua = finalTotal.toInt();
+        final totalHargaItem = (totalPrice - discount).toInt();
+        final ppn = (totalHargaItem * 0.1).toInt();
+        final biayaLainnya = totalSemua - totalHargaItem - ppn;
+
+        final qrisResult = await MidtransService.createQrisCharge(
+          grossAmount: totalSemua,
+          itemName: itemName,
+          itemPrice: totalHargaItem,
+          itemQuantity: 1,
+          ppn: ppn,
+          otherFee: biayaLainnya,
+          poinDiscount: poinDigunakan,
+          customerName: user?.displayName ?? 'Pelanggan CariMakan',
+          customerEmail: user?.email ?? 'customer@carimakan.app',
+        );
+
+        if (!mounted) return;
+
+        final paymentResult = await Navigator.push<MidtransPaymentResult>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MidtransQrisPage(qrisResult: qrisResult),
+          ),
+        );
+
+        if (!mounted) return;
+
+        if (paymentResult != null && paymentResult.status == MidtransPaymentStatus.success) {
+          final tableOrPickupInfo = _deliveryType == 'Dine In'
+              ? 'Meja ${_nomorMeja ?? "-"}'
+              : 'Take Away';
+
+          final orderId = await PesananService.createOrder(
+            cartItems: widget.cartItems,
+            totalPrice: finalTotal,
+            paymentMethod: 'QRIS',
+            restoId: widget.restoId,
+            appliedPromo: _selectedPromo,
+            discount: discount,
+            subtotal: totalPrice,
+            type: _deliveryType,
+            tableOrPickupInfo: tableOrPickupInfo,
+          );
+
+          CartService.instance.clearCart(widget.restoId);
+
+          if (poinDigunakan > 0 && user != null) {
+            await PoinService.enqueueRedeem(
+              orderId: orderId,
+              userId: user.uid,
+              poinDigunakan: poinDigunakan,
+            );
+          }
+          if (user != null) {
+            await PoinService.enqueueEarn(
+              orderId: orderId,
+              userId: user.uid,
+              totalAkhir: finalTotal,
+            );
+          }
+
+          if (user != null) {
+            await NotificationService().sendNotification(
+              userId: user.uid,
+              title: 'Nunggu acc dari resto ⏳',
+              body: 'Pembayaran ${_formatRupiah(finalTotal)} untuk pesanan $itemName telah berhasil dikonfirmasi.',
+              type: 'order_status',
+              additionalData: {
+                'orderId': orderId,
+                'orderType': _deliveryType,
+              },
+            );
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderReceiptPage(
+                orderId: orderId,
+                menuName: itemName,
+                totalPrice: finalTotal,
+                isTakeaway: _deliveryType == 'Take Away',
+                poinDidapat: poinDidapat,
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (user != null) {
+          await NotificationService().sendNotification(
+            userId: user.uid,
+            title: 'Pembayaran Gagal ❌',
+            body: 'Pembayaran sebesar ${_formatRupiah(finalTotal)} gagal diproses: $e',
+            type: 'order_status',
+          );
+        }
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text('Oops!', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              content: Text('Gagal memulai pembayaran: $e', style: GoogleFonts.poppins(fontSize: 13)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Tutup', style: GoogleFonts.poppins(color: const Color(0xFFD33400))),
+                ),
+              ],
+            ),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  Widget _buildPaymentMethodOption({
+    required String method,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final bool isSelected = _selectedPaymentMethod == method;
+    final bool isTakeaway = _deliveryType == 'Take Away';
+    final bool isTunai = method == 'Tunai';
+    final bool isDisabled = isTakeaway && isTunai;
+
+    return Opacity(
+      opacity: isDisabled ? 0.4 : 1.0,
+      child: InkWell(
+        onTap: isDisabled
+            ? null
+            : () {
+                setState(() {
+                  _selectedPaymentMethod = method;
+                });
+              },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          child: Row(
+            children: [
+              Icon(icon, color: isSelected ? const Color(0xFFD33400) : Colors.grey, size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? const Color(0xFFD33400) : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Radio<String>(
+                value: method,
+                groupValue: _selectedPaymentMethod,
+                activeColor: const Color(0xFFD33400),
+                onChanged: isDisabled
+                    ? null
+                    : (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedPaymentMethod = val;
+                          });
+                        }
+                      },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadPoin() async {
@@ -51,85 +456,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
     }
   }
 
-  void _showDeliveryTypeBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        String? localNomorMeja = _nomorMeja;
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pilih Opsi Pengiriman',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ListTile(
-                    leading: const Icon(Icons.restaurant, color: Color(0xFFD33400)),
-                    title: Text(
-                      localNomorMeja != null && localNomorMeja!.isNotEmpty
-                          ? 'Dine In (Meja $localNomorMeja)'
-                          : 'Dine In',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: localNomorMeja == null || localNomorMeja!.isEmpty
-                        ? Text('Masukkan nomor meja Anda', style: GoogleFonts.poppins(fontSize: 12))
-                        : null,
-                    trailing: _deliveryType == 'Dine In' && localNomorMeja != null && localNomorMeja!.isNotEmpty
-                        ? const Icon(Icons.check_circle, color: Color(0xFFD33400))
-                        : null,
-                    onTap: () async {
-                      final nomor = await _showTableNumberDialog(localNomorMeja);
-                      if (nomor != null && nomor.isNotEmpty) {
-                        setModalState(() {
-                          localNomorMeja = nomor;
-                        });
-                        setState(() {
-                          _deliveryType = 'Dine In';
-                          _nomorMeja = nomor;
-                        });
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
-                  const Divider(),
-                  ListTile(
-                    leading: const Icon(Icons.shopping_bag_outlined, color: Color(0xFFD33400)),
-                    title: Text(
-                      'Takeaway',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
-                    trailing: _deliveryType == 'Take Away'
-                        ? const Icon(Icons.check_circle, color: Color(0xFFD33400))
-                        : null,
-                    onTap: () {
-                      setState(() {
-                        _deliveryType = 'Take Away';
-                        _nomorMeja = null;
-                      });
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+
 
   Future<String?> _showTableNumberDialog(String? currentNumber) async {
     final controller = TextEditingController(text: currentNumber);
@@ -430,72 +757,151 @@ class _PembayaranPageState extends State<PembayaranPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Delivery Type
-            GestureDetector(
-              onTap: _showDeliveryTypeBottomSheet,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF1F1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            _deliveryType == 'Dine In'
-                                ? Icons.restaurant
-                                : Icons.shopping_bag_outlined,
-                            color: const Color(0xFFD33400),
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _deliveryType == 'Dine In'
-                              ? (_nomorMeja != null && _nomorMeja!.isNotEmpty
-                                  ? 'Dine In (Meja $_nomorMeja)'
-                                  : 'Dine In')
-                              : 'Takeaway',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Custom Segmented Control for Delivery Type
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Animated background slider
+                      AnimatedAlign(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        alignment: _deliveryType == 'Dine In'
+                            ? Alignment.centerLeft
+                            : Alignment.centerRight,
+                        child: FractionallySizedBox(
+                          widthFactor: 0.5,
+                          child: Container(
+                            margin: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD33400),
+                              borderRadius: BorderRadius.circular(21),
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFD33400)),
-                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        'Ganti',
+                      // Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                if (_deliveryType != 'Dine In') {
+                                  final nomor = await _showTableNumberDialog(_nomorMeja);
+                                  setState(() {
+                                    _deliveryType = 'Dine In';
+                                    if (nomor != null && nomor.isNotEmpty) {
+                                      _nomorMeja = nomor;
+                                    }
+                                  });
+                                }
+                              },
+                              child: Container(
+                                color: Colors.transparent,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.restaurant,
+                                      color: _deliveryType == 'Dine In' ? Colors.white : Colors.grey[600],
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _deliveryType == 'Dine In' && _nomorMeja != null && _nomorMeja!.isNotEmpty
+                                          ? 'Dine In ($_nomorMeja)'
+                                          : 'Dine In',
+                                      style: GoogleFonts.poppins(
+                                        color: _deliveryType == 'Dine In' ? Colors.white : Colors.grey[800],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _deliveryType = 'Take Away';
+                                  _nomorMeja = null;
+                                  if (_selectedPaymentMethod == 'Tunai') {
+                                    _selectedPaymentMethod = 'QRIS';
+                                  }
+                                });
+                              },
+                              child: Container(
+                                color: Colors.transparent,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.shopping_bag_outlined,
+                                      color: _deliveryType == 'Take Away' ? Colors.white : Colors.grey[600],
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Takeaway',
+                                      style: GoogleFonts.poppins(
+                                        color: _deliveryType == 'Take Away' ? Colors.white : Colors.grey[800],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (_deliveryType == 'Dine In') ...[
+                  const SizedBox(height: 8),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final nomor = await _showTableNumberDialog(_nomorMeja);
+                        if (nomor != null && nomor.isNotEmpty) {
+                          setState(() {
+                            _nomorMeja = nomor;
+                          });
+                        }
+                      },
+                      icon: const Icon(Icons.edit, size: 14, color: Color(0xFFD33400)),
+                      label: Text(
+                        _nomorMeja != null && _nomorMeja!.isNotEmpty
+                            ? 'Ubah Nomor Meja (Meja $_nomorMeja)'
+                            : 'Masukkan Nomor Meja',
                         style: GoogleFonts.poppins(
                           color: const Color(0xFFD33400),
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
+                ],
             const SizedBox(height: 16),
 
             // Lokasi Resto
@@ -517,35 +923,9 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Jl. Setia Budi No.28, Ngesrep, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50262',
+                    _restoAlamat,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFD33400)),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.directions, color: Color(0xFFD33400), size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Rute',
-                            style: GoogleFonts.poppins(
-                              color: const Color(0xFFD33400),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ],
@@ -760,6 +1140,51 @@ class _PembayaranPageState extends State<PembayaranPage> {
             ),
             const SizedBox(height: 24),
 
+            // Pilih Metode Pembayaran
+            Text(
+              'Pilih Metode Pembayaran',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                children: [
+                  _buildPaymentMethodOption(
+                    method: 'QRIS',
+                    title: 'QRIS (Midtrans)',
+                    subtitle: 'Bayar instan via GoPay, DANA, ShopeePay, dll',
+                    icon: Icons.qr_code,
+                  ),
+                  if (_deliveryType != 'Take Away') ...[
+                    const Divider(height: 1),
+                    _buildPaymentMethodOption(
+                      method: 'Tunai',
+                      title: 'Tunai (Cash)',
+                      subtitle: 'Bayar di kasir, scan QR untuk terima poin',
+                      icon: Icons.money,
+                    ),
+                  ],
+                  const Divider(height: 1),
+                  _buildPaymentMethodOption(
+                    method: 'Bypass',
+                    title: 'Bypass QRIS (Testing)',
+                    subtitle: 'Langsung sukses bayar tanpa lewat Midtrans',
+                    icon: Icons.bolt,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
             // Detail Pesanan
             Text(
               'Detail pesanan kamu nyakk',
@@ -882,24 +1307,12 @@ class _PembayaranPageState extends State<PembayaranPage> {
                                   child: ElevatedButton(
                                     onPressed: () {
                                       Navigator.pop(context); // close dialog
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PaymentMethodPage(
-                                            cartItems: widget.cartItems,
-                                            totalPrice: finalTotal,
-                                            restoId: widget.restoId,
-                                            appliedPromo: _selectedPromo,
-                                            discount: discount,
-                                            subtotal: totalPrice,
-                                            type: _deliveryType,
-                                            tableOrPickupInfo: _deliveryType == 'Dine In'
-                                                ? 'Meja ${_nomorMeja ?? "-"}'
-                                                : 'Take Away',
-                                            poinDigunakan: poinDigunakan,
-                                            poinDidapat: poinDidapat,
-                                          ),
-                                        ),
+                                      _processCheckout(
+                                        finalTotal: finalTotal,
+                                        totalPrice: totalPrice,
+                                        discount: discount,
+                                        poinDigunakan: poinDigunakan,
+                                        poinDidapat: poinDidapat,
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -947,8 +1360,19 @@ class _PembayaranPageState extends State<PembayaranPage> {
           ],
         ),
       ),
-    );
-  }
+      if (_isProcessing)
+        Container(
+          color: Colors.black.withOpacity(0.3),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFFD33400),
+            ),
+          ),
+        ),
+    ],
+  ),
+);
+}
 
   Widget _buildPriceRow(String label, String value) {
     return Row(

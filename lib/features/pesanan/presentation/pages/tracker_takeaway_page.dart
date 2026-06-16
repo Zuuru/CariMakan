@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../widgets/review_bottom_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TrackerTakeawayPage extends StatefulWidget {
   final String? orderId;
@@ -23,6 +24,37 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
   bool _isLoading = true;
   Map<String, dynamic>? _orderData;
   bool _sudahDireview = false;
+  String _restoAlamat = 'Jl. Setia Budi No.28, Ngesrep, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50262';
+  double? _restoLat;
+  double? _restoLng;
+
+  Future<void> _launchMaps() async {
+    Uri url;
+    if (_restoLat != null && _restoLng != null) {
+      url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$_restoLat,$_restoLng');
+    } else {
+      url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(_restoAlamat)}');
+    }
+
+    try {
+      final bool launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        final bool launchedBrowser = await launchUrl(url);
+        if (!launchedBrowser && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tidak dapat membuka Google Maps')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error launching maps: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Terjadi kesalahan: $e')),
+        );
+      }
+    }
+  }
 
 
   @override
@@ -86,6 +118,14 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
             if (restoSnapshot.hasData && restoSnapshot.data!.exists) {
               final restoData = restoSnapshot.data!.data() as Map<String, dynamic>;
               _restoName = restoData['nama'] ?? restoData['name'] ?? 'Resto';
+              if (restoData['lokasi_alamat'] != null && restoData['lokasi_alamat'].toString().isNotEmpty) {
+                _restoAlamat = restoData['lokasi_alamat'] as String;
+              }
+              if (restoData['lokasi'] is GeoPoint) {
+                final geo = restoData['lokasi'] as GeoPoint;
+                _restoLat = geo.latitude;
+                _restoLng = geo.longitude;
+              }
             } else {
               _restoName = 'Loading Resto...';
             }
@@ -162,6 +202,8 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
                       const SizedBox(height: 32),
                       _buildReviewSection(),
                     ],
+                    const SizedBox(height: 32),
+                    _buildRestoLocationCard(),
                     const SizedBox(height: 32),
                     _buildRestoContactCard(),
                   ],
@@ -756,6 +798,71 @@ class _TrackerTakeawayPageState extends State<TrackerTakeawayPage> {
         minimumSize: const Size(double.infinity, 54),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 2,
+      ),
+    );
+  }
+
+  Widget _buildRestoLocationCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.location_on, color: Color(0xFFD33400), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Lokasi Resto',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _restoAlamat,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: _launchMaps,
+            icon: const Icon(Icons.directions, size: 16),
+            label: Text(
+              'Rute ke Resto',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD33400),
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 44),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ],
       ),
     );
   }
