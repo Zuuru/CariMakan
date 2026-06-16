@@ -1,7 +1,10 @@
 import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:carimakan/core/services/cloudinary_service.dart';
 
 import '../../data/menu_model.dart';
 import '../../data/menu_service.dart';
@@ -33,6 +36,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
   String _selectedCategory = 'Makanan';
   bool _isAvailable = true;
   String? _selectedImageUrl;
+  File? _imageFile;
   bool _isLoading = false;
 
   // Variant state
@@ -171,6 +175,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                       onTap: () {
                         setState(() {
                           _selectedImageUrl = item['url'];
+                          _imageFile = null;
                         });
                         Navigator.pop(context);
                       },
@@ -204,6 +209,104 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                       ),
                     );
                   },
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+        _selectedImageUrl = null;
+      });
+    }
+  }
+
+  void _showImageSourceBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Pilih Foto Menu',
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage();
+                },
+                icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
+                label: Text(
+                  'Pilih dari Galeri',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD33400),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showPresetBottomSheet();
+                },
+                icon: const Icon(Icons.restaurant_menu_outlined, color: Color(0xFFD33400)),
+                label: Text(
+                  'Pilih dari Preset Makanan',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFD33400),
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Color(0xFFD33400), width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -403,13 +506,22 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
       final price = int.tryParse(_priceController.text) ?? 0;
       final description = _descController.text.trim();
 
+      String? finalImageUrl = _selectedImageUrl;
+      if (_imageFile != null) {
+        final uploadedUrl = await CloudinaryService.uploadImage(_imageFile!);
+        if (uploadedUrl == null) {
+          throw Exception('Gagal mengunggah foto menu ke Cloudinary');
+        }
+        finalImageUrl = uploadedUrl;
+      }
+
       final menu = MenuModel(
         id: widget.existingMenu?.id ?? '', // kosong jika baru
         restoId: widget.restoId,
         nama: name,
         harga: price,
         isAvailable: _isAvailable,
-        imageUrl: _selectedImageUrl,
+        imageUrl: finalImageUrl,
         kategori: _selectedCategory,
         deskripsi: description,
         urutan: widget.existingMenu?.urutan ?? 0,
@@ -589,7 +701,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
         ),
         const SizedBox(height: 8),
         GestureDetector(
-          onTap: _showPresetBottomSheet,
+          onTap: _showImageSourceBottomSheet,
           child: CustomPaint(
             painter: DashedBorderPainter(
               color: const Color(0xFFE5CFC8),
@@ -601,12 +713,12 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                 width: double.infinity,
                 height: 160,
                 color: Colors.transparent,
-                child: _selectedImageUrl != null
+                child: _imageFile != null
                     ? Stack(
                         fit: StackFit.expand,
                         children: [
-                          Image.network(
-                            _selectedImageUrl!,
+                          Image.file(
+                            _imageFile!,
                             fit: BoxFit.cover,
                           ),
                           Container(
@@ -634,33 +746,66 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                           ),
                         ],
                       )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFBEBEB),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.add_a_photo_outlined,
-                              color: Color(0xFFD33400),
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Tap untuk upload foto',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF8E7E78),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                    : (_selectedImageUrl != null
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                _selectedImageUrl!,
+                                fit: BoxFit.cover,
+                              ),
+                              Container(
+                                color: Colors.black.withValues(alpha: 0.15),
+                              ),
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'Ganti Foto',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFBEBEB),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.add_a_photo_outlined,
+                                  color: Color(0xFFD33400),
+                                  size: 26,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Tap untuk upload foto',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF8E7E78),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )),
               ),
             ),
           ),
