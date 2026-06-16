@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 
 import '../../data/promo_model.dart';
 import '../../data/promo_service.dart';
@@ -43,7 +41,6 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
   DateTime? _mulai;
   DateTime? _berakhir;
   bool _isLoading = false;
-  File? _imageFile;
 
   bool get _isEditMode => widget.existingPromo != null;
 
@@ -59,8 +56,8 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
       _nilaiDiskonController.text = p.nilaiDiskon.toString();
       _isPercent = p.isPercent;
       if (p.maksDiskon != null) _maksDiskonController.text = p.maksDiskon.toString();
-      _minBelanjaController.text = p.minBelanja.toString();
-      _minItemController.text = p.minItem.toString();
+      _minBelanjaController.text = p.minBelanja > 0 ? p.minBelanja.toString() : '';
+      _minItemController.text = p.minItem > 0 ? p.minItem.toString() : '';
       _mulai = p.mulai;
       _berakhir = p.berakhir;
     }
@@ -124,15 +121,9 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
     setState(() => _isLoading = true);
 
     try {
-      String? finalImageUrl = _imageUrlController.text.trim().isNotEmpty
+      final String? finalImageUrl = _imageUrlController.text.trim().isNotEmpty
           ? _imageUrlController.text.trim()
           : null;
-
-      if (_imageFile != null) {
-        // TODO: Nanti upload _imageFile ke Firebase Storage di sini
-        // Karena Firebase Storage belum aktif, kita gunakan placeholder dummy.
-        finalImageUrl = 'https://via.placeholder.com/600x400?text=Gambar+Dari+Galeri';
-      }
 
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
       final promo = PromoModel(
@@ -162,11 +153,17 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
         await PromoService.updatePromo(promo);
       } else {
         await PromoService.tambahPromo(promo);
-        
-        // Fetch restaurant name
-        final restoSnap = await FirebaseFirestore.instance.collection('restaurants').doc(widget.restoId).get();
-        final restoName = restoSnap.exists ? (restoSnap.data()?['nama'] ?? 'Resto') : 'Resto';
 
+        // Fetch restaurant name
+        final restoSnap = await FirebaseFirestore.instance
+            .collection('restaurants')
+            .doc(widget.restoId)
+            .get();
+        final restoName = restoSnap.exists
+            ? (restoSnap.data()?['nama'] ?? 'Resto')
+            : 'Resto';
+
+        // Push notification ke semua customer
         await NotificationService().sendNotification(
           userId: 'all',
           title: 'Promo Baru dari $restoName! 🎉',
@@ -256,7 +253,9 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
               const SizedBox(height: 12),
               Center(
                 child: Text(
-                  _isEditMode ? 'Perbarui detail promo' : 'Isi detail promo baru untuk resto Anda',
+                  _isEditMode
+                      ? 'Perbarui detail promo'
+                      : 'Isi detail promo baru untuk resto Anda',
                   style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFF6B7280)),
                 ),
               ),
@@ -285,20 +284,28 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
               _buildTextField(
                 label: 'Kode Promo (Opsional)',
                 controller: _kodeController,
-                icon: Icons.code,
+                icon: Icons.confirmation_number_outlined,
                 hintText: 'Contoh: MAKAN20',
                 textCapitalization: TextCapitalization.characters,
               ),
               const SizedBox(height: 16),
-              _buildImagePicker(),
-              
-              // TextField URL yang disembunyikan/dijadikan opsional jika butuh
-              // _buildTextField(
-              //   label: 'Link Gambar Promo (Sementara)',
-              //   controller: _imageUrlController,
-              //   icon: Icons.image_outlined,
-              //   hintText: 'Contoh: https://unsplash.com/...',
-              // ),
+
+              // ── URL Gambar Promo ──
+              _buildTextField(
+                label: 'Link Gambar Promo (Opsional)',
+                controller: _imageUrlController,
+                icon: Icons.image_outlined,
+                hintText: 'https://contoh.com/gambar-promo.jpg',
+                keyboardType: TextInputType.url,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null; // opsional
+                  final uri = Uri.tryParse(v.trim());
+                  if (uri == null || !uri.hasAbsolutePath || !v.startsWith('http')) {
+                    return 'Masukkan URL yang valid (https://...)';
+                  }
+                  return null;
+                },
+              ),
 
               const SizedBox(height: 28),
 
@@ -328,10 +335,16 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                 label: _isPercent ? 'Nilai Diskon (%)' : 'Nilai Diskon (Rp)',
                 controller: _nilaiDiskonController,
                 icon: _isPercent ? Icons.percent : Icons.payments_outlined,
-                hintText: _isPercent ? 'Contoh: 20' : 'Contoh: 15000',
+                hintText: _isPercent ? 'Contoh: 20 (artinya 20%)' : 'Contoh: 15000',
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Nilai diskon wajib diisi' : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Nilai diskon wajib diisi';
+                  final val = int.tryParse(v.trim());
+                  if (val == null || val <= 0) return 'Nilai harus lebih dari 0';
+                  if (_isPercent && val > 100) return 'Persentase tidak boleh lebih dari 100';
+                  return null;
+                },
               ),
               if (_isPercent) ...[
                 const SizedBox(height: 16),
@@ -349,6 +362,11 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
 
               // ── Syarat ──
               _buildSectionTitle('Syarat Penggunaan'),
+              const SizedBox(height: 4),
+              Text(
+                'Isi 0 atau kosongkan jika tidak ada syarat minimum.',
+                style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF9CA3AF)),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -437,79 +455,6 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
     );
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-        _imageUrlController.clear(); // Hapus URL teks jika sudah pilih gambar
-      });
-    }
-  }
-
-  Widget _buildImagePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Gambar Promo (Opsional)',
-          style: GoogleFonts.outfit(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF4B5563),
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _pickImage,
-          child: Container(
-            width: double.infinity,
-            height: 150,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF3F4F6), width: 2),
-            ),
-            child: _imageFile != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.file(
-                      _imageFile!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  )
-                : (_imageUrlController.text.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          _imageUrlController.text,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.add_photo_alternate_outlined,
-                              size: 40, color: Color(0xFF9CA3AF)),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tap untuk pilih gambar dari galeri',
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              color: const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
-                      )),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildToggleButton(String label, bool isSelected, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
@@ -535,7 +480,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
     );
   }
 
-  static const _months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  static const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   static String _fmtDate(DateTime d) => '${d.day} ${_months[d.month - 1]} ${d.year}';
 
   Widget _buildDateField(String label, DateTime? date, VoidCallback onTap) {

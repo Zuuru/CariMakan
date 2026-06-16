@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/presentation/pages/home_page.dart';
 import '../../home_karyawan/presentation/pages/home_karyawan_page.dart';
@@ -531,6 +532,106 @@ class _LoginFormState extends State<_LoginForm> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+            'id': user.uid,
+            'nama': user.displayName ?? 'Google User',
+            'email': user.email ?? '',
+            'role': 'customer',
+            'url_whatsapp': '',
+            'status': 'aktif',
+            'poin_reward': 0,
+            'created_at': FieldValue.serverTimestamp(),
+          });
+        } else {
+          final userData = userDoc.data();
+          final status = userData?['status'] as String?;
+          final role = userData?['role'] as String?;
+
+          if (role == 'karyawan' && status == 'suspend') {
+            await FirebaseAuth.instance.signOut();
+            String? ownerPhone;
+            final restoId = userData?['resto_id'] as String?;
+            if (restoId != null && restoId.isNotEmpty) {
+              final restoDoc = await FirebaseFirestore.instance.collection('restaurants').doc(restoId).get();
+              if (restoDoc.exists) {
+                final ownerId = restoDoc.data()?['owner_id'] as String?;
+                if (ownerId != null) {
+                  final ownerDoc = await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
+                  if (ownerDoc.exists) {
+                    ownerPhone = ownerDoc.data()?['url_whatsapp'] as String?;
+                  }
+                }
+              }
+            }
+            if (mounted) {
+              setState(() => _isLoading = false);
+              _showSuspendedDialog(context, ownerPhone);
+            }
+            return;
+          }
+        }
+
+        if (mounted) {
+          final updatedUserDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+          final role = updatedUserDoc.data()?['role'] as String?;
+          
+          Navigator.of(context).pop(); // Close bottom sheet
+          
+          if (role == 'karyawan') {
+            final restoId = updatedUserDoc.data()?['resto_id'] as String? ?? '';
+            final namaKaryawan = updatedUserDoc.data()?['nama'] as String? ?? 'Karyawan';
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => KaryawanHomePage(
+                  restoId: restoId,
+                  namaKaryawan: namaKaryawan,
+                ),
+              ),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal login Google: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -614,7 +715,7 @@ class _LoginFormState extends State<_LoginForm> {
             width: double.infinity,
             height: 54,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: _isLoading ? null : _loginWithGoogle,
               icon: Image.asset('assets/images/Icon/google_logo.png', width: 22),
               label: Text(
                 'Login pake Google',
@@ -794,6 +895,106 @@ class _RegisterFormState extends State<_RegisterForm> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+            'id': user.uid,
+            'nama': user.displayName ?? 'Google User',
+            'email': user.email ?? '',
+            'role': 'customer',
+            'url_whatsapp': '',
+            'status': 'aktif',
+            'poin_reward': 0,
+            'created_at': FieldValue.serverTimestamp(),
+          });
+        } else {
+          final userData = userDoc.data();
+          final status = userData?['status'] as String?;
+          final role = userData?['role'] as String?;
+
+          if (role == 'karyawan' && status == 'suspend') {
+            await FirebaseAuth.instance.signOut();
+            String? ownerPhone;
+            final restoId = userData?['resto_id'] as String?;
+            if (restoId != null && restoId.isNotEmpty) {
+              final restoDoc = await FirebaseFirestore.instance.collection('restaurants').doc(restoId).get();
+              if (restoDoc.exists) {
+                final ownerId = restoDoc.data()?['owner_id'] as String?;
+                if (ownerId != null) {
+                  final ownerDoc = await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
+                  if (ownerDoc.exists) {
+                    ownerPhone = ownerDoc.data()?['url_whatsapp'] as String?;
+                  }
+                }
+              }
+            }
+            if (mounted) {
+              setState(() => _isLoading = false);
+              _showSuspendedDialog(context, ownerPhone);
+            }
+            return;
+          }
+        }
+
+        if (mounted) {
+          final updatedUserDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+          final role = updatedUserDoc.data()?['role'] as String?;
+          
+          Navigator.of(context).pop(); // Close bottom sheet
+          
+          if (role == 'karyawan') {
+            final restoId = updatedUserDoc.data()?['resto_id'] as String? ?? '';
+            final namaKaryawan = updatedUserDoc.data()?['nama'] as String? ?? 'Karyawan';
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => KaryawanHomePage(
+                  restoId: restoId,
+                  namaKaryawan: namaKaryawan,
+                ),
+              ),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal login Google: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -876,7 +1077,7 @@ class _RegisterFormState extends State<_RegisterForm> {
             width: double.infinity,
             height: 54,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: _isLoading ? null : _loginWithGoogle,
               icon: Image.asset('assets/images/Icon/google_logo.png', width: 22),
               label: Text(
                 'Login pake Google',
