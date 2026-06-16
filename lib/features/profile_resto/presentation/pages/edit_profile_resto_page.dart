@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:carimakan/features/home/presentation/pages/location_picker_page.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:carimakan/core/services/cloudinary_service.dart';
 
 class EditProfileRestoPage extends StatefulWidget {
   const EditProfileRestoPage({Key? key}) : super(key: key);
@@ -36,6 +39,8 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
   double? _latitude;
   double? _longitude;
   String? _lokasiAlamat;
+  File? _imageFile;
+  String? _currentImageUrl;
 
   @override
   void initState() {
@@ -63,6 +68,7 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
         _deskripsiController.text = data['deskripsi'] ?? '';
         _waRestController.text = data['url_whatsapp'] ?? '';
         _lokasiAlamat = data['lokasi_alamat'] as String?;
+        _currentImageUrl = data['imageUrl'] ?? data['image_url'] ?? data['foto_profil'] as String?;
         
         if (data['lokasi'] is GeoPoint) {
           final geo = data['lokasi'] as GeoPoint;
@@ -130,6 +136,23 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
     }
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar: $e')),
+      );
+    }
+  }
+
   Future<void> _saveRestoData() async {
     if (_restoId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -143,6 +166,17 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
     });
 
     try {
+      // 1. Upload image to Cloudinary if picked
+      String? uploadedUrl;
+      if (_imageFile != null) {
+        uploadedUrl = await CloudinaryService.uploadImage(_imageFile!);
+        if (uploadedUrl == null) {
+          throw Exception('Gagal mengunggah foto restoran ke Cloudinary');
+        }
+      }
+
+      if (!mounted) return;
+
       final docRef = FirebaseFirestore.instance.collection('restaurants').doc(_restoId);
       
       final Map<String, dynamic> updateData = {
@@ -151,6 +185,12 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
         'url_whatsapp': _waRestController.text.trim(),
         'badges': _fasilitasTerpilih,
       };
+
+      if (uploadedUrl != null) {
+        updateData['imageUrl'] = uploadedUrl;
+        updateData['image_url'] = uploadedUrl;
+        updateData['foto_profil'] = uploadedUrl;
+      }
 
       if (_latitude != null && _longitude != null) {
         updateData['lokasi'] = GeoPoint(_latitude!, _longitude!);
@@ -287,39 +327,48 @@ class _EditProfileRestoPageState extends State<EditProfileRestoPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Foto Resto Upload
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/background/bg_login.png'), // placeholder
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFD33400),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
+            GestureDetector(
+              onTap: _pickImage,
+              child: Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 160,
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        size: 20,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+                        image: DecorationImage(
+                          image: _imageFile != null
+                              ? FileImage(_imageFile!) as ImageProvider
+                              : (_currentImageUrl != null && _currentImageUrl!.isNotEmpty
+                                  ? (_currentImageUrl!.startsWith('http')
+                                      ? NetworkImage(_currentImageUrl!) as ImageProvider
+                                      : AssetImage(_currentImageUrl!) as ImageProvider)
+                                  : const AssetImage('assets/images/background/bg_login.png')),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD33400),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 32),

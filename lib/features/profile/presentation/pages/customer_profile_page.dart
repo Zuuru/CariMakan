@@ -64,18 +64,10 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         final userData = userDoc.data();
         if (userData != null) {
           role = userData['role'] as String?;
-          if (userData['nama'] != null) {
-            _userName = userData['nama'] as String;
-          }
-          if (userData['email'] != null) {
-            _userEmail = userData['email'] as String;
-          }
-          if (userData['photoUrl'] != null) {
-            _photoUrl = userData['photoUrl'] as String;
-          }
-          if (userData['photoBase64'] != null) {
-            _photoBase64 = userData['photoBase64'] as String;
-          }
+          _userName = userData['nama'] as String? ?? 'Jett Heartcliff';
+          _userEmail = userData['email'] as String? ?? 'babababamjett@gmail.com';
+          _photoUrl = userData['photoUrl'] as String?;
+          _photoBase64 = userData['photoBase64'] as String?;
         }
       }
 

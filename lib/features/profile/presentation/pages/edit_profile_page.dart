@@ -3,10 +3,11 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carimakan/core/widgets/custom_back_button.dart';
+import 'package:carimakan/core/services/cloudinary_service.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -68,11 +69,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
 
     try {
-      String? photoBase64;
+      String? cloudinaryUrl;
       
       if (_imageFile != null) {
-        final bytes = await _imageFile!.readAsBytes();
-        photoBase64 = base64Encode(bytes);
+        cloudinaryUrl = await CloudinaryService.uploadImage(_imageFile!);
+        if (cloudinaryUrl == null) {
+          throw Exception('Gagal mengunggah foto profil ke Cloudinary');
+        }
       }
 
       final Map<String, dynamic> updateData = {
@@ -82,8 +85,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'tanggalLahir': _dobController.text,
       };
 
-      if (photoBase64 != null) {
-        updateData['photoBase64'] = photoBase64;
+      if (cloudinaryUrl != null) {
+        updateData['photoUrl'] = cloudinaryUrl;
+        updateData['photoBase64'] = FieldValue.delete(); // Bersihkan base64 lama
       }
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
@@ -114,20 +118,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> _pickImage() async {
     try {
-      final List<AssetEntity>? result = await AssetPicker.pickAssets(
-        context,
-        pickerConfig: const AssetPickerConfig(
-          maxAssets: 1,
-          requestType: RequestType.image,
-        ),
-      );
-      if (result != null && result.isNotEmpty) {
-        final file = await result.first.file;
-        if (file != null) {
-          setState(() {
-            _imageFile = file;
-          });
-        }
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -279,10 +275,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
               image: DecorationImage(
                 image: _imageFile != null 
                     ? FileImage(_imageFile!) as ImageProvider
-                    : (_currentPhotoBase64 != null 
-                        ? MemoryImage(base64Decode(_currentPhotoBase64!)) as ImageProvider
-                        : (_currentPhotoUrl != null
-                            ? NetworkImage(_currentPhotoUrl!) as ImageProvider
+                    : (_currentPhotoUrl != null
+                        ? NetworkImage(_currentPhotoUrl!) as ImageProvider
+                        : (_currentPhotoBase64 != null 
+                            ? MemoryImage(base64Decode(_currentPhotoBase64!)) as ImageProvider
                             : const AssetImage('assets/images/profile.png'))),
                 fit: BoxFit.cover,
               ),

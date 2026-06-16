@@ -9,6 +9,7 @@ import '../../data/promo_model.dart';
 import '../../data/promo_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carimakan/core/services/notification_service.dart';
+import 'package:carimakan/core/services/cloudinary_service.dart';
 
 /// Halaman form untuk membuat promo baru atau mengedit promo yang sudah ada.
 ///
@@ -129,9 +130,11 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
           : null;
 
       if (_imageFile != null) {
-        // TODO: Nanti upload _imageFile ke Firebase Storage di sini
-        // Karena Firebase Storage belum aktif, kita gunakan placeholder dummy.
-        finalImageUrl = 'https://via.placeholder.com/600x400?text=Gambar+Dari+Galeri';
+        final uploadedUrl = await CloudinaryService.uploadImage(_imageFile!);
+        if (uploadedUrl == null) {
+          throw Exception('Gagal mengunggah gambar promo ke Cloudinary');
+        }
+        finalImageUrl = uploadedUrl;
       }
 
       final uid = FirebaseAuth.instance.currentUser?.uid ?? '';

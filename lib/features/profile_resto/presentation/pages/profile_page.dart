@@ -24,6 +24,8 @@ class _ProfilePageState extends State<ProfilePage> {
   int _totalReview = 0;
   String? _userName;
   String? _userEmail;
+  String? _userPhotoUrl;
+  String? _restoPhotoUrl;
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           _userName = userData?['nama'] as String?;
           _userEmail = userData?['email'] as String?;
+          _userPhotoUrl = userData?['photoUrl'] as String?;
         });
       }
 
@@ -58,6 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _status = data['status'] as String?;
           _rating = (data['avg_rating'] as num?)?.toDouble() ?? 0.0;
           _totalReview = (data['total_review'] as num?)?.toInt() ?? 0;
+          _restoPhotoUrl = data['imageUrl'] ?? data['image_url'] ?? data['foto_profil'] as String?;
         });
       }
     } catch (e) {
@@ -222,8 +226,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 spreadRadius: 5,
               )
             ],
-            image: const DecorationImage(
-              image: AssetImage('assets/images/Icon/icon_carimakan.png'), // placeholder
+            image: DecorationImage(
+              image: _restoPhotoUrl != null && _restoPhotoUrl!.isNotEmpty
+                  ? (_restoPhotoUrl!.startsWith('http')
+                      ? NetworkImage(_restoPhotoUrl!) as ImageProvider
+                      : AssetImage(_restoPhotoUrl!) as ImageProvider)
+                  : (_userPhotoUrl != null && _userPhotoUrl!.isNotEmpty
+                      ? (_userPhotoUrl!.startsWith('http')
+                          ? NetworkImage(_userPhotoUrl!) as ImageProvider
+                          : AssetImage(_userPhotoUrl!) as ImageProvider)
+                      : const AssetImage('assets/images/Icon/icon_carimakan.png')),
               fit: BoxFit.cover,
             ),
           ),
