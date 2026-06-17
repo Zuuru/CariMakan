@@ -34,6 +34,9 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
   String _buttonText = 'Daftar sebagai owner resto';
   bool _isOwner = false;
   bool _isLoadingStatus = true;
+  bool _isNotifOn = true;
+  bool _isUpdateOn = true;
+  final String _imageVersion = DateTime.now().millisecondsSinceEpoch.toString();
 
   @override
   void initState() {
@@ -213,7 +216,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                         image: _photoBase64 != null
                             ? MemoryImage(base64Decode(_photoBase64!)) as ImageProvider
                             : (_photoUrl != null 
-                                ? NetworkImage('$_photoUrl?v=${DateTime.now().millisecondsSinceEpoch}') as ImageProvider
+                                ? NetworkImage('$_photoUrl?v=$_imageVersion') as ImageProvider
                                 : const AssetImage('assets/images/profile.png')),
                         fit: BoxFit.cover,
                       ),
@@ -324,11 +327,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
               );
             },
           ),
-          const ProfileMenuItem(
-            icon: Icons.language,
-            title: 'Bahasa',
-            showDivider: true,
-          ),
+
           ProfileMenuItem(
             icon: Icons.security,
             title: 'Keamanan/Privasi',
@@ -350,32 +349,46 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
 
 
   Widget _buildToggleSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1F1F1).withOpacity(0.9),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-          _buildToggleItem(
-            icon: Icons.notifications,
-            title: 'Notifikasi',
-            value: true,
+    return StatefulBuilder(
+      builder: (context, setLocalState) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(24),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(color: Colors.grey.withOpacity(0.1), height: 1),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F1F1).withOpacity(0.9),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                _buildToggleItem(
+                  icon: Icons.notifications,
+                  title: 'Notifikasi',
+                  value: _isNotifOn,
+                  onChanged: (val) {
+                    setLocalState(() => _isNotifOn = val);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(color: Colors.grey.withOpacity(0.1), height: 1),
+                ),
+                _buildToggleItem(
+                  icon: Icons.download,
+                  title: 'Update',
+                  value: _isUpdateOn,
+                  onChanged: (val) {
+                    setLocalState(() => _isUpdateOn = val);
+                  },
+                ),
+              ],
+            ),
           ),
-          _buildToggleItem(icon: Icons.download, title: 'Update', value: true),
-        ],
-      ),
-      ),
+        );
+      },
     );
   }
 
@@ -383,6 +396,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     required IconData icon,
     required String title,
     required bool value,
+    required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
       leading: Container(
@@ -405,7 +419,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         scale: 0.8,
         child: Switch(
           value: value,
-          onChanged: (val) {},
+          onChanged: onChanged,
           activeColor: Colors.white,
           activeTrackColor: AppColors.primary,
           inactiveThumbColor: Colors.white,
