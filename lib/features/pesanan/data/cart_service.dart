@@ -7,6 +7,7 @@ class CartItemModel {
   final String menuImage;
   final double basePrice;
   final double totalPrice;
+  final String description;
   int quantity;
   final Map<String, List<Map<String, dynamic>>> selectedVariants;
 
@@ -16,6 +17,7 @@ class CartItemModel {
     required this.menuImage,
     required this.basePrice,
     required this.totalPrice,
+    required this.description,
     this.quantity = 1,
     required this.selectedVariants,
   });

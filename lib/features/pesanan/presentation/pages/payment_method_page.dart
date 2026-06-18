@@ -59,7 +59,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       final totalSemua = widget.totalPrice.toInt();
       final totalHargaItem = (widget.subtotal - widget.discount).toInt();
       final ppn = (totalHargaItem * 0.1).toInt();
-      final biayaLainnya = totalSemua - totalHargaItem - ppn;
+      // Perbaikan: tambahkan poinDigunakan untuk mengimbangi pengurangan poin di totalSemua
+      // agar biayaLainnya kembali menjadi nilai positif (ongkir/fee sesungguhnya)
+      final biayaLainnya = totalSemua - totalHargaItem - ppn + widget.poinDigunakan;
 
       final itemName = widget.cartItems.isEmpty 
           ? 'Makanan' 

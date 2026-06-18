@@ -7,12 +7,14 @@ class DetailPesananPage extends StatefulWidget {
   final String name;
   final String price;
   final String imagePath;
+  final String description;
 
   const DetailPesananPage({
     super.key,
     required this.name,
     required this.price,
     required this.imagePath,
+    this.description = 'Tidak ada deskripsi',
   });
 
   @override
@@ -93,7 +95,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis...',
+                            widget.description,
                             style: GoogleFonts.poppins(
                               color: Colors.white70,
                               fontSize: 10,
@@ -365,16 +367,22 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Total :', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
-                    Text(
-                      widget.price,
-                      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Total :', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey)),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Text(
+                          widget.price,
+                          style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 12),
                 // Cari bagian ElevatedButton.icon di dalam file DetailPesananPage kamu:
                 ElevatedButton.icon(
                   onPressed: () {
