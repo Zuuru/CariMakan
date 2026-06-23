@@ -7,6 +7,8 @@ import '../../../pesanan/data/cart_service.dart';
 import '../../../pesanan/presentation/pages/pembayaran_page.dart';
 import '../../../home_resto/presentation/widgets/ulasan_resto_card.dart';
 import 'package:carimakan/core/widgets/favorite_button.dart';
+import 'package:carimakan/core/services/pending_payment_service.dart';
+import 'package:carimakan/core/services/midtrans_service.dart';
 
 class RestoPage extends StatefulWidget {
   final String name;
@@ -48,6 +50,9 @@ class _RestoPageState extends State<RestoPage> {
   double _avgRating = 4.9;
   int _totalReview = 999;
 
+  // Pending payment state
+  PendingPayment? _pendingPayment;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +62,54 @@ class _RestoPageState extends State<RestoPage> {
     _listenOperationalHours();
     _listenActiveOrders();
     _listenRestoDetails();
+    _loadPendingPayment();
+  }
+
+  Future<void> _loadPendingPayment() async {
+    final pending = await PendingPaymentService.getPendingPayment();
+    if (!mounted) return;
+    // Verify it's still a live Midtrans transaction
+    if (pending != null) {
+      try {
+        final status = await MidtransService.getTransactionStatus(pending.midtransOrderId);
+        if (MidtransService.isPaymentSuccess(status) ||
+            status == 'expire' ||
+            status == 'cancel' ||
+            status == 'deny') {
+          await PendingPaymentService.clearPendingPayment();
+          if (mounted) setState(() { _pendingPayment = null; });
+          return;
+        }
+      } catch (_) { /* if unreachable, still show the banner */ }
+    }
+    if (mounted) setState(() { _pendingPayment = pending; });
+  }
+
+  void _navigateToPendingPayment() {
+    final pending = _pendingPayment;
+    if (pending == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PembayaranPage(
+          cartItems: pending.cartItems,
+          restoId: pending.restoId,
+          tableId: pending.tableId,
+          nomorMeja: pending.nomorMeja,
+          restoredQrisResult: MidtransQrisResult(
+            orderId: pending.midtransOrderId,
+            qrString: pending.qrString,
+            transactionId: pending.midtransOrderId,
+            grossAmount: pending.grossAmount,
+            transactionStatus: 'pending',
+          ),
+          restoredPromo: pending.appliedPromo,
+          restoredDeliveryType: pending.deliveryType,
+          restoredPakaiPoin: pending.pakaiPoin,
+          restoredNomorMeja: pending.nomorMeja,
+        ),
+      ),
+    ).then((_) => _loadPendingPayment()); // refresh banner after returning
   }
 
   @override
@@ -151,6 +204,74 @@ class _RestoPageState extends State<RestoPage> {
     });
   }
 
+  Widget _buildPendingBanner() {
+    final pending = _pendingPayment!;
+    final itemCount = pending.cartItems.fold(0, (sum, item) => sum + item.quantity);
+    final amountStr = 'Rp ${pending.grossAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}';
+
+    return GestureDetector(
+      onTap: _navigateToPendingPayment,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF97316), Color(0xFFD33400)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.payment_rounded, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '⚠️ Ada pembayaran QRIS yang belum selesai!',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    '$itemCount item · $amountStr',
+                    style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Bayar',
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFFD33400),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -227,6 +348,9 @@ class _RestoPageState extends State<RestoPage> {
                 ],
               ),
             ),
+          // Pending payment warning banner
+          if (_pendingPayment != null)
+            _buildPendingBanner(),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -874,7 +998,7 @@ class _RestoPageState extends State<RestoPage> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context); // close bottom sheet
                       if (!_isOpen) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -885,17 +1009,82 @@ class _RestoPageState extends State<RestoPage> {
                         );
                         return;
                       }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PembayaranPage(
-                            cartItems: items,
-                            restoId: widget.restoId,
-                            tableId: widget.tableId,
-                            nomorMeja: widget.nomorMeja,
-                          ),
-                        ),
+
+                      // Check for existing pending QRIS payment
+                      final checkResult = await PendingPaymentService.checkAndHandlePendingPayment(
+                        context: context,
+                        newCartItems: items,
+                        newRestoId: widget.restoId,
                       );
+
+                      if (!context.mounted) return;
+
+                      if (checkResult.action == PendingCheckAction.restoreSameOrder) {
+                        // Restore the existing pending payment
+                        final pending = checkResult.pendingPayment!;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PembayaranPage(
+                              cartItems: pending.cartItems,
+                              restoId: pending.restoId,
+                              tableId: pending.tableId,
+                              nomorMeja: pending.nomorMeja,
+                              restoredQrisResult: MidtransQrisResult(
+                                orderId: pending.midtransOrderId,
+                                qrString: pending.qrString,
+                                transactionId: pending.midtransOrderId,
+                                grossAmount: pending.grossAmount,
+                                transactionStatus: 'pending',
+                              ),
+                              restoredPromo: pending.appliedPromo,
+                              restoredDeliveryType: pending.deliveryType,
+                              restoredPakaiPoin: pending.pakaiPoin,
+                              restoredNomorMeja: pending.nomorMeja,
+                            ),
+                          ),
+                        );
+                      } else if (checkResult.action == PendingCheckAction.differentOrderBlocked) {
+                        // Offer to navigate to the pending payment
+                        final pending = checkResult.pendingPayment;
+                        if (pending != null && context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PembayaranPage(
+                                cartItems: pending.cartItems,
+                                restoId: pending.restoId,
+                                tableId: pending.tableId,
+                                nomorMeja: pending.nomorMeja,
+                                restoredQrisResult: MidtransQrisResult(
+                                  orderId: pending.midtransOrderId,
+                                  qrString: pending.qrString,
+                                  transactionId: pending.midtransOrderId,
+                                  grossAmount: pending.grossAmount,
+                                  transactionStatus: 'pending',
+                                ),
+                                restoredPromo: pending.appliedPromo,
+                                restoredDeliveryType: pending.deliveryType,
+                                restoredPakaiPoin: pending.pakaiPoin,
+                                restoredNomorMeja: pending.nomorMeja,
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        // No pending payment — normal checkout
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PembayaranPage(
+                              cartItems: items,
+                              restoId: widget.restoId,
+                              tableId: widget.tableId,
+                              nomorMeja: widget.nomorMeja,
+                            ),
+                          ),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD33400),
