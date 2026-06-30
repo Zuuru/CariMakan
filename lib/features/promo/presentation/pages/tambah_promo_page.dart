@@ -1,9 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import '../../data/promo_model.dart';
 import '../../data/promo_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -43,6 +44,10 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
 
   bool get _isEditMode => widget.existingPromo != null;
 
+  String _formatNumber(int val) {
+    return NumberFormat.decimalPattern('id').format(val);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,12 +57,15 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
       _deskripsiController.text = p.deskripsi;
       _kodeController.text = p.kode ?? '';
       _imageUrlController.text = p.imageUrl ?? '';
-      _nilaiDiskonController.text = p.nilaiDiskon.toString();
       _isPercent = p.isPercent;
-      if (p.maksDiskon != null)
-        _maksDiskonController.text = p.maksDiskon.toString();
+      _nilaiDiskonController.text = _isPercent
+          ? p.nilaiDiskon.toString()
+          : _formatNumber(p.nilaiDiskon);
+      if (p.maksDiskon != null) {
+        _maksDiskonController.text = _formatNumber(p.maksDiskon!);
+      }
       _minBelanjaController.text = p.minBelanja > 0
-          ? p.minBelanja.toString()
+          ? _formatNumber(p.minBelanja)
           : '';
       _minItemController.text = p.minItem > 0 ? p.minItem.toString() : '';
       _mulai = p.mulai;
@@ -109,6 +117,102 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
     }
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('Gagal memilih gambar: $e', const Color(0xFFE53935));
+    }
+  }
+
+  Widget _buildImagePicker() {
+    final hasImage = _imageFile != null || _imageUrlController.text.trim().isNotEmpty;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gambar Promo (Opsional)',
+          style: GoogleFonts.outfit(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF4B5563),
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _pickImage,
+          child: Container(
+            height: 160,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFF3F4F6),
+                width: 1.5,
+              ),
+              image: _imageFile != null
+                  ? DecorationImage(
+                      image: FileImage(_imageFile!),
+                      fit: BoxFit.cover,
+                    )
+                  : (_imageUrlController.text.trim().isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(_imageUrlController.text.trim()),
+                          fit: BoxFit.cover,
+                        )
+                      : null),
+            ),
+            child: hasImage
+                ? Align(
+                    alignment: Alignment.topRight,
+                    child: Container(
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        color: Color(0xFF9CA3AF),
+                        size: 40,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Pilih Gambar Promo',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: const Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -154,12 +258,12 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
             ? _kodeController.text.trim().toUpperCase()
             : null,
         imageUrl: finalImageUrl,
-        nilaiDiskon: int.tryParse(_nilaiDiskonController.text.trim()) ?? 0,
+        nilaiDiskon: int.tryParse(_nilaiDiskonController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0,
         isPercent: _isPercent,
         maksDiskon: _isPercent && _maksDiskonController.text.trim().isNotEmpty
-            ? int.tryParse(_maksDiskonController.text.trim())
+            ? int.tryParse(_maksDiskonController.text.replaceAll(RegExp(r'[^0-9]'), ''))
             : null,
-        minBelanja: int.tryParse(_minBelanjaController.text.trim()) ?? 0,
+        minBelanja: int.tryParse(_minBelanjaController.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0,
         minItem: int.tryParse(_minItemController.text.trim()) ?? 0,
         mulai: _mulai!,
         berakhir: _berakhir!,
@@ -318,24 +422,8 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
               ),
               const SizedBox(height: 16),
 
-              // ── URL Gambar Promo ──
-              _buildTextField(
-                label: 'Link Gambar Promo (Opsional)',
-                controller: _imageUrlController,
-                icon: Icons.image_outlined,
-                hintText: 'https://contoh.com/gambar-promo.jpg',
-                keyboardType: TextInputType.url,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return null; // opsional
-                  final uri = Uri.tryParse(v.trim());
-                  if (uri == null ||
-                      !uri.hasAbsolutePath ||
-                      !v.startsWith('http')) {
-                    return 'Masukkan URL yang valid (https://...)';
-                  }
-                  return null;
-                },
-              ),
+              // ── Gambar Promo ──
+              _buildImagePicker(),
 
               const SizedBox(height: 28),
 
@@ -352,9 +440,15 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                 child: Row(
                   children: [
                     _buildToggleButton('Persen (%)', _isPercent, () {
+                      if (!_isPercent) {
+                        _nilaiDiskonController.clear();
+                      }
                       setState(() => _isPercent = true);
                     }),
                     _buildToggleButton('Nominal (Rp)', !_isPercent, () {
+                      if (_isPercent) {
+                        _nilaiDiskonController.clear();
+                      }
                       setState(() => _isPercent = false);
                     }),
                   ],
@@ -367,13 +461,16 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                 icon: _isPercent ? Icons.percent : Icons.payments_outlined,
                 hintText: _isPercent
                     ? 'Contoh: 20 (artinya 20%)'
-                    : 'Contoh: 15000',
+                    : 'Contoh: 15.000',
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: _isPercent
+                    ? [FilteringTextInputFormatter.digitsOnly]
+                    : [ThousandsSeparatorInputFormatter()],
                 validator: (v) {
                   if (v == null || v.trim().isEmpty)
                     return 'Nilai diskon wajib diisi';
-                  final val = int.tryParse(v.trim());
+                  final cleanVal = v.replaceAll(RegExp(r'[^0-9]'), '');
+                  final val = int.tryParse(cleanVal);
                   if (val == null || val <= 0)
                     return 'Nilai harus lebih dari 0';
                   if (_isPercent && val > 100)
@@ -387,9 +484,9 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                   label: 'Batas Maks. Potongan / Rp (Opsional)',
                   controller: _maksDiskonController,
                   icon: Icons.vertical_align_top_outlined,
-                  hintText: 'Contoh: 50000 (kosongkan jika tidak ada batas)',
+                  hintText: 'Contoh: 50.000 (kosongkan jika tidak ada batas)',
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [ThousandsSeparatorInputFormatter()],
                 ),
               ],
 
@@ -415,7 +512,7 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
                       icon: Icons.shopping_cart_outlined,
                       hintText: '0',
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [ThousandsSeparatorInputFormatter()],
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -666,6 +763,34 @@ class _TambahPromoPageState extends State<TambahPromoPage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Hanya ambil angka saja
+    final String cleanText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanText.isEmpty) {
+      return newValue.copyWith(
+        text: '',
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final intVal = int.parse(cleanText);
+    final formatter = NumberFormat.decimalPattern('id');
+    final formattedString = formatter.format(intVal);
+
+    return TextEditingValue(
+      text: formattedString,
+      selection: TextSelection.collapsed(offset: formattedString.length),
     );
   }
 }

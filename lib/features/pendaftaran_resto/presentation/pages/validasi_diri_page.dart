@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:carimakan/core/theme/app_colors.dart';
 import '../widgets/custom_registration_field.dart';
 import 'profil_resto_page.dart';
@@ -16,6 +18,7 @@ class _ValidasiDiriPageState extends State<ValidasiDiriPage> {
   final TextEditingController _nomorHpController = TextEditingController();
   final TextEditingController _namaKtpController = TextEditingController();
   final TextEditingController _nikController = TextEditingController();
+  File? _ktpImageFile;
 
   @override
   void dispose() {
@@ -24,6 +27,23 @@ class _ValidasiDiriPageState extends State<ValidasiDiriPage> {
     _namaKtpController.dispose();
     _nikController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickKtpImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _ktpImageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar: $e')),
+      );
+    }
   }
 
   @override
@@ -101,11 +121,19 @@ class _ValidasiDiriPageState extends State<ValidasiDiriPage> {
                             return;
                           }
 
+                          if (_ktpImageFile == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Harap pilih/unggah foto KTP Anda!')),
+                            );
+                            return;
+                          }
+
                           final registrationData = {
                             'owner_name': _namaPemilikController.text.trim(),
                             'owner_phone': _nomorHpController.text.trim(),
                             'ktp_name': _namaKtpController.text.trim(),
                             'ktp_nik': _nikController.text.trim(),
+                            'ktp_image_path': _ktpImageFile!.path,
                           };
 
                           Navigator.push(
@@ -302,31 +330,48 @@ class _ValidasiDiriPageState extends State<ValidasiDiriPage> {
               Expanded(
                 flex: 2,
                 child: GestureDetector(
-                  onTap: () {
-                    // TODO: Implement image picker
-                  },
+                  onTap: _pickKtpImage,
                   child: Container(
                     height: 106, // Menyesuaikan tinggi 2 textfield + spacer
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F1F1),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: const Color(0xFFC21111), width: 1),
+                      image: _ktpImageFile != null
+                          ? DecorationImage(
+                              image: FileImage(_ktpImageFile!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add_a_photo, color: Color(0xFFC21111), size: 28),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Upload Foto',
-                          style: GoogleFonts.outfit(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFC21111),
+                    child: _ktpImageFile != null
+                        ? Align(
+                            alignment: Alignment.topRight,
+                            child: Container(
+                              margin: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                            ),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.add_a_photo, color: Color(0xFFC21111), size: 28),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Upload Foto',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFFC21111),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),

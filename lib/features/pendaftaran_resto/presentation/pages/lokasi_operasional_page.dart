@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carimakan/core/services/cloudinary_service.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:carimakan/features/home/presentation/pages/location_picker_page.dart';
 import 'status_pendaftaran_page.dart';
 
 class LokasiOperasionalPage extends StatefulWidget {
@@ -16,6 +21,30 @@ class LokasiOperasionalPage extends StatefulWidget {
 class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
   final TextEditingController _alamatController = TextEditingController();
   bool _isLoading = false;
+  
+  // Default location: Tembalang, Semarang
+  double _latitude = -7.0494;
+  double _longitude = 110.4382;
+
+  Future<void> _pickLocationOnMap() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationPickerPage(
+          initialLocation: LatLng(_latitude, _longitude),
+          initialAddress: _alamatController.text.trim(),
+        ),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic> && mounted) {
+      setState(() {
+        _latitude = result['latitude'] as double;
+        _longitude = result['longitude'] as double;
+        _alamatController.text = result['address'] as String;
+      });
+    }
+  }
 
   final List<Map<String, dynamic>> _operasionalDays = [
     {'day': 'Senin', 'isOpen': true, 'openTime': const TimeOfDay(hour: 8, minute: 0), 'closeTime': const TimeOfDay(hour: 22, minute: 0)},
@@ -154,6 +183,30 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
                             final userId = FirebaseAuth.instance.currentUser?.uid;
                             if (userId == null) throw Exception('User belum login');
 
+                            // Upload KTP image to Cloudinary
+                            String? ktpUrl;
+                            if (widget.registrationData['ktp_image_path'] != null) {
+                              final ktpFile = File(widget.registrationData['ktp_image_path']);
+                              if (await ktpFile.exists()) {
+                                ktpUrl = await CloudinaryService.uploadImage(ktpFile);
+                                if (ktpUrl == null) {
+                                  throw Exception('Gagal mengunggah foto KTP ke Cloudinary');
+                                }
+                              }
+                            }
+
+                            // Upload Resto image to Cloudinary
+                            String? restoUrl;
+                            if (widget.registrationData['resto_image_path'] != null) {
+                              final restoFile = File(widget.registrationData['resto_image_path']);
+                              if (await restoFile.exists()) {
+                                restoUrl = await CloudinaryService.uploadImage(restoFile);
+                                if (restoUrl == null) {
+                                  throw Exception('Gagal mengunggah foto resto ke Cloudinary');
+                                }
+                              }
+                            }
+
                             // Prepare operational schedule
                             final opHours = _operasionalDays.map((day) {
                               return {
@@ -176,7 +229,7 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
                               'genres': widget.registrationData['genres'],
                               'badges': widget.registrationData['facilities'],
                               'lokasi_alamat': _alamatController.text.trim(),
-                              'lokasi': const GeoPoint(-6.9825, 110.4285), // Mock GPS for now
+                              'lokasi': GeoPoint(_latitude, _longitude),
                               'status': 'pending',
                               'created_at': FieldValue.serverTimestamp(),
                               'owner_ktp_name': widget.registrationData['ktp_name'],
@@ -184,6 +237,8 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
                               'url_whatsapp': widget.registrationData['owner_phone'],
                               'avg_rating': 0.0,
                               'total_review': 0,
+                              'foto_profil': restoUrl ?? '',
+                              'owner_ktp_url': ktpUrl ?? '',
                             };
 
                             // Save to Firestore
@@ -329,23 +384,73 @@ class _LokasiOperasionalPageState extends State<LokasiOperasionalPage> {
           const SizedBox(height: 20),
           
           // Map Placeholder
-          Container(
-            width: double.infinity,
-            height: 180,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: const Color(0xFFF1F1F1),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/background/map_placeholder.png',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Icon(Icons.map, size: 50, color: Colors.grey),
-                  );
-                },
+          GestureDetector(
+            onTap: _pickLocationOnMap,
+            child: Container(
+              width: double.infinity,
+              height: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFF1F1F1),
+                border: Border.all(color: const Color(0xFFC21111).withOpacity(0.3)),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  children: [
+                    AbsorbPointer(
+                      child: FlutterMap(
+                        options: MapOptions(
+                          initialCenter: LatLng(_latitude, _longitude),
+                          initialZoom: 15.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            subdomains: const ['a', 'b', 'c'],
+                            userAgentPackageName: 'com.carimakan.app',
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(_latitude, _longitude),
+                                width: 40,
+                                height: 40,
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Color(0xFFC21111),
+                                  size: 40,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.fullscreen, color: Colors.white, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Ketuk untuk Ubah',
+                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

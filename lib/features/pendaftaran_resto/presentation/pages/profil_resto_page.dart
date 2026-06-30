@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'lokasi_operasional_page.dart';
 import '../widgets/custom_registration_field.dart';
 
@@ -17,6 +19,24 @@ class _ProfilRestoPageState extends State<ProfilRestoPage> {
   final TextEditingController _namaRestoController = TextEditingController();
   final TextEditingController _deskripsiRestoController = TextEditingController();
   final TextEditingController _detailBioController = TextEditingController();
+  File? _restoImageFile;
+
+  Future<void> _pickRestoImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _restoImageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar: $e')),
+      );
+    }
+  }
 
   // Selected Genres
   final List<String> _selectedGenres = [];
@@ -147,12 +167,20 @@ class _ProfilRestoPageState extends State<ProfilRestoPage> {
                             return;
                           }
 
+                          if (_restoImageFile == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Harap unggah foto profil resto Anda!')),
+                            );
+                            return;
+                          }
+
                           final updatedData = Map<String, dynamic>.from(widget.registrationData);
                           updatedData['nama'] = _namaRestoController.text.trim();
                           updatedData['deskripsi'] = _deskripsiRestoController.text.trim();
                           updatedData['bio'] = _detailBioController.text.trim();
                           updatedData['genres'] = _selectedGenres;
                           updatedData['facilities'] = _selectedFacilities;
+                          updatedData['resto_image_path'] = _restoImageFile!.path;
 
                           Navigator.push(
                             context,
@@ -272,11 +300,8 @@ class _ProfilRestoPageState extends State<ProfilRestoPage> {
           ),
           const SizedBox(height: 20),
           
-          // Dotted Upload Foto Container
           GestureDetector(
-            onTap: () {
-              // TODO: Implement image picker
-            },
+            onTap: _pickRestoImage,
             child: CustomPaint(
               painter: DashedBorderPainter(
                 color: const Color(0xFFC21111),
@@ -291,26 +316,45 @@ class _ProfilRestoPageState extends State<ProfilRestoPage> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F1F1),
                   borderRadius: BorderRadius.circular(10),
+                  image: _restoImageFile != null
+                      ? DecorationImage(
+                          image: FileImage(_restoImageFile!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      color: Color(0xFFC21111),
-                      size: 44,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Upload Foto',
-                      style: GoogleFonts.outfit(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFC21111),
+                child: _restoImageFile != null
+                    ? Align(
+                        alignment: Alignment.topRight,
+                        child: Container(
+                          margin: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit, color: Colors.white, size: 18),
+                        ),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.add_photo_alternate_outlined,
+                            color: Color(0xFFC21111),
+                            size: 44,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Upload Foto',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFC21111),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
