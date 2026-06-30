@@ -244,7 +244,7 @@ class _LoginRegisterSheetState extends State<_LoginRegisterSheet>
     final hasKeyboard = bottomInset > 0;
     
     // Fixed height when keyboard is closed to prevent the background glass container from resizing/jumping
-    final sheetHeight = hasKeyboard ? screenHeight * 0.82 : 680.0;
+    final sheetHeight = hasKeyboard ? screenHeight * 0.82 : 680.0.clamp(0.0, screenHeight * 0.85);
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
@@ -634,22 +634,20 @@ class _LoginFormState extends State<_LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 530,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'WELCOME\nBACK',
-            style: GoogleFonts.outfit(
-              fontSize: 46,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.1,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'WELCOME\nBACK',
+          style: GoogleFonts.outfit(
+            fontSize: (46.0 * (MediaQuery.of(context).size.width / 412.0)).clamp(32.0, 48.0),
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            height: 1.1,
           ),
-          const SizedBox(height: 24),
+        ),
+        const SizedBox(height: 24),
           _label('Email'),
           _textField('Masukkin email kamu yakk',
               controller: _emailController,
@@ -686,7 +684,7 @@ class _LoginFormState extends State<_LoginForm> {
               ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             height: 54,
@@ -732,8 +730,7 @@ class _LoginFormState extends State<_LoginForm> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 }
 
@@ -997,13 +994,11 @@ class _RegisterFormState extends State<_RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 530,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _label('Nama'),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _label('Nama'),
           _textField('Masukkin nama kamu yakk', controller: _namaController),
           const SizedBox(height: 16),
           _label('Email'),
@@ -1048,7 +1043,7 @@ class _RegisterFormState extends State<_RegisterForm> {
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             height: 54,
@@ -1094,8 +1089,7 @@ class _RegisterFormState extends State<_RegisterForm> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _dateField() {
@@ -1331,7 +1325,7 @@ class _SplashPage1State extends State<SplashPage1>
                       position: _titleOffsetAnimation,
                       child: Text("Gas\nCari\nMakan",
                           style: GoogleFonts.outfit(
-                              fontSize: 90,
+                              fontSize: (90.0 * (MediaQuery.of(context).size.width / 412.0)).clamp(55.0, 90.0),
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               height: 1.1,
@@ -1450,7 +1444,7 @@ class _SplashPage2State extends State<SplashPage2>
                   position: _titleOffsetAnimation,
                   child: Text("Mau\nMakan\nNunggu\nLama?",
                       style: GoogleFonts.outfit(
-                          fontSize: 90,
+                          fontSize: (90.0 * (MediaQuery.of(context).size.width / 412.0)).clamp(55.0, 90.0),
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.0,
@@ -1567,7 +1561,7 @@ class _SplashPage3State extends State<SplashPage3>
                   position: _titleOffsetAnimation,
                   child: Text("Pesan\nDari\nMana\nAja!",
                       style: GoogleFonts.outfit(
-                          fontSize: 90,
+                          fontSize: (90.0 * (MediaQuery.of(context).size.width / 412.0)).clamp(55.0, 90.0),
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.0,

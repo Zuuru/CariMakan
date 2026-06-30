@@ -130,8 +130,11 @@ class MidtransService {
       return data;
     }
 
+    final validationMessages = data['validation_messages'] as List<dynamic>?;
+    final validationString = validationMessages != null ? ' Details: ${validationMessages.join(", ")}' : '';
+
     throw Exception(
-      'Gagal membuat QRIS Midtrans ($statusCode): ${data['status_message'] ?? response.body}',
+      'Gagal membuat QRIS Midtrans ($statusCode): ${data['status_message'] ?? response.body}$validationString',
     );
   }
 

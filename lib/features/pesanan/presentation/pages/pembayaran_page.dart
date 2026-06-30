@@ -259,7 +259,9 @@ class _PembayaranPageState extends State<PembayaranPage> {
         final totalSemua = finalTotal.toInt();
         final totalHargaItem = (totalPrice - discount).toInt();
         final ppn = (totalHargaItem * 0.1).toInt();
-        final biayaLainnya = totalSemua - totalHargaItem - ppn;
+        // Perbaikan: tambahkan poinDigunakan untuk mengimbangi pengurangan poin di totalSemua
+        // agar biayaLainnya kembali menjadi nilai positif (ongkir/fee sesungguhnya)
+        final biayaLainnya = totalSemua - totalHargaItem - ppn + poinDigunakan;
 
         final qrisResult = await MidtransService.createQrisCharge(
           grossAmount: totalSemua,

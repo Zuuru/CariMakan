@@ -172,6 +172,7 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
       menuImage: widget.menuImage,
       basePrice: widget.menuPrice,
       totalPrice: _totalPrice,
+      description: widget.description,
       quantity: _quantity,
       selectedVariants: finalVariants,
     );
@@ -417,25 +418,31 @@ class _DetailMenuPageState extends State<DetailMenuPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Total :',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total :',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
-                          ),
-                          Text(
-                            _formatRupiah(_totalPrice * _quantity),
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Text(
+                                _formatRupiah(_totalPrice * _quantity),
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       ElevatedButton.icon(
                         onPressed: _onAddToCart,
                         icon: Icon(

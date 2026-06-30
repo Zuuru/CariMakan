@@ -467,6 +467,7 @@ class _RestoPageState extends State<RestoPage> {
                             priceStr,
                             data['image_url'] ?? 'assets/images/placeholder.jpg',
                             rawPrice: rawPrice,
+                            description: data['deskripsi'] ?? 'Tidak ada deskripsi',
                           );
                         },
                       );
@@ -566,6 +567,7 @@ class _RestoPageState extends State<RestoPage> {
                               priceStr,
                               data['image_url'] ?? 'assets/images/placeholder.jpg',
                               rawPrice: rawPrice,
+                              description: data['deskripsi'] ?? 'Tidak ada deskripsi',
                             );
                           }).toList(),
                         );
@@ -799,7 +801,7 @@ class _RestoPageState extends State<RestoPage> {
                                                 menuName: item.menuName,
                                                 menuImage: item.menuImage,
                                                 menuPrice: item.basePrice,
-                                                description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
+                                                description: item.description,
                                                 initialRating: _avgRating,
                                                 initialReviewCount: _totalReview,
                                                 editingItem: item,
@@ -944,7 +946,7 @@ class _RestoPageState extends State<RestoPage> {
     );
   }
 
-  Widget _buildMenuCard(String menuId, String name, String price, String imagePath, {bool isVertical = false, double rawPrice = 0.0}) {
+  Widget _buildMenuCard(String menuId, String name, String price, String imagePath, {bool isVertical = false, double rawPrice = 0.0, String description = 'Tidak ada deskripsi'}) {
     final Widget cardContent = Container(
       width: isVertical ? double.infinity : 150,
       margin: isVertical ? const EdgeInsets.only(bottom: 16) : EdgeInsets.zero,
@@ -1069,7 +1071,7 @@ class _RestoPageState extends State<RestoPage> {
               menuName: name,
               menuImage: imagePath,
               menuPrice: rawPrice > 0 ? rawPrice : double.tryParse(price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0.0,
-              description: 'Espresso yang di mix dengan susu dan butter dengan rasa yang cukup manis dengan perpaduan butter, kopi dan susu',
+              description: description,
               initialRating: _avgRating,
               initialReviewCount: _totalReview,
             ),
