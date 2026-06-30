@@ -27,6 +27,41 @@ class CartItemModel {
     if (menuId != other.menuId) return false;
     return jsonEncode(selectedVariants) == jsonEncode(other.selectedVariants);
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'menuId': menuId,
+      'menuName': menuName,
+      'menuImage': menuImage,
+      'basePrice': basePrice,
+      'totalPrice': totalPrice,
+      'description': description,
+      'quantity': quantity,
+      'selectedVariants': selectedVariants,
+    };
+  }
+
+  factory CartItemModel.fromMap(Map<String, dynamic> map) {
+    final rawVariants = map['selectedVariants'] as Map<String, dynamic>? ?? {};
+    final variants = rawVariants.map(
+      (key, value) => MapEntry(
+        key,
+        (value as List<dynamic>)
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList(),
+      ),
+    );
+    return CartItemModel(
+      menuId: map['menuId'] as String? ?? '',
+      menuName: map['menuName'] as String? ?? '',
+      menuImage: map['menuImage'] as String? ?? '',
+      basePrice: (map['basePrice'] as num?)?.toDouble() ?? 0.0,
+      totalPrice: (map['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      description: map['description'] as String? ?? '',
+      quantity: (map['quantity'] as num?)?.toInt() ?? 1,
+      selectedVariants: variants,
+    );
+  }
 }
 
 class CartService extends ChangeNotifier {

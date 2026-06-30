@@ -93,6 +93,34 @@ class PromoModel {
     );
   }
 
+  /// Factory constructor dari plain Map (digunakan oleh PendingPaymentService).
+  factory PromoModel.fromMap(Map<String, dynamic> data, String id) {
+    DateTime parseDate(dynamic v) {
+      if (v is Timestamp) return v.toDate();
+      if (v is String) return DateTime.tryParse(v) ?? DateTime.now();
+      return DateTime.now();
+    }
+
+    return PromoModel(
+      id: id,
+      createdBy: data['created_by'] as String? ?? '',
+      restoId: data['resto_id'] as String?,
+      userId: data['user_id'] as String?,
+      nama: data['nama'] as String? ?? '',
+      deskripsi: data['deskripsi'] as String? ?? '',
+      kode: data['kode'] as String?,
+      imageUrl: data['image_url'] as String?,
+      nilaiDiskon: (data['nilai_diskon'] as num?)?.toInt() ?? 0,
+      isPercent: data['is_percent'] as bool? ?? false,
+      maksDiskon: (data['maks_diskon'] as num?)?.toInt(),
+      minBelanja: (data['min_belanja'] as num?)?.toInt() ?? 0,
+      minItem: (data['min_item'] as num?)?.toInt() ?? 0,
+      mulai: parseDate(data['mulai']),
+      berakhir: parseDate(data['berakhir']),
+      isActive: data['is_active'] as bool? ?? true,
+    );
+  }
+
   /// Konversi ke Map untuk disimpan ke Firestore.
   Map<String, dynamic> toFirestore() {
     return {

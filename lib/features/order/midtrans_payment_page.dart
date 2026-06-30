@@ -115,114 +115,174 @@ class _MidtransQrisPageState extends State<MidtransQrisPage> {
     return 'Rp $buffer';
   }
 
+  Future<bool> _confirmExit() async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Yakin keluar?',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Pembayaran QRIS kamu belum selesai. Jika keluar, kamu bisa melanjutkan pembayaran ini nanti.',
+          style: GoogleFonts.poppins(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Tetap di sini',
+              style: GoogleFonts.poppins(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD33400),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              'Keluar',
+              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldExit = await _confirmExit();
+        if (shouldExit && mounted) {
+          _pollTimer?.cancel();
+          Navigator.pop(
+            context,
+            MidtransPaymentResult(
+              status: MidtransPaymentStatus.closed,
+              orderId: widget.qrisResult.orderId,
+              message: 'Pembayaran ditunda',
+            ),
+          );
+        }
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () {
-            _pollTimer?.cancel();
-            Navigator.pop(
-              context,
-              MidtransPaymentResult(
-                status: MidtransPaymentStatus.closed,
-                orderId: widget.qrisResult.orderId,
-                message: 'Pembayaran dibatalkan',
-              ),
-            );
-          },
-        ),
-        title: Text(
-          'Bayar dengan QRIS',
-          style: GoogleFonts.poppins(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Text(
-              _formatRupiah(widget.qrisResult.grossAmount),
-              style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFFD33400),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Nominal sudah otomatis sesuai total pesanan',
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade300, width: 2),
-              ),
-              child: QrImageView(
-                data: widget.qrisResult.qrString,
-                version: QrVersions.auto,
-                size: 220,
-                backgroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _statusMessage,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[700]),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Scan QR di atas via GoPay, OVO, DANA, m-Banking, atau e-wallet lainnya.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[500]),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isChecking ? null : () => _checkPaymentStatus(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD33400),
-                  disabledBackgroundColor: Colors.grey[400],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.black),
+            onPressed: () async {
+              final shouldExit = await _confirmExit();
+              if (shouldExit && mounted) {
+                _pollTimer?.cancel();
+                Navigator.pop(
+                  context,
+                  MidtransPaymentResult(
+                    status: MidtransPaymentStatus.closed,
+                    orderId: widget.qrisResult.orderId,
+                    message: 'Pembayaran ditunda',
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: _isChecking
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Sudah Bayar',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-              ),
+                );
+              }
+            },
+          ),
+          title: Text(
+            'Bayar dengan QRIS',
+            style: GoogleFonts.poppins(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
-          ],
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Text(
+                _formatRupiah(widget.qrisResult.grossAmount),
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFD33400),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Nominal sudah otomatis sesuai total pesanan',
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300, width: 2),
+                ),
+                child: QrImageView(
+                  data: widget.qrisResult.qrString,
+                  version: QrVersions.auto,
+                  size: 220,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _statusMessage,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Scan QR di atas via GoPay, OVO, DANA, m-Banking, atau e-wallet lainnya.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[500]),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isChecking ? null : () => _checkPaymentStatus(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD33400),
+                    disabledBackgroundColor: Colors.grey[400],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: _isChecking
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Sudah Bayar',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
