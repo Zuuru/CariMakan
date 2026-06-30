@@ -17,7 +17,9 @@ class CustomBackButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed ?? () => Navigator.pop(context),
       child: Container(
-        padding: const EdgeInsets.only(left: 14, top: 12, bottom: 12, right: 10),
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: backgroundColor,
           shape: BoxShape.circle,
