@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'promo_model.dart';
 
@@ -65,16 +66,45 @@ class PromoService {
   /// Stream real-time semua promo aktif yang belum kadaluarsa.
   /// Digunakan oleh Customer PromoPage & PromoBanner.
   static Stream<List<PromoModel>> getActivePromos() {
-    return _db
+    final controller = StreamController<List<PromoModel>>();
+
+    List<PromoModel> restoPromos = [];
+    List<PromoModel> adminPromos = [];
+
+    void emitCombined() {
+      final combined = [...restoPromos, ...adminPromos]
+          .where((promo) => !promo.isExpired && !promo.isUpcoming)
+          .toList()
+          ..sort((a, b) => b.mulai.compareTo(a.mulai));
+      if (!controller.isClosed) {
+        controller.add(combined);
+      }
+    }
+
+    final sub1 = _db
         .collection(_collection)
         .where('is_active', isEqualTo: true)
         .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => PromoModel.fromFirestore(doc))
-              .where((promo) => !promo.isExpired && !promo.isUpcoming)
-              .toList()
-              ..sort((a, b) => b.mulai.compareTo(a.mulai));
-        });
+        .listen((snapshot) {
+      restoPromos = snapshot.docs.map((doc) => PromoModel.fromFirestore(doc)).toList();
+      emitCombined();
+    });
+
+    final sub2 = _db
+        .collection('promo_vouchers')
+        .where('is_active', isEqualTo: true)
+        .snapshots()
+        .listen((snapshot) {
+      adminPromos = snapshot.docs.map((doc) => PromoModel.fromFirestore(doc)).toList();
+      emitCombined();
+    });
+
+    controller.onCancel = () {
+      sub1.cancel();
+      sub2.cancel();
+      controller.close();
+    };
+
+    return controller.stream;
   }
 }
