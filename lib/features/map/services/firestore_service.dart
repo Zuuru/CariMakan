@@ -5,7 +5,7 @@ class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Stream<List<Restaurant>> streamRestaurants() {
-    return _db.collection('restaurants').snapshots().map((snapshot) {
+    return _db.collection('restaurants').where('status', isEqualTo: 'aktif').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         return Restaurant.fromFirestore(doc.id, doc.data());
       }).toList();
@@ -13,7 +13,7 @@ class FirestoreService {
   }
 
   Future<List<Restaurant>> getRestaurants() async {
-    final snapshot = await _db.collection('restaurants').get();
+    final snapshot = await _db.collection('restaurants').where('status', isEqualTo: 'aktif').get();
     return snapshot.docs.map((doc) {
       return Restaurant.fromFirestore(doc.id, doc.data());
     }).toList();

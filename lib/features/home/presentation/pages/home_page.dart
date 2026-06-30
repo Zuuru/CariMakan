@@ -100,7 +100,7 @@ class _HomeContentState extends State<HomeContent> {
 
   StreamSubscription<DocumentSnapshot>? _userSubscription;
   late final Stream<QuerySnapshot> _restaurantsStream =
-      FirebaseFirestore.instance.collection('restaurants').snapshots();
+      FirebaseFirestore.instance.collection('restaurants').where('status', isEqualTo: 'aktif').snapshots();
   late final Stream<QuerySnapshot> _notificationsStream = FirebaseFirestore.instance
       .collection('notifications')
       .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
@@ -720,7 +720,7 @@ class _HomeContentState extends State<HomeContent> {
           SizedBox(
             height: 270,
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('restaurants').limit(4).snapshots(),
+              stream: FirebaseFirestore.instance.collection('restaurants').where('status', isEqualTo: 'aktif').limit(4).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator(color: Colors.white));

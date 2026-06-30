@@ -64,7 +64,9 @@ class PromoModel {
   /// Contoh: "20%" atau "Rp 15.000"
   String get diskonLabel {
     if (isPercent) {
-      final maxLabel = maksDiskon != null ? ' (maks Rp ${_formatNumber(maksDiskon!)})' : '';
+      final maxLabel = maksDiskon != null
+          ? ' (maks Rp ${_formatNumber(maksDiskon!)})'
+          : '';
       return '$nilaiDiskon%$maxLabel';
     }
     return 'Rp ${_formatNumber(nilaiDiskon)}';
@@ -81,7 +83,7 @@ class PromoModel {
       nama: data['nama'] ?? '',
       deskripsi: data['deskripsi'] ?? '',
       kode: data['kode'],
-      imageUrl: data['image_url'],
+      imageUrl: data['image_url'] ?? data['foto_uri'],
       nilaiDiskon: data['nilai_diskon'] ?? 0,
       isPercent: data['is_percent'] ?? false,
       maksDiskon: data['maks_diskon'],
@@ -109,7 +111,7 @@ class PromoModel {
       nama: data['nama'] as String? ?? '',
       deskripsi: data['deskripsi'] as String? ?? '',
       kode: data['kode'] as String?,
-      imageUrl: data['image_url'] as String?,
+      imageUrl: (data['image_url'] ?? data['foto_uri']) as String?,
       nilaiDiskon: (data['nilai_diskon'] as num?)?.toInt() ?? 0,
       isPercent: data['is_percent'] as bool? ?? false,
       maksDiskon: (data['maks_diskon'] as num?)?.toInt(),
