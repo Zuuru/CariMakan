@@ -1,0 +1,250 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../widgets/resto_bottom_navbar.dart';
+import '../widgets/rekap_harian_card.dart';
+import '../widgets/ulasan_resto_card.dart';
+import '../widgets/menu_terlaris_card.dart';
+import '../../../menu_resto/presentation/pages/manajemen_menu_page.dart';
+import '../../../recap_resto/presentation/pages/recap_page.dart';
+import '../../../profile_resto/presentation/pages/profile_page.dart';
+import '../../../recap_resto/data/recap_service.dart';
+
+class HomeRestoPage extends StatefulWidget {
+  const HomeRestoPage({Key? key}) : super(key: key);
+
+  @override
+  State<HomeRestoPage> createState() => _HomeRestoPageState();
+}
+
+class _HomeRestoPageState extends State<HomeRestoPage> {
+  int _currentIndex = 0; // Default to 'Order/Dashboard'
+  
+  // Dummy Page Names for threshold testing
+  final List<String> _pageNames = [
+    'Dashboard / Recap',
+    'Manajemen Menu',
+    'Rekap / Keuangan',
+    'Profil Resto'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFEFEFEF),
+      body: Stack(
+        children: [
+          // Persistent stacked pages
+          IndexedStack(
+            index: _currentIndex,
+            children: [
+              // Page 0: Dashboard / Order
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 20,
+                    bottom: 120, // space for the floating navbar
+                  ),
+                  child: _buildDashboardContent(),
+                ),
+              ),
+              // Page 1: Manajemen Menu
+              ManajemenMenuPage(
+                onBackPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+              ),
+              // Page 2: Rekap / Keuangan
+              RecapPage(
+                onBackPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+              ),
+              // Page 3: Profil Resto
+              ProfilePage(
+                onBackPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+              ),
+            ],
+          ),
+          
+          // Floating Bottom Navbar
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: RestoBottomNavbar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardContent() {
+    return FutureBuilder<String?>(
+      future: RecapService.getCurrentRestoId(),
+      builder: (context, snapshot) {
+        final restoId = snapshot.data;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 20),
+            Text(
+              'Halo!!',
+              style: GoogleFonts.montserrat(
+                fontSize: 48,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 30),
+            RekapHarianCard(restoId: restoId),
+            const SizedBox(height: 30),
+            const UlasanRestoCard(),
+            const SizedBox(height: 30),
+            MenuTerlarisCard(restoId: restoId),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPlaceholderPage(int index) {
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 20,
+            bottom: 120,
+          ),
+          child: Text(
+            'Halaman ${_pageNames[index]} Belum Tersedia',
+            style: GoogleFonts.outfit(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: const BoxDecoration(
+              color: Color(0xFFD9D9D9),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Yo, Resto',
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('restaurants')
+          .where('owner_id', isEqualTo: uid)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        String name = 'Resto';
+        String address = 'Lokasi belum diatur';
+
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          final data = snapshot.data!.docs.first.data();
+          name = data['nama'] ?? 'Resto';
+          address = data['lokasi_alamat'] ?? 'Lokasi belum diatur';
+        }
+
+        return Row(
+          children: [
+            // Profile Picture Placeholder
+            Container(
+              width: 50,
+              height: 50,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD9D9D9),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    address,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF989898),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

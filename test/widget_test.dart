@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:carimakan/main.dart';
+import 'package:carimakan/features/profile/presentation/widgets/menu_item.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
@@ -26,5 +27,30 @@ void main() {
     // Verify that our counter has incremented.
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
+  });
+
+  testWidgets('ProfileMenuItem renders correctly', (WidgetTester tester) async {
+    // Build the ProfileMenuItem widget
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProfileMenuItem(
+            icon: Icons.person,
+            title: 'Test Menu',
+            showDivider: true,
+            onTap: () {},
+          ),
+        ),
+      ),
+    );
+
+    // Verify that the title text is displayed
+    expect(find.text('Test Menu'), findsOneWidget);
+
+    // Verify that the icon is displayed
+    expect(find.byIcon(Icons.person), findsOneWidget);
+
+    // Verify that the forward arrow icon is displayed
+    expect(find.byIcon(Icons.arrow_forward_ios), findsOneWidget);
   });
 }

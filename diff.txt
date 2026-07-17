@@ -1,0 +1,19 @@
+﻿commit 0ca01b5863ea1b697f90855fa13b868a88026b34
+Author: va11h411a <Paulusale180@gmail.com>
+Date:   Sun Jun 7 13:13:26 2026 +0700
+
+    menambahkan logic manajemen resto
+
+diff --git a/lib/features/splash/pages/splash_screen.dart b/lib/features/splash/pages/splash_screen.dart
+index c27cc99..fa16fea 100644
+--- a/lib/features/splash/pages/splash_screen.dart
++++ b/lib/features/splash/pages/splash_screen.dart
+@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
+ import 'package:cloud_firestore/cloud_firestore.dart';
+ import '../../../core/theme/app_colors.dart';
+ import '../../home/presentation/pages/home_page.dart';
+-import '../../login/pages/forgot_password_page.dart';
++import 'forgot_password_page.dart';
+ 
+ class SplashScreen extends StatefulWidget {
+   final bool showLoginImmediately;
